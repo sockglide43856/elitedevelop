@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,126 +8,105 @@
     <meta name="theme-color" content="#0b1220" id="ed-theme-color">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <link rel="manifest" href="{% static 'manifest.json' %}">
-    <link rel="icon" href="{% static 'EliteDevelopLogo.png' %}">
-    <link rel="apple-touch-icon" href="{% static 'EliteDevelopLogo.png' %}">
-
-    <title>{% block title %}EliteDevelop{% endblock %}</title>
-
-    <script>
-    (() => {
-        const saved = localStorage.getItem("theme");
-
-        const theme =
-            saved === "light" || saved === "dark"
-                ? saved
-                : (
-                    matchMedia("(prefers-color-scheme: dark)").matches
-                        ? "dark"
-                        : "light"
-                );
-
-        document.documentElement.dataset.theme = theme;
-        document.documentElement.classList.toggle("dark-theme", theme === "dark");
-        document.documentElement.style.colorScheme = theme;
-    })();
-    </script>
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    >
-
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    >
-
-    <link rel="stylesheet" href="{% static 'css/elitedevelop.css' %}">
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/easymde/dist/easymde.min.css"
-    >
-
-    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
-
-    <script src="{% static 'machina/js/ui.js' %}"></script>
-    <script src="{% static 'machina/js/editor.js' %}"></script>
-
-    {% block css %}{% endblock %}
-    {% block styles %}{% endblock %}
-    {% block head %}{% endblock %}
+<link rel="manifest" href="{% static 'manifest.json' %}">
+<link rel="icon" href="{% static 'EliteDevelopLogo.png' %}">
+<link rel="apple-touch-icon" href="{% static 'EliteDevelopLogo.png' %}">
+<title>{% block title %}EliteDevelop{% endblock %}</title>
+<!-- Automatically follow the user's system theme.
+     There is intentionally no manual theme toggle. -->
+<script>
+(() => {
+    const saved = localStorage.getItem("theme");
+    const theme =
+        saved === "light" || saved === "dark"
+            ? saved
+            : (
+                window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "dark"
+                    : "light"
+            );
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.classList.toggle(
+        "dark-theme",
+        theme === "dark"
+    );
+    document.documentElement.style.colorScheme = theme;
+})();
+</script>
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+>
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+>
+<link rel="stylesheet" href="{% static 'css/elitedevelop.css' %}">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/easymde/dist/easymde.min.css"
+>
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+<script src="{% static 'machina/js/ui.js' %}"></script>
+<script src="{% static 'machina/js/editor.js' %}"></script>
+{% block css %}{% endblock %}
+{% block styles %}{% endblock %}
+{% block head %}{% endblock %}
 </head>
 
 {% if indev and not user.is_staff %}
 
 <body class="maintenance-page">
-    <div class="maintenance-shell">
-        <section class="maintenance-card">
-
-            <a href="/" class="ed-brand maintenance-brand">
-                <img
-                    src="{% static 'EliteDevelopLogo.png' %}"
-                    alt="EliteDevelop"
-                >
-                <span>EliteDevelop</span>
+<div class="maintenance-shell">
+    <section class="maintenance-card">
+        <a href="/" class="ed-brand maintenance-brand">
+            <img
+                src="{% static 'EliteDevelopLogo.png' %}"
+                alt="EliteDevelop"
+            >
+            <span>EliteDevelop</span>
+        </a>
+        <div class="maintenance-icon">
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+        </div>
+        <div class="ed-eyebrow">TEMPORARILY OFFLINE</div>
+        <h1>We'll be right back.</h1>
+        <p>
+            EliteDevelop is temporarily offline while we work on the
+            platform. Nothing is wrong with your account.
+        </p>
+        <div class="maintenance-reason">
+            <i class="fa-solid fa-circle-info"></i>
+            {{ reason|default:"Scheduled Maintenance" }}
+        </div>
+        <p class="small">
+            Legal documents may still be available while maintenance is active.
+        </p>
+        <div class="maintenance-actions">
+            <a href="/legal">
+                <i class="fa-solid fa-scale-balanced"></i>
+                Legal
             </a>
-
-            <div class="maintenance-icon">
-                <i class="fa-solid fa-screwdriver-wrench"></i>
-            </div>
-
-            <div class="ed-eyebrow">TEMPORARILY OFFLINE</div>
-
-            <h1>We'll be right back.</h1>
-
-            <p>
-                EliteDevelop is temporarily offline while we work on the
-                platform. Nothing is wrong with your account.
-            </p>
-
-            <div class="maintenance-reason">
-                <i class="fa-solid fa-circle-info"></i>
-                {{ reason|default:"Scheduled Maintenance" }}
-            </div>
-
-            <p class="small">
-                Legal documents may still be available while maintenance is active.
-            </p>
-
-            <div class="maintenance-actions">
-                <a href="/legal">
-                    <i class="fa-solid fa-scale-balanced"></i>
-                    Legal
-                </a>
-
-                {% if user.is_staff %}
-                <a href="/admin">
-                    <i class="fa-solid fa-gauge-high"></i>
-                    Administration
-                </a>
-                {% endif %}
-
-                <a href="/">
-                    <i class="fa-solid fa-house"></i>
-                    Home
-                </a>
-            </div>
-
-            <div class="system-line">
-                <i class="fa-solid fa-circle"></i>
-                ELITEDEVELOP SYSTEMS · MAINTENANCE MODE
-            </div>
-
-        </section>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
+            {% if user.is_staff %}
+            <a href="/admin">
+                <i class="fa-solid fa-gauge-high"></i>
+                Administration
+            </a>
+            {% endif %}
+            <a href="/">
+                <i class="fa-solid fa-house"></i>
+                Home
+            </a>
+        </div>
+        <div class="system-line">
+            <i class="fa-solid fa-circle"></i>
+            ELITEDEVELOP SYSTEMS · MAINTENANCE MODE
+        </div>
+    </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 </body>
 
 {% else %}
@@ -134,6 +114,7 @@
 <body>
 
 {% if user.is_staff and indev %}
+
 <div class="ed-debug">
     <i class="fa-solid fa-circle-exclamation"></i>
     <strong>DEVELOPMENT MODE</strong>
@@ -142,462 +123,432 @@
     <span>•</span>
     {{ user.get_username }}
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
-{% endif %}
 
+{% endif %}
 
 {% if user.is_authenticated %}
 
 <div id="pwa-install-banner" class="ed-banner d-none">
-    <i class="fa-solid fa-mobile-screen-button"></i>
-
-    <span>
-        Add EliteDevelop to your home screen for a faster experience.
-    </span>
-
-    <button
-        id="btn-pwa-install"
-        class="btn btn-sm btn-primary d-none"
-    >
-        <i class="fa-solid fa-plus me-1"></i>
-        Install
-    </button>
-
-    <span id="ios-install-instructions" class="d-none">
-        Tap
-        <i class="fa-solid fa-share-from-square mx-1"></i>
-        then <strong>Add to Home Screen</strong>.
-    </span>
+<i class="fa-solid fa-mobile-screen-button"></i>
+<span>
+    Add EliteDevelop to your home screen for a faster experience.
+</span>
+<button
+    id="btn-pwa-install"
+    class="btn btn-sm btn-primary d-none"
+>
+    <i class="fa-solid fa-plus me-1"></i>
+    Install
+</button>
+<span id="ios-install-instructions" class="d-none">
+    Tap
+    <i class="fa-solid fa-share-from-square mx-1"></i>
+    then <strong>Add to Home Screen</strong>.
+</span>
 </div>
-
-
 <div id="notification-permission-banner" class="ed-banner d-none">
-    <i class="fa-solid fa-bell"></i>
-
-    <span>
-        Enable notifications so you don't miss new messages.
-    </span>
-
-    <button
-        id="btn-grant-notifications"
-        class="btn btn-sm btn-success"
-    >
-        <i class="fa-solid fa-bell me-1"></i>
-        Enable
-    </button>
+<i class="fa-solid fa-bell"></i>
+<span>
+    Enable notifications so you don't miss new messages.
+</span>
+<button
+    id="btn-grant-notifications"
+    class="btn btn-sm btn-success"
+>
+    <i class="fa-solid fa-bell me-1"></i>
+    Enable
+</button>
 </div>
 
 {% endif %}
 
-
 <nav class="ed-navbar">
-
-    <a
-        href="/"
-        class="ed-brand"
-        id="ed-logo"
-        aria-label="EliteDevelop home"
+<a
+    href="/"
+    class="ed-brand"
+    id="ed-logo"
+    aria-label="EliteDevelop home"
+>
+    <img
+        src="{% static 'EliteDevelopLogo.png' %}"
+        alt=""
+        class="ed-brand-logo"
     >
-        <img
-            src="{% static 'EliteDevelopLogo.png' %}"
-            alt=""
-            class="ed-brand-logo"
+    <span>EliteDevelop</span>
+</a>
+<div class="ed-nav-main">
+    <!-- Network -->
+    <div class="ed-dropdown">
+        <button
+            class="ed-dropdown-trigger"
+            type="button"
+            aria-label="Open network menu"
         >
-        <span>EliteDevelop</span>
+            <i class="fa-solid fa-layer-group"></i>
+            <i class="fa-solid fa-chevron-down caret"></i>
+        </button>
+        <div class="ed-dropdown-menu">
+            <a
+                href="https://3dio.pythonanywhere.com"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <i class="fa-solid fa-cubes"></i>
+                3d.io
+                <i class="fa-solid fa-arrow-up-right-from-square ms-auto"></i>
+            </a>
+            <a
+                href="https://htmio.pythonanywhere.com"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <i class="fa-solid fa-globe"></i>
+                htm.io
+                <i class="fa-solid fa-arrow-up-right-from-square ms-auto"></i>
+            </a>
+        </div>
+    </div>
+    <a
+        href="/legal"
+        class="ed-nav-link"
+        title="Legal"
+        aria-label="Legal"
+    >
+        <i class="fa-solid fa-scale-balanced"></i>
     </a>
-
-
-    <div class="ed-nav-main">
-
-        <div class="ed-dropdown">
-            <button
-                class="ed-dropdown-trigger"
-                type="button"
-            >
-                <i class="fa-solid fa-layer-group"></i>
-                <i class="fa-solid fa-chevron-down caret"></i>
-            </button>
-
-            <div class="ed-dropdown-menu">
-                <a
-                    href="https://3dio.pythonanywhere.com"
-                    target="_blank"
-                >
-                    <i class="fa-solid fa-cubes"></i>
-                    3d.io
-                    <i class="fa-solid fa-arrow-up-right-from-square ms-auto"></i>
-                </a>
-
-                <a
-                    href="https://htmio.pythonanywhere.com"
-                    target="_blank"
-                >
-                    <i class="fa-solid fa-globe"></i>
-                    htm.io
-                    <i class="fa-solid fa-arrow-up-right-from-square ms-auto"></i>
-                </a>
-            </div>
+    <a
+        href="/users"
+        class="ed-nav-link"
+        title="Users"
+        aria-label="Users"
+    >
+        <i class="fa-solid fa-users"></i>
+    </a>
+    <a
+        href="/stats"
+        class="ed-nav-link"
+        title="Stats"
+        aria-label="Stats"
+    >
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Stats</span>
+    </a>
+    <a
+        href="/forms"
+        class="ed-nav-link"
+        title="Forms"
+        aria-label="Forms"
+    >
+        <i class="fa-solid fa-list-check"></i>
+    </a>
+    <a
+        href="/proxy"
+        class="ed-nav-link"
+        title="Proxy"
+        aria-label="Proxy"
+    >
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Proxy</span>
+    </a>
+    <!-- Tools -->
+    <div class="ed-dropdown">
+        <button
+            class="ed-dropdown-trigger"
+            type="button"
+            aria-label="Open tools menu"
+        >
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+            <span>Tools</span>
+            <i class="fa-solid fa-chevron-down caret"></i>
+        </button>
+        <div class="ed-dropdown-menu">
+            <a href="{% url 'qr-dashboard' %}">
+                <i class="fa-solid fa-qrcode"></i>
+                QR Studio
+            </a>
+            <a href="{% url 'py' %}">
+                <i class="fa-brands fa-python"></i>
+                Python Executor
+            </a>
+            <div class="ed-dropdown-divider"></div>
+            <a href="/eliteos">
+                <i class="fa-solid fa-desktop"></i>
+                EliteOS
+            </a>
         </div>
-
-
-        <a href="/legal" class="ed-nav-link">
-            <i class="fa-solid fa-scale-balanced"></i>
-        </a>
-
-        <a href="/users" class="ed-nav-link">
-            <i class="fa-solid fa-users"></i>
-        </a>
-
-        <a href="/stats" class="ed-nav-link">
-            <i class="fa-solid fa-chart-line"></i>
-            <span>Stats</span>
-        </a>
-
-        <a href="/forms" class="ed-nav-link">
-            <i class="fa-solid fa-list-check"></i>
-        </a>
-
-        <a href="/proxy" class="ed-nav-link">
-            <i class="fa-solid fa-shield-halved"></i>
-            <span>Proxy</span>
-        </a>
-
-
-        <div class="ed-dropdown">
-            <button
-                class="ed-dropdown-trigger"
-                type="button"
-            >
-                <i class="fa-solid fa-screwdriver-wrench"></i>
-                <span>Tools</span>
-                <i class="fa-solid fa-chevron-down caret"></i>
-            </button>
-
-            <div class="ed-dropdown-menu">
-
-                <a href="{% url 'qr-dashboard' %}">
-                    <i class="fa-solid fa-qrcode"></i>
-                    QR Studio
-                </a>
-
-                <a href="{% url 'py' %}">
-                    <i class="fa-brands fa-python"></i>
-                    Python Executor
-                </a>
-
-                <div class="ed-dropdown-divider"></div>
-
-                <a href="/eliteos">
-                    <i class="fa-solid fa-desktop"></i>
-                    EliteOS
-                </a>
-
-            </div>
-        </div>
-
-
-        {% if user.is_staff %}
-
-        <div class="ed-dropdown">
-
-            <button
-                class="ed-dropdown-trigger"
-                type="button"
-            >
-                <i class="fa-solid fa-user-shield"></i>
-                <span>Staff</span>
-                <i class="fa-solid fa-chevron-down caret"></i>
-            </button>
-
-            <div class="ed-dropdown-menu">
-
-                <a href="/admin">
-                    <i class="fa-solid fa-gauge-high"></i>
-                    Admin Panel
-                </a>
-
-                <a href="/admin/" target="_blank">
-                    <i class="fa-solid fa-sliders"></i>
-                    Django Admin
-                </a>
-
-            </div>
-
-        </div>
-
-        {% endif %}
-
-
-        <div class="ed-dropdown">
-
-            <button
-                class="ed-dropdown-trigger"
-                type="button"
-            >
-                <i class="fa-solid fa-comments"></i>
-                <span>Social</span>
-                <i class="fa-solid fa-chevron-down caret"></i>
-            </button>
-
-            <div class="ed-dropdown-menu">
-
-                <a href="/forums/">
-                    <i class="fa-solid fa-comments"></i>
-                    Forums
-                </a>
-
-                <a href="{% url 'private-portal' %}">
-                    <i class="fa-solid fa-message"></i>
-                    Private Chats
-                </a>
-
-            </div>
-
-        </div>
-
     </div>
-
-
-    <div class="ed-nav-right">
-
-        {% if user.is_authenticated %}
-
-        <div
-            id="nav-streak-widget"
-            class="ed-streak"
-            title="Spend 15 active minutes on EliteDevelop each day to earn your streak."
+    {% if user.is_staff %}
+    <!-- Staff -->
+    <div class="ed-dropdown">
+        <button
+            class="ed-dropdown-trigger"
+            type="button"
+            aria-label="Open staff menu"
         >
-
-            <i class="fa-solid fa-fire ed-streak-fire"></i>
-
-            <span id="nav-streak-status">
-
-                {% if user.userprofile.streak_earned_today %}
-
-                <span class="ed-streak-earned">
-                    <i class="fa-solid fa-circle-check"></i>
-                    Earned
-                </span>
-
-                {% else %}
-
-                <span id="nav-streak-timer">--:--</span>
-                <span class="streak-target"> / 15:00</span>
-
-                {% endif %}
-
-            </span>
-
-            <span
-                class="ed-streak-count"
-                id="nav-streak-count"
-            >
-                {{ user.userprofile.current_streak|default:0 }}d
-            </span>
-
+            <i class="fa-solid fa-user-shield"></i>
+            <span>Staff</span>
+            <i class="fa-solid fa-chevron-down caret"></i>
+        </button>
+        <div class="ed-dropdown-menu">
+            <a href="/admin">
+                <i class="fa-solid fa-gauge-high"></i>
+                Admin Panel
+            </a>
+            <a href="/admin/" target="_blank" rel="noopener noreferrer">
+                <i class="fa-solid fa-sliders"></i>
+                Django Admin
+            </a>
         </div>
-
-
-        <button
-            type="button"
-            class="ed-icon-button d-none d-md-inline-grid"
-            id="ed-command-button"
-            title="Command Palette (Ctrl+K)"
-        >
-            <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-
-
-        <button
-            class="ed-icon-button"
-            type="button"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#codeVault"
-            title="Code Vault"
-        >
-            <i class="fa-solid fa-vault"></i>
-        </button>
-
-
-        <button
-            class="ed-icon-button"
-            type="button"
-            id="ed-theme-toggle"
-            title="Switch theme"
-            aria-label="Switch theme"
-        >
-            <i class="fa-solid fa-moon"></i>
-        </button>
-
-
-        <a
-            href="{% url 'settings-hub' %}"
-            class="ed-icon-button"
-            title="Settings"
-        >
-            <i class="fa-solid fa-gear"></i>
-        </a>
-
-
-        <form
-            action="{% url 'logout' %}"
-            method="post"
-            class="m-0"
-            id="ed-logout-form"
-        >
-            {% csrf_token %}
-
-            <button
-                type="submit"
-                class="ed-icon-button"
-                title="Log out"
-            >
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </button>
-        </form>
-
-
-        {% else %}
-
-        <a href="{% url 'login' %}" class="ed-nav-link">
-            <i class="fa-solid fa-right-to-bracket"></i>
-            <span>Login</span>
-        </a>
-
-        <a
-            href="{% url 'register' %}"
-            class="btn btn-sm btn-primary px-3"
-        >
-            <i class="fa-solid fa-user-plus me-1"></i>
-            Register
-        </a>
-
-        {% endif %}
-
-
-        <button
-            type="button"
-            class="ed-mobile-toggle"
-            id="ed-mobile-toggle"
-            aria-label="Open navigation"
-            aria-expanded="false"
-        >
-            <i class="fa-solid fa-bars"></i>
-        </button>
-
     </div>
-
-
-    <div class="ed-mobile-panel" id="ed-mobile-panel">
-
-        <div class="ed-mobile-section">Platform</div>
-
-        <a href="/legal" class="ed-mobile-link">
-            <i class="fa-solid fa-scale-balanced"></i>
-            Legal
-        </a>
-
-        <a href="/forms" class="ed-mobile-link">
-            <i class="fa-solid fa-list-check"></i>
-            Forms
-        </a>
-
-        <a href="/users" class="ed-mobile-link">
-            <i class="fa-solid fa-users"></i>
-            Users
-        </a>
-
-        <a href="/stats" class="ed-mobile-link">
-            <i class="fa-solid fa-chart-line"></i>
-            Statistics
-        </a>
-
-        <a href="/proxy" class="ed-mobile-link">
-            <i class="fa-solid fa-shield-halved"></i>
-            Proxy
-        </a>
-
-
-        <div class="ed-mobile-section">Network</div>
-
-        <a
-            href="https://3dio.pythonanywhere.com"
-            target="_blank"
-            class="ed-mobile-link"
+    {% endif %}
+    <!-- Social -->
+    <div class="ed-dropdown">
+        <button
+            class="ed-dropdown-trigger"
+            type="button"
+            aria-label="Open social menu"
         >
-            <i class="fa-solid fa-cubes"></i>
-            3d.io
-        </a>
-
-        <a
-            href="https://htmio.pythonanywhere.com"
-            target="_blank"
-            class="ed-mobile-link"
-        >
-            <i class="fa-solid fa-globe"></i>
-            htm.io
-        </a>
-
-
-        <div class="ed-mobile-section">Tools</div>
-
-        <a
-            href="{% url 'qr-dashboard' %}"
-            class="ed-mobile-link"
-        >
-            <i class="fa-solid fa-qrcode"></i>
-            QR Studio
-        </a>
-
-        <a
-            href="{% url 'py' %}"
-            class="ed-mobile-link"
-        >
-            <i class="fa-brands fa-python"></i>
-            Python Executor
-        </a>
-
-        <a href="/eliteos" class="ed-mobile-link">
-            <i class="fa-solid fa-desktop"></i>
-            EliteOS
-        </a>
-
-
-        <div class="ed-mobile-section">Community</div>
-
-        <a href="/forums/" class="ed-mobile-link">
             <i class="fa-solid fa-comments"></i>
-            Forums
-        </a>
-
-        <a
-            href="{% url 'private-portal' %}"
-            class="ed-mobile-link"
-        >
-            <i class="fa-solid fa-message"></i>
-            Private Chats
-        </a>
-
-
-        {% if user.is_staff %}
-
-        <div class="ed-mobile-divider"></div>
-
-        <div class="ed-mobile-section">Staff</div>
-
-        <a href="/admin" class="ed-mobile-link">
-            <i class="fa-solid fa-gauge-high"></i>
-            Admin Panel
-        </a>
-
-        {% endif %}
-
+            <span>Social</span>
+            <i class="fa-solid fa-chevron-down caret"></i>
+        </button>
+        <div class="ed-dropdown-menu">
+            <a href="/forums/">
+                <i class="fa-solid fa-comments"></i>
+                Forums
+            </a>
+            <a href="{% url 'private-portal' %}">
+                <i class="fa-solid fa-message"></i>
+                Private Chats
+            </a>
+        </div>
     </div>
-
+</div>
+<div class="ed-nav-right">
+    {% if user.is_authenticated %}
+    <div
+        id="nav-streak-widget"
+        class="ed-streak"
+        title="Spend 15 active minutes on EliteDevelop each day to earn your streak."
+    >
+        <i class="fa-solid fa-fire ed-streak-fire"></i>
+        <span id="nav-streak-status">
+            {% if user.userprofile.streak_earned_today %}
+            <span class="ed-streak-earned">
+                <i class="fa-solid fa-circle-check"></i>
+                Earned
+            </span>
+            {% else %}
+            <span id="nav-streak-timer">--:--</span>
+            <span class="streak-target"> / 15:00</span>
+            {% endif %}
+        </span>
+        <span
+            class="ed-streak-count"
+            id="nav-streak-count"
+        >
+            {{ user.userprofile.current_streak|default:0 }}d
+        </span>
+    </div>
+    <button
+        type="button"
+        class="ed-icon-button d-none d-md-inline-grid"
+        id="ed-command-button"
+        title="Command Palette (Ctrl+K)"
+        aria-label="Open command palette"
+    >
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+    <button
+        class="ed-icon-button"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#codeVault"
+        title="Code Vault"
+        aria-label="Open Code Vault"
+    >
+        <i class="fa-solid fa-vault"></i>
+    </button>
+    <!-- GitHub -->
+    <a
+        href="https://github.com/sockglide43856/elitedevelop"
+        class="ed-icon-button"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="EliteDevelop on GitHub"
+        aria-label="EliteDevelop on GitHub"
+    >
+        <i class="fa-brands fa-github"></i>
+    </a>
+    <a
+        href="{% url 'settings-hub' %}"
+        class="ed-icon-button"
+        title="Settings"
+        aria-label="Settings"
+    >
+        <i class="fa-solid fa-gear"></i>
+    </a>
+    <form
+        action="{% url 'logout' %}"
+        method="post"
+        class="m-0"
+        id="ed-logout-form"
+    >
+        {% csrf_token %}
+        <button
+            type="submit"
+            class="ed-icon-button"
+            title="Log out"
+            aria-label="Log out"
+        >
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+    </form>
+    {% else %}
+    <a
+        href="{% url 'login' %}"
+        class="ed-nav-link"
+        title="Log in"
+        aria-label="Log in"
+    >
+        <i class="fa-solid fa-right-to-bracket"></i>
+        <span>Login</span>
+    </a>
+    <a
+        href="{% url 'register' %}"
+        class="btn btn-sm btn-primary px-3"
+    >
+        <i class="fa-solid fa-user-plus me-1"></i>
+        Register
+    </a>
+    {% endif %}
+    <button
+        type="button"
+        class="ed-mobile-toggle"
+        id="ed-mobile-toggle"
+        aria-label="Open navigation"
+        aria-expanded="false"
+        aria-controls="ed-mobile-panel"
+    >
+        <i class="fa-solid fa-bars"></i>
+    </button>
+</div>
+<!-- Mobile navigation -->
+<div
+    class="ed-mobile-panel"
+    id="ed-mobile-panel"
+>
+    <div class="ed-mobile-section">
+        Platform
+    </div>
+    <a href="/legal" class="ed-mobile-link">
+        <i class="fa-solid fa-scale-balanced"></i>
+        <span>Legal</span>
+    </a>
+    <a href="/forms" class="ed-mobile-link">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Forms</span>
+    </a>
+    <a href="/users" class="ed-mobile-link">
+        <i class="fa-solid fa-users"></i>
+        <span>Users</span>
+    </a>
+    <a href="/stats" class="ed-mobile-link">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Stats</span>
+    </a>
+    <a href="/proxy" class="ed-mobile-link">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Proxy</span>
+    </a>
+    <div class="ed-mobile-section">
+        Network
+    </div>
+    <a
+        href="https://3dio.pythonanywhere.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ed-mobile-link"
+    >
+        <i class="fa-solid fa-cubes"></i>
+        <span>3d.io</span>
+    </a>
+    <a
+        href="https://htmio.pythonanywhere.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ed-mobile-link"
+    >
+        <i class="fa-solid fa-globe"></i>
+        <span>htm.io</span>
+    </a>
+    <div class="ed-mobile-section">
+        Tools
+    </div>
+    <a
+        href="{% url 'qr-dashboard' %}"
+        class="ed-mobile-link"
+    >
+        <i class="fa-solid fa-qrcode"></i>
+        <span>QR Studio</span>
+    </a>
+    <a
+        href="{% url 'py' %}"
+        class="ed-mobile-link"
+    >
+        <i class="fa-brands fa-python"></i>
+        <span>Python Executor</span>
+    </a>
+    <a
+        href="/eliteos"
+        class="ed-mobile-link"
+    >
+        <i class="fa-solid fa-desktop"></i>
+        <span>EliteOS</span>
+    </a>
+    <div class="ed-mobile-section">
+        Community
+    </div>
+    <a
+        href="/forums/"
+        class="ed-mobile-link"
+    >
+        <i class="fa-solid fa-comments"></i>
+        <span>Forums</span>
+    </a>
+    <a
+        href="{% url 'private-portal' %}"
+        class="ed-mobile-link"
+    >
+        <i class="fa-solid fa-message"></i>
+        <span>Private Chats</span>
+    </a>
+    <a
+        href="https://github.com/sockglide43856/elitedevelop"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ed-mobile-link"
+    >
+        <i class="fa-brands fa-github"></i>
+        <span>GitHub</span>
+    </a>
+    {% if user.is_staff %}
+    <div class="ed-mobile-divider"></div>
+    <div class="ed-mobile-section">
+        Staff
+    </div>
+    <a
+        href="/admin"
+        class="ed-mobile-link"
+    >
+        <i class="fa-solid fa-gauge-high"></i>
+        <span>Admin Panel</span>
+    </a>
+    {% endif %}
+</div>
 </nav>
-
 
 {% if user.is_authenticated %}
 
@@ -605,279 +556,225 @@
     class="offcanvas offcanvas-end"
     tabindex="-1"
     id="codeVault"
+    aria-labelledby="codeVaultTitle"
 >
-
-    <div class="vault-header">
-
-        <div class="vault-title">
-
-            <span class="vault-title-icon">
-                <i class="fa-solid fa-vault"></i>
-            </span>
-
-            <div>
-                <div>Code Vault</div>
-                <div class="vault-subtitle">
-                    Private snippet storage
-                </div>
+<div class="vault-header">
+    <div class="vault-title">
+        <span class="vault-title-icon">
+            <i class="fa-solid fa-vault"></i>
+        </span>
+        <div>
+            <div id="codeVaultTitle">
+                Code Vault
             </div>
-
+            <div class="vault-subtitle">
+                Private snippet storage
+            </div>
         </div>
-
+    </div>
+    <button
+        type="button"
+        class="btn-close btn-close-white"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+    ></button>
+</div>
+<div class="offcanvas-body p-3">
+    <div class="vault-section">
+        <div class="vault-label">
+            New Snippet
+        </div>
+        <input
+            type="text"
+            id="snippet-title"
+            class="form-control form-control-sm vault-input mb-2"
+            placeholder="Snippet title..."
+        >
+        <select
+            id="snippet-lang"
+            class="form-select form-select-sm vault-input mb-2"
+        >
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="html">HTML / CSS</option>
+            <option value="django">Django</option>
+            <option value="json">JSON</option>
+            <option value="bash">Bash</option>
+        </select>
+        <textarea
+            id="snippet-code"
+            class="form-control form-control-sm vault-input vault-code mb-2"
+            placeholder="Paste code here..."
+        ></textarea>
+        <button
+            id="btn-save-snippet"
+            class="btn btn-warning w-100 fw-bold vault-save"
+        >
+            <i class="fa-solid fa-cloud-arrow-up me-1"></i>
+            Encrypt & Save
+        </button>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="vault-label mb-0">
+            My Vault
+        </div>
         <button
             type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="offcanvas"
-        ></button>
-
+            id="vault-refresh"
+            class="btn btn-sm btn-dark"
+            aria-label="Refresh vault"
+            title="Refresh"
+        >
+            <i class="fa-solid fa-rotate"></i>
+        </button>
     </div>
-
-
-    <div class="offcanvas-body p-3">
-
-        <div class="vault-section">
-
-            <div class="vault-label">
-                New Snippet
-            </div>
-
-            <input
-                type="text"
-                id="snippet-title"
-                class="form-control form-control-sm vault-input mb-2"
-                placeholder="Snippet title..."
-            >
-
-            <select
-                id="snippet-lang"
-                class="form-select form-select-sm vault-input mb-2"
-            >
-                <option value="python">Python</option>
-                <option value="javascript">JavaScript</option>
-                <option value="html">HTML / CSS</option>
-                <option value="django">Django</option>
-                <option value="json">JSON</option>
-                <option value="bash">Bash</option>
-            </select>
-
-            <textarea
-                id="snippet-code"
-                class="form-control form-control-sm vault-input vault-code mb-2"
-                placeholder="Paste code here..."
-            ></textarea>
-
-            <button
-                id="btn-save-snippet"
-                class="btn btn-warning w-100 fw-bold vault-save"
-            >
-                <i class="fa-solid fa-cloud-arrow-up me-1"></i>
-                Encrypt & Save
-            </button>
-
-        </div>
-
-
-        <div class="d-flex justify-content-between align-items-center mb-2">
-
-            <div class="vault-label mb-0">
-                My Vault
-            </div>
-
-            <button
-                type="button"
-                id="vault-refresh"
-                class="btn btn-sm btn-dark"
-            >
-                <i class="fa-solid fa-rotate"></i>
-            </button>
-
-        </div>
-
-        <div
-            id="vault-list-container"
-            class="d-flex flex-column gap-2"
-        ></div>
-
-    </div>
-
+    <div
+        id="vault-list-container"
+        class="d-flex flex-column gap-2"
+    ></div>
+</div>
 </div>
 
 {% endif %}
-
 
 {% if messages %}
 
 <div class="django-messages">
-
-    {% for message in messages %}
-
-    <div
-        class="alert alert-primary alert-dismissible fade show border-0 shadow-sm"
-        role="alert"
-    >
-        <i class="fa-solid fa-circle-info me-2"></i>
-
-        {{ message }}
-
-        <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close"
-        ></button>
-
-    </div>
-
-    {% endfor %}
-
+{% for message in messages %}
+<div
+    class="alert alert-primary alert-dismissible fade show border-0 shadow-sm"
+    role="alert"
+>
+    <i class="fa-solid fa-circle-info me-2"></i>
+    {{ message }}
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+    ></button>
+</div>
+{% endfor %}
 </div>
 
 {% endif %}
 
-
 <main class="flex-grow-1 container-fluid py-3 py-md-4">
-
-    {% block content %}
-        {% block body %}
-            {% block main %}{% endblock %}
-        {% endblock %}
+{% block content %}
+    {% block body %}
+        {% block main %}{% endblock %}
     {% endblock %}
-
+{% endblock %}
 </main>
-
-
 <div id="ed-toast-container"></div>
-
-
 <div
     id="ed-command-overlay"
     class="ed-command-overlay"
     aria-hidden="true"
 >
-
-    <div
-        class="ed-command"
-        role="dialog"
-        aria-modal="true"
-        aria-label="EliteDevelop command palette"
-    >
-
-        <div class="ed-command-search">
-
-            <i class="fa-solid fa-magnifying-glass"></i>
-
-            <input
-                type="text"
-                id="ed-command-input"
-                placeholder="Search EliteDevelop..."
-                autocomplete="off"
-            >
-
-            <kbd>ESC</kbd>
-
-        </div>
-
-
-        <div
-            class="ed-command-items"
-            id="ed-command-items"
+<div
+    class="ed-command"
+    role="dialog"
+    aria-modal="true"
+    aria-label="EliteDevelop command palette"
+>
+    <div class="ed-command-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input
+            type="text"
+            id="ed-command-input"
+            placeholder="Search EliteDevelop..."
+            autocomplete="off"
         >
-
-            <a href="/" class="ed-command-item">
-                <i class="fa-solid fa-house"></i>
-                Dashboard
-            </a>
-
-            <a href="/forms" class="ed-command-item">
-                <i class="fa-solid fa-list-check"></i>
-                Forms
-            </a>
-
-            <a href="/users" class="ed-command-item">
-                <i class="fa-solid fa-users"></i>
-                Users
-            </a>
-
-            <a href="/stats" class="ed-command-item">
-                <i class="fa-solid fa-chart-line"></i>
-                Statistics
-            </a>
-
-            <a href="/proxy" class="ed-command-item">
-                <i class="fa-solid fa-shield-halved"></i>
-                Proxy
-            </a>
-
-            <a href="/forums/" class="ed-command-item">
-                <i class="fa-solid fa-comments"></i>
-                Forums
-            </a>
-
-            <a href="/eliteos" class="ed-command-item">
-                <i class="fa-solid fa-desktop"></i>
-                EliteOS
-            </a>
-
-            <a
-                href="{% url 'qr-dashboard' %}"
-                class="ed-command-item"
-            >
-                <i class="fa-solid fa-qrcode"></i>
-                QR Studio
-            </a>
-
-            <a
-                href="{% url 'py' %}"
-                class="ed-command-item"
-            >
-                <i class="fa-brands fa-python"></i>
-                Python Executor
-            </a>
-
-            <a
-                href="{% url 'settings-hub' %}"
-                class="ed-command-item"
-            >
-                <i class="fa-solid fa-gear"></i>
-                Settings
-            </a>
-
-        </div>
-
+        <kbd>ESC</kbd>
     </div>
-
+    <div
+        class="ed-command-items"
+        id="ed-command-items"
+    >
+        <a href="/" class="ed-command-item">
+            <i class="fa-solid fa-house"></i>
+            Dashboard
+        </a>
+        <a href="/forms" class="ed-command-item">
+            <i class="fa-solid fa-list-check"></i>
+            Forms
+        </a>
+        <a href="/users" class="ed-command-item">
+            <i class="fa-solid fa-users"></i>
+            Users
+        </a>
+        <a href="/stats" class="ed-command-item">
+            <i class="fa-solid fa-chart-line"></i>
+            Statistics
+        </a>
+        <a href="/proxy" class="ed-command-item">
+            <i class="fa-solid fa-shield-halved"></i>
+            Proxy
+        </a>
+        <a href="/forums/" class="ed-command-item">
+            <i class="fa-solid fa-comments"></i>
+            Forums
+        </a>
+        <a href="/eliteos" class="ed-command-item">
+            <i class="fa-solid fa-desktop"></i>
+            EliteOS
+        </a>
+        <a
+            href="{% url 'qr-dashboard' %}"
+            class="ed-command-item"
+        >
+            <i class="fa-solid fa-qrcode"></i>
+            QR Studio
+        </a>
+        <a
+            href="{% url 'py' %}"
+            class="ed-command-item"
+        >
+            <i class="fa-brands fa-python"></i>
+            Python Executor
+        </a>
+        <a
+            href="{% url 'settings-hub' %}"
+            class="ed-command-item"
+        >
+            <i class="fa-solid fa-gear"></i>
+            Settings
+        </a>
+        <a
+            href="https://github.com/sockglide43856/elitedevelop"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="ed-command-item"
+        >
+            <i class="fa-brands fa-github"></i>
+            GitHub
+        </a>
+    </div>
 </div>
-
-
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 {% block scripts %}{% endblock %}
 {% block script %}{% endblock %}
 {% block js %}{% endblock %}
 
-
 {% if user.is_authenticated %}
 
 <script>
 window.ED_CONFIG = {
     csrfToken: "{{ csrf_token }}",
-
     secondsToday: {{ user.userprofile.seconds_today|default:0 }},
-
     streakEarnedToday:
         {% if user.userprofile.streak_earned_today %}
         true
         {% else %}
         false
         {% endif %},
-
     trackTimeURL: "{% url 'track_time_ping' %}",
-
     vaultListURL: "/api/vault/list/",
     vaultSaveURL: "/api/vault/save/",
-
     saveSubscriptionURL: "/chats/api/save-subscription/",
-
     publicVapidKey: [
         4,161,245,236,119,133,218,179,100,122,
         34,135,32,127,205,46,9,73,247,59,
@@ -902,9 +799,7 @@ window.ED_CONFIG = {
 
 {% endif %}
 
-
 <script src="{% static 'js/elitedevelop.js' %}"></script>
-
 </body>
 </html>
 
