@@ -1,0 +1,3214 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+>
+
+<title>EliteOS</title>
+
+<style>
+
+:root {
+    --accent: #4f7cff;
+    --glass: rgba(20, 28, 45, .72);
+    --glass-light: rgba(255, 255, 255, .12);
+    --border: rgba(255, 255, 255, .18);
+    --text: #f8fafc;
+    --muted: #aeb8c9;
+    --panel-height: 58px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+    background: #07111f;
+    color: var(--text);
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+#boot-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(
+            circle at center,
+            #122449,
+            #050914 70%
+        );
+}
+
+.boot-box {
+    width: min(560px, 90vw);
+    text-align: center;
+}
+
+.boot-logo {
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: -2px;
+}
+
+.boot-subtitle {
+    color: var(--muted);
+    margin: 12px 0 28px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 10px;
+    border-radius: 100px;
+    overflow: hidden;
+    background: rgba(255,255,255,.1);
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background:
+        linear-gradient(
+            90deg,
+            var(--accent),
+            #8b5cf6
+        );
+    transition: width .3s ease;
+}
+
+.boot-status {
+    margin-top: 15px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+#bios-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    padding: 50px;
+    background: #050505;
+    color: #ddd;
+    font-family: monospace;
+}
+
+#bios-screen h1 {
+    color: white;
+}
+
+.bios-count {
+    color: #7dff9b;
+    font-size: 22px;
+    margin-top: 30px;
+}
+
+#desktop {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            #4f7cff 0%,
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 80% 25%,
+            #7c3aed 0%,
+            transparent 32%
+        ),
+        linear-gradient(
+            135deg,
+            #06111f,
+            #0d1d33
+        );
+}
+
+#desktop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            rgba(255,255,255,.02),
+            rgba(255,255,255,0)
+        );
+}
+
+#topbar {
+    height: 34px;
+    position: relative;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    background: rgba(8, 12, 22, .45);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.brand {
+    font-weight: 750;
+}
+
+.top-right {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+#desktop-icons {
+    position: absolute;
+    top: 52px;
+    left: 14px;
+    z-index: 2;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, 88px);
+}
+
+.desktop-icon {
+    border: none;
+    background: transparent;
+    color: white;
+    padding: 8px;
+    border-radius: 14px;
+    transition: .18s;
+}
+
+.desktop-icon:hover {
+    background: rgba(255,255,255,.1);
+}
+
+.desktop-icon .icon {
+    font-size: 34px;
+}
+
+.desktop-icon .label {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+#window-layer {
+    position: absolute;
+    inset: 34px 0 var(--panel-height) 0;
+    z-index: 10;
+}
+
+.window {
+    position: absolute;
+    min-width: 340px;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    resize: both;
+    border-radius: 18px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    box-shadow:
+        0 25px 70px rgba(0,0,0,.4),
+        inset 0 1px rgba(255,255,255,.1);
+    backdrop-filter:
+        blur(35px)
+        saturate(150%);
+}
+
+.window.maximized {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    resize: none;
+    border-radius: 0;
+}
+
+.window-titlebar {
+    height: 43px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    user-select: none;
+    cursor: move;
+    background: rgba(255,255,255,.055);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.window-controls {
+    display: flex;
+    gap: 7px;
+}
+
+.window-control {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    padding: 0;
+}
+
+.close {
+    background: #ff5f57;
+}
+
+.minimize {
+    background: #febc2e;
+}
+
+.maximize {
+    background: #28c840;
+}
+
+.window-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.window-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+#taskbar {
+    position: fixed;
+    z-index: 1000;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--panel-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(10, 15, 27, .7);
+    backdrop-filter: blur(30px);
+    border-top: 1px solid rgba(255,255,255,.1);
+}
+
+.task-button {
+    min-width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 13px;
+    background: transparent;
+    color: white;
+    font-size: 19px;
+}
+
+.task-button:hover,
+.task-button.active {
+    background: rgba(255,255,255,.12);
+}
+
+#start-menu {
+    display: none;
+    position: fixed;
+    z-index: 5000;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(680px, 90vw);
+    padding: 18px;
+    border-radius: 22px;
+    background: rgba(18, 25, 42, .85);
+    border: 1px solid rgba(255,255,255,.15);
+    backdrop-filter: blur(40px);
+    box-shadow: 0 30px 80px rgba(0,0,0,.45);
+}
+
+#start-menu.open {
+    display: block;
+}
+
+.start-search {
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 13px 15px;
+    border-radius: 12px;
+    color: white;
+    background: rgba(255,255,255,.1);
+}
+
+.app-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(120px, 1fr)
+        );
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.app-launcher {
+    padding: 18px 10px;
+    border: none;
+    border-radius: 15px;
+    color: white;
+    background: rgba(255,255,255,.06);
+}
+
+.app-launcher:hover {
+    background: rgba(255,255,255,.13);
+}
+
+.app-launcher .big-icon {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.files-layout {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 190px 1fr;
+}
+
+.files-sidebar {
+    padding: 12px;
+    border-right: 1px solid rgba(255,255,255,.08);
+}
+
+.files-sidebar button {
+    width: 100%;
+    border: none;
+    text-align: left;
+    padding: 10px;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    color: white;
+    background: transparent;
+}
+
+.files-sidebar button:hover {
+    background: rgba(255,255,255,.1);
+}
+
+.files-main {
+    padding: 16px;
+}
+
+.file-path {
+    margin-bottom: 14px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.file-list {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(120px, 1fr)
+        );
+    gap: 12px;
+}
+
+.file-item {
+    padding: 14px;
+    border-radius: 14px;
+    text-align: center;
+    background: rgba(255,255,255,.055);
+}
+
+.file-item:hover {
+    background: rgba(255,255,255,.12);
+}
+
+.file-icon {
+    font-size: 32px;
+}
+
+.editor-layout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-toolbar {
+    padding: 8px;
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.editor-toolbar button {
+    border: none;
+    border-radius: 9px;
+    padding: 7px 11px;
+    color: white;
+    background: rgba(255,255,255,.1);
+}
+
+.editor {
+    flex: 1;
+    resize: none;
+    border: none;
+    outline: none;
+    padding: 16px;
+    color: #d7e5ff;
+    background: rgba(5,8,15,.6);
+    font-family: ui-monospace, monospace;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.terminal {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    color: #c7ffd5;
+    background: #050807;
+    font-family: ui-monospace, monospace;
+}
+
+.terminal-output {
+    flex: 1;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+.terminal-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.terminal-prompt {
+    color: #7dff9b;
+}
+
+.terminal-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    color: white;
+    background: transparent;
+    font-family: inherit;
+}
+
+.browser-layout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.browser-tabs {
+    display: flex;
+    gap: 5px;
+    padding: 7px;
+    overflow-x: auto;
+    background: rgba(255,255,255,.04);
+}
+
+.browser-tab {
+    min-width: 140px;
+    border: none;
+    padding: 8px;
+    border-radius: 9px;
+    color: white;
+    background: rgba(255,255,255,.08);
+}
+
+.browser-bar {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+}
+
+.browser-url {
+    flex: 1;
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    padding: 10px;
+    color: white;
+    background: rgba(0,0,0,.25);
+}
+
+.browser-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: white;
+}
+
+.settings-layout {
+    padding: 20px;
+    max-width: 800px;
+}
+
+.setting-section {
+    margin-bottom: 22px;
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.06);
+}
+
+.setting-section h3 {
+    margin-top: 0;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 12px 0;
+}
+
+.store-grid {
+    padding: 18px;
+    display: grid;
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(200px, 1fr)
+        );
+    gap: 15px;
+}
+
+.store-card {
+    padding: 18px;
+    border-radius: 17px;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+.store-icon {
+    font-size: 35px;
+}
+
+.store-card button {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    margin-top: 12px;
+    padding: 9px;
+    color: white;
+    background: var(--accent);
+}
+
+.notice {
+    position: fixed;
+    z-index: 1000000;
+    right: 20px;
+    bottom: 75px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: rgba(15,25,40,.9);
+    border: 1px solid rgba(255,255,255,.15);
+    backdrop-filter: blur(25px);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="boot-screen">
+
+    <div class="boot-box">
+
+        <div class="boot-logo">
+            EliteOS
+        </div>
+
+        <div class="boot-subtitle">
+            Liquid Glass Desktop Environment
+        </div>
+
+        <div class="progress-track">
+            <div
+                id="progress-fill"
+                class="progress-fill"
+            ></div>
+        </div>
+
+        <div
+            id="boot-status"
+            class="boot-status"
+        >
+            Initializing...
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="bios-screen">
+
+    <h1>
+        EliteOS Firmware
+    </h1>
+
+    <p>
+        EliteOS Boot Manager v1.0
+    </p>
+
+    <p>
+        Boot target:
+        EliteOS Desktop Environment
+    </p>
+
+    <div
+        id="bios-count"
+        class="bios-count"
+    >
+        Booting automatically...
+    </div>
+
+    <p>
+        Press any key to cancel automatic boot.
+    </p>
+
+</div>
+
+
+<div id="desktop">
+
+    <div id="topbar">
+
+        <div class="brand">
+            EliteOS
+        </div>
+
+        <div class="top-right">
+
+            <span id="top-user">
+                {{ eliteos_username }}
+            </span>
+
+            <span id="clock">
+                --:--
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div id="desktop-icons">
+
+        <button
+            class="desktop-icon"
+            onclick="openApp('files')"
+        >
+            <span class="icon">📁</span>
+            <span class="label">Files</span>
+        </button>
+
+        <button
+            class="desktop-icon"
+            onclick="openApp('browser')"
+        >
+            <span class="icon">🌐</span>
+            <span class="label">Browser</span>
+        </button>
+
+        <button
+            class="desktop-icon"
+            onclick="openApp('code')"
+        >
+            <span class="icon">⌘</span>
+            <span class="label">Code Studio</span>
+        </button>
+
+        <button
+            class="desktop-icon"
+            onclick="openApp('settings')"
+        >
+            <span class="icon">⚙</span>
+            <span class="label">Settings</span>
+        </button>
+
+    </div>
+
+
+    <div id="window-layer"></div>
+
+</div>
+
+
+<div id="start-menu">
+
+    <input
+        class="start-search"
+        placeholder="Search EliteOS..."
+    >
+
+    <div class="app-grid">
+
+        <button
+            class="app-launcher"
+            onclick="openApp('files')"
+        >
+            <span class="big-icon">📁</span>
+            Files
+        </button>
+
+        <button
+            class="app-launcher"
+            onclick="openApp('terminal')"
+        >
+            <span class="big-icon">▸_</span>
+            Terminal
+        </button>
+
+        <button
+            class="app-launcher"
+            onclick="openApp('code')"
+        >
+            <span class="big-icon">⌘</span>
+            Code Studio
+        </button>
+
+        <button
+            class="app-launcher"
+            onclick="openApp('browser')"
+        >
+            <span class="big-icon">🌐</span>
+            Browser
+        </button>
+
+        <button
+            class="app-launcher"
+            onclick="openApp('store')"
+        >
+            <span class="big-icon">◈</span>
+            App Store
+        </button>
+
+        <button
+            class="app-launcher"
+            onclick="openApp('settings')"
+        >
+            <span class="big-icon">⚙</span>
+            Settings
+        </button>
+
+    </div>
+
+</div>
+
+
+<div id="taskbar">
+
+    <button
+        class="task-button"
+        onclick="toggleStart()"
+    >
+        ◈
+    </button>
+
+    <button
+        class="task-button"
+        onclick="openApp('files')"
+    >
+        📁
+    </button>
+
+    <button
+        class="task-button"
+        onclick="openApp('browser')"
+    >
+        🌐
+    </button>
+
+    <button
+        class="task-button"
+        onclick="openApp('code')"
+    >
+        ⌘
+    </button>
+
+    <button
+        class="task-button"
+        onclick="openApp('terminal')"
+    >
+        ▸_
+    </button>
+
+    <button
+        class="task-button"
+        onclick="openApp('store')"
+    >
+        ◈
+    </button>
+
+</div>
+
+
+<script>
+
+const USERNAME =
+    "{{ eliteos_username|escapejs }}";
+
+
+const API = {
+    filesystem:
+        "api/filesystem/",
+
+    saveFilesystem:
+        "api/filesystem/save/",
+
+    resetFilesystem:
+        "api/filesystem/reset/",
+
+    settings:
+        "api/settings/",
+
+    storeApps:
+        "api/store/apps/",
+
+    installApp(id) {
+        return `api/store/install/${id}/`;
+    },
+
+    boot:
+        "api/boot/",
+};
+
+
+let filesystem = {};
+
+let currentPath = "/home";
+
+let highestZ = 100;
+
+
+function getCookie(name) {
+
+    const value =
+        `; ${document.cookie}`;
+
+    const parts =
+        value.split(`; ${name}=`);
+
+    if (parts.length === 2) {
+
+        return parts
+            .pop()
+            .split(";")
+            .shift();
+
+    }
+
+}
+
+
+const csrfToken =
+    getCookie("csrftoken");
+
+
+async function apiFetch(
+    url,
+    options = {}
+) {
+
+    options.headers =
+        options.headers || {};
+
+    if (
+        options.method &&
+        options.method !== "GET"
+    ) {
+
+        options.headers[
+            "X-CSRFToken"
+        ] = csrfToken;
+
+        options.headers[
+            "Content-Type"
+        ] = "application/json";
+
+    }
+
+    return fetch(
+        url,
+        options
+    );
+
+}
+
+
+function notify(message) {
+
+    const element =
+        document.createElement("div");
+
+    element.className =
+        "notice";
+
+    element.textContent =
+        message;
+
+    document.body.appendChild(
+        element
+    );
+
+    setTimeout(
+        () => element.remove(),
+        3000
+    );
+
+}
+
+
+async function loadFilesystem() {
+
+    const response =
+        await apiFetch(
+            API.filesystem
+        );
+
+    const data =
+        await response.json();
+
+    if (!data.success) {
+
+        throw new Error(
+            data.error ||
+            "Could not load filesystem."
+        );
+
+    }
+
+    filesystem =
+        data.filesystem;
+
+}
+
+
+async function saveFilesystem() {
+
+    const response =
+        await apiFetch(
+            API.saveFilesystem,
+            {
+                method: "POST",
+
+                body: JSON.stringify(
+                    {
+                        filesystem
+                    }
+                ),
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (!data.success) {
+
+        notify(
+            data.error ||
+            "Filesystem save failed."
+        );
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+
+function parentPath(path) {
+
+    if (path === "/") {
+        return "/";
+    }
+
+    const parts =
+        path
+            .split("/")
+            .filter(Boolean);
+
+    parts.pop();
+
+    return "/" +
+        parts.join("/");
+
+}
+
+
+function fileName(path) {
+
+    if (path === "/") {
+        return "/";
+    }
+
+    const parts =
+        path
+            .split("/")
+            .filter(Boolean);
+
+    return parts[
+        parts.length - 1
+    ];
+
+}
+
+
+function getChildren(path) {
+
+    const prefix =
+        path === "/"
+            ? "/"
+            : path + "/";
+
+    return Object
+        .entries(filesystem)
+        .filter(
+            ([itemPath]) => {
+
+                if (
+                    itemPath === path
+                ) {
+                    return false;
+                }
+
+                if (
+                    !itemPath.startsWith(
+                        prefix
+                    )
+                ) {
+                    return false;
+                }
+
+                const remaining =
+                    itemPath.slice(
+                        prefix.length
+                    );
+
+                return !remaining.includes(
+                    "/"
+                );
+
+            }
+        )
+        .sort(
+            (a, b) => {
+
+                const aDirectory =
+                    a[1].type ===
+                    "directory";
+
+                const bDirectory =
+                    b[1].type ===
+                    "directory";
+
+                if (
+                    aDirectory &&
+                    !bDirectory
+                ) {
+                    return -1;
+                }
+
+                if (
+                    !aDirectory &&
+                    bDirectory
+                ) {
+                    return 1;
+                }
+
+                return fileName(
+                    a[0]
+                ).localeCompare(
+                    fileName(
+                        b[0]
+                    )
+                );
+
+            }
+        );
+
+}
+
+
+function createWindow(
+    id,
+    title,
+    content,
+    width = 720,
+    height = 520
+) {
+
+    const existing =
+        document.getElementById(
+            `window-${id}`
+        );
+
+    if (existing) {
+
+        focusWindow(
+            existing
+        );
+
+        return existing;
+
+    }
+
+    const windowElement =
+        document.createElement("div");
+
+    windowElement.id =
+        `window-${id}`;
+
+    windowElement.className =
+        "window";
+
+    windowElement.style.width =
+        width + "px";
+
+    windowElement.style.height =
+        height + "px";
+
+    windowElement.style.left =
+        (
+            80 +
+            Math.random() * 160
+        ) + "px";
+
+    windowElement.style.top =
+        (
+            40 +
+            Math.random() * 100
+        ) + "px";
+
+    windowElement.style.zIndex =
+        ++highestZ;
+
+    windowElement.innerHTML = `
+
+        <div class="window-titlebar">
+
+            <div class="window-controls">
+
+                <button
+                    class="window-control close"
+                ></button>
+
+                <button
+                    class="window-control minimize"
+                ></button>
+
+                <button
+                    class="window-control maximize"
+                ></button>
+
+            </div>
+
+            <div class="window-title">
+                ${title}
+            </div>
+
+        </div>
+
+        <div class="window-body">
+            ${content}
+        </div>
+    `;
+
+    document
+        .getElementById(
+            "window-layer"
+        )
+        .appendChild(
+            windowElement
+        );
+
+    const titlebar =
+        windowElement.querySelector(
+            ".window-titlebar"
+        );
+
+    makeDraggable(
+        windowElement,
+        titlebar
+    );
+
+    windowElement
+        .querySelector(".close")
+        .onclick =
+            () => windowElement.remove();
+
+    windowElement
+        .querySelector(".minimize")
+        .onclick =
+            () => {
+
+                windowElement.style.display =
+                    "none";
+
+            };
+
+    windowElement
+        .querySelector(".maximize")
+        .onclick =
+            () => {
+
+                windowElement.classList.toggle(
+                    "maximized"
+                );
+
+            };
+
+    windowElement.addEventListener(
+        "mousedown",
+        () => focusWindow(
+            windowElement
+        )
+    );
+
+    return windowElement;
+
+}
+
+
+function focusWindow(
+    windowElement
+) {
+
+    windowElement.style.zIndex =
+        ++highestZ;
+
+}
+
+
+function makeDraggable(
+    windowElement,
+    handle
+) {
+
+    let startX;
+    let startY;
+
+    let originalLeft;
+    let originalTop;
+
+    handle.addEventListener(
+        "pointerdown",
+        event => {
+
+            if (
+                event.target.closest(
+                    "button"
+                )
+            ) {
+                return;
+            }
+
+            focusWindow(
+                windowElement
+            );
+
+            startX =
+                event.clientX;
+
+            startY =
+                event.clientY;
+
+            originalLeft =
+                windowElement.offsetLeft;
+
+            originalTop =
+                windowElement.offsetTop;
+
+            handle.setPointerCapture(
+                event.pointerId
+            );
+
+        }
+    );
+
+    handle.addEventListener(
+        "pointermove",
+        event => {
+
+            if (
+                startX === undefined
+            ) {
+                return;
+            }
+
+            windowElement.style.left =
+                (
+                    originalLeft +
+                    event.clientX -
+                    startX
+                ) + "px";
+
+            windowElement.style.top =
+                (
+                    originalTop +
+                    event.clientY -
+                    startY
+                ) + "px";
+
+        }
+    );
+
+    handle.addEventListener(
+        "pointerup",
+        () => {
+
+            startX =
+                undefined;
+
+        }
+    );
+
+}
+
+
+function openApp(id) {
+
+    switch (id) {
+
+        case "files":
+            openFiles();
+            break;
+
+        case "terminal":
+            openTerminal();
+            break;
+
+        case "code":
+            openCode();
+            break;
+
+        case "browser":
+            openBrowser();
+            break;
+
+        case "settings":
+            openSettings();
+            break;
+
+        case "store":
+            openStore();
+            break;
+
+    }
+
+}
+
+
+function openFiles() {
+
+    const windowElement =
+        createWindow(
+            "files",
+            "Files",
+            `
+            <div class="files-layout">
+
+                <div class="files-sidebar">
+
+                    <button
+                        onclick="navigateFiles('/')"
+                    >
+                        🖥 Root
+                    </button>
+
+                    <button
+                        onclick="navigateFiles('/home')"
+                    >
+                        🏠 Home
+                    </button>
+
+                    <button
+                        onclick="navigateFiles('/home/Desktop')"
+                    >
+                        Desktop
+                    </button>
+
+                    <button
+                        onclick="navigateFiles('/home/Documents')"
+                    >
+                        Documents
+                    </button>
+
+                    <button
+                        onclick="navigateFiles('/home/Downloads')"
+                    >
+                        Downloads
+                    </button>
+
+                    <button
+                        onclick="navigateFiles('/home/Projects')"
+                    >
+                        Projects
+                    </button>
+
+                </div>
+
+                <div class="files-main">
+
+                    <div
+                        id="file-path"
+                        class="file-path"
+                    ></div>
+
+                    <div
+                        id="file-list"
+                        class="file-list"
+                    ></div>
+
+                </div>
+
+            </div>
+            `,
+            820,
+            560
+        );
+
+    renderFiles();
+
+    return windowElement;
+
+}
+
+
+function navigateFiles(path) {
+
+    if (!filesystem[path]) {
+
+        notify(
+            "Directory does not exist."
+        );
+
+        return;
+
+    }
+
+    if (
+        filesystem[path].type !==
+        "directory"
+    ) {
+
+        openFile(path);
+
+        return;
+
+    }
+
+    currentPath =
+        path;
+
+    renderFiles();
+
+}
+
+
+function renderFiles() {
+
+    const pathElement =
+        document.getElementById(
+            "file-path"
+        );
+
+    const listElement =
+        document.getElementById(
+            "file-list"
+        );
+
+    if (
+        !pathElement ||
+        !listElement
+    ) {
+        return;
+    }
+
+    pathElement.innerHTML = `
+        <button
+            onclick="navigateFiles(parentPath(currentPath))"
+        >
+            ←
+        </button>
+
+        ${currentPath}
+    `;
+
+    const children =
+        getChildren(
+            currentPath
+        );
+
+    listElement.innerHTML =
+        children
+            .map(
+                ([path, item]) => {
+
+                    const directory =
+                        item.type ===
+                        "directory";
+
+                    return `
+
+                        <div
+                            class="file-item"
+                            ondblclick="
+                                openFilesystemItem(
+                                    '${path.replace(
+                                        /'/g,
+                                        "\\'"
+                                    )}'
+                                )
+                            "
+                        >
+
+                            <div class="file-icon">
+
+                                ${
+                                    directory
+                                        ? "📁"
+                                        : "📄"
+                                }
+
+                            </div>
+
+                            <div>
+                                ${fileName(path)}
+                            </div>
+
+                        </div>
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+function openFilesystemItem(path) {
+
+    const item =
+        filesystem[path];
+
+    if (!item) {
+        return;
+    }
+
+    if (
+        item.type ===
+        "directory"
+    ) {
+
+        navigateFiles(path);
+
+    } else {
+
+        openFile(path);
+
+    }
+
+}
+
+
+function openFile(path) {
+
+    const item =
+        filesystem[path];
+
+    if (!item) {
+        return;
+    }
+
+    if (
+        path.endsWith(".html")
+    ) {
+
+        openCode(
+            path
+        );
+
+        return;
+
+    }
+
+    if (
+        path.endsWith(".py")
+    ) {
+
+        openCode(
+            path
+        );
+
+        return;
+
+    }
+
+    createWindow(
+        `file-${path}`,
+        fileName(path),
+        `
+        <textarea
+            class="editor"
+            id="viewer-${encodeURIComponent(path)}"
+        ></textarea>
+        `,
+        650,
+        500
+    );
+
+    const editor =
+        document.getElementById(
+            `viewer-${encodeURIComponent(path)}`
+        );
+
+    editor.value =
+        typeof item.content === "string"
+            ? item.content
+            : JSON.stringify(
+                item.content,
+                null,
+                2
+            );
+
+    editor.onchange =
+        async () => {
+
+            filesystem[path].content =
+                editor.value;
+
+            await saveFilesystem();
+
+        };
+
+}
+
+
+function openCode(
+    initialPath =
+        "/home/Projects/hello.py"
+) {
+
+    const windowElement =
+        createWindow(
+            "code",
+            "Code Studio",
+            `
+            <div class="editor-layout">
+
+                <div class="editor-toolbar">
+
+                    <button
+                        onclick="saveEditorFile()"
+                    >
+                        Save
+                    </button>
+
+                    <button
+                        onclick="runEditorPreview()"
+                    >
+                        Preview
+                    </button>
+
+                    <select
+                        id="editor-file"
+                        onchange="loadEditorFile()"
+                    ></select>
+
+                </div>
+
+                <textarea
+                    id="code-editor"
+                    class="editor"
+                    spellcheck="false"
+                ></textarea>
+
+            </div>
+            `,
+            850,
+            620
+        );
+
+    populateEditorFiles(
+        initialPath
+    );
+
+    return windowElement;
+
+}
+
+
+function populateEditorFiles(
+    initialPath
+) {
+
+    const select =
+        document.getElementById(
+            "editor-file"
+        );
+
+    const editor =
+        document.getElementById(
+            "code-editor"
+        );
+
+    if (
+        !select ||
+        !editor
+    ) {
+        return;
+    }
+
+    const files =
+        Object.keys(filesystem)
+            .filter(
+                path =>
+                    filesystem[path].type ===
+                    "file"
+            );
+
+    select.innerHTML =
+        files
+            .map(
+                path => `
+
+                    <option
+                        value="${path}"
+                    >
+                        ${path}
+                    </option>
+
+                `
+            )
+            .join("");
+
+    select.value =
+        filesystem[initialPath]
+            ? initialPath
+            : files[0];
+
+    loadEditorFile();
+
+}
+
+
+function loadEditorFile() {
+
+    const path =
+        document.getElementById(
+            "editor-file"
+        ).value;
+
+    const editor =
+        document.getElementById(
+            "code-editor"
+        );
+
+    editor.value =
+        filesystem[path]?.content ||
+        "";
+
+}
+
+
+async function saveEditorFile() {
+
+    const path =
+        document.getElementById(
+            "editor-file"
+        ).value;
+
+    const editor =
+        document.getElementById(
+            "code-editor"
+        );
+
+    filesystem[path].content =
+        editor.value;
+
+    const success =
+        await saveFilesystem();
+
+    if (success) {
+
+        notify(
+            "File saved."
+        );
+
+    }
+
+}
+
+
+function runEditorPreview() {
+
+    const path =
+        document.getElementById(
+            "editor-file"
+        ).value;
+
+    const source =
+        document.getElementById(
+            "code-editor"
+        ).value;
+
+    if (
+        path.endsWith(".html")
+    ) {
+
+        const windowElement =
+            createWindow(
+                "preview",
+                "Preview",
+                `
+                <iframe
+                    class="browser-frame"
+                    id="preview-frame"
+                ></iframe>
+                `,
+                700,
+                520
+            );
+
+        const frame =
+            windowElement.querySelector(
+                "#preview-frame"
+            );
+
+        frame.srcdoc =
+            source;
+
+        return;
+
+    }
+
+    notify(
+        "HTML files can be previewed directly. Python execution requires a configured execution service."
+    );
+
+}
+
+
+function openTerminal() {
+
+    const windowElement =
+        createWindow(
+            "terminal",
+            "Terminal",
+            `
+            <div class="terminal">
+
+                <div
+                    id="terminal-output"
+                    class="terminal-output"
+                >
+EliteOS Terminal v1.0
+Type "help" for commands.
+
+                </div>
+
+                <div
+                    class="terminal-input-row"
+                >
+
+                    <span
+                        class="terminal-prompt"
+                    >
+                        ${USERNAME}@eliteos:~$
+                    </span>
+
+                    <input
+                        id="terminal-input"
+                        class="terminal-input"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+            </div>
+            `,
+            760,
+            480
+        );
+
+    const input =
+        windowElement.querySelector(
+            "#terminal-input"
+        );
+
+    input.focus();
+
+    input.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter"
+            ) {
+
+                runTerminalCommand(
+                    input.value
+                );
+
+                input.value = "";
+
+            }
+
+        }
+    );
+
+}
+
+
+function terminalPrint(text) {
+
+    const output =
+        document.getElementById(
+            "terminal-output"
+        );
+
+    if (!output) {
+        return;
+    }
+
+    output.textContent +=
+        "\n" + text;
+
+    output.scrollTop =
+        output.scrollHeight;
+
+}
+
+
+function runTerminalCommand(raw) {
+
+    const command =
+        raw.trim();
+
+    terminalPrint(
+        `${USERNAME}@eliteos:~$ ${command}`
+    );
+
+    const [name, ...args] =
+        command.split(/\s+/);
+
+    switch (name) {
+
+        case "":
+            break;
+
+        case "help":
+
+            terminalPrint(
+                [
+                    "Available commands:",
+                    "help",
+                    "ls [path]",
+                    "cd <path>",
+                    "pwd",
+                    "cat <file>",
+                    "mkdir <path>",
+                    "touch <file>",
+                    "clear",
+                    "neofetch",
+                ].join("\n")
+            );
+
+            break;
+
+        case "ls":
+
+            terminalPrint(
+                getChildren(
+                    args[0] || currentPath
+                )
+                    .map(
+                        ([path, item]) =>
+                            (
+                                item.type ===
+                                "directory"
+                                    ? "[DIR] "
+                                    : "      "
+                            ) +
+                            fileName(path)
+                    )
+                    .join("\n")
+            );
+
+            break;
+
+        case "pwd":
+
+            terminalPrint(
+                currentPath
+            );
+
+            break;
+
+        case "cd":
+
+            if (!args[0]) {
+
+                currentPath =
+                    "/home";
+
+            } else {
+
+                const target =
+                    args[0];
+
+                if (
+                    filesystem[target] &&
+                    filesystem[target].type ===
+                    "directory"
+                ) {
+
+                    currentPath =
+                        target;
+
+                } else {
+
+                    terminalPrint(
+                        "cd: directory not found"
+                    );
+
+                }
+
+            }
+
+            break;
+
+        case "cat":
+
+            if (
+                filesystem[args[0]]?.type ===
+                "file"
+            ) {
+
+                terminalPrint(
+                    filesystem[
+                        args[0]
+                    ].content
+                );
+
+            } else {
+
+                terminalPrint(
+                    "cat: file not found"
+                );
+
+            }
+
+            break;
+
+        case "mkdir":
+
+            if (!args[0]) {
+
+                terminalPrint(
+                    "mkdir: missing path"
+                );
+
+                break;
+
+            }
+
+            filesystem[
+                args[0]
+            ] = {
+                type: "directory",
+                name: fileName(
+                    args[0]
+                ),
+            };
+
+            saveFilesystem();
+
+            terminalPrint(
+                "Directory created."
+            );
+
+            break;
+
+        case "touch":
+
+            if (!args[0]) {
+
+                terminalPrint(
+                    "touch: missing path"
+                );
+
+                break;
+
+            }
+
+            filesystem[
+                args[0]
+            ] = {
+                type: "file",
+                mime: "text/plain",
+                content: "",
+            };
+
+            saveFilesystem();
+
+            terminalPrint(
+                "File created."
+            );
+
+            break;
+
+        case "clear":
+
+            document.getElementById(
+                "terminal-output"
+            ).textContent = "";
+
+            break;
+
+        case "neofetch":
+
+            terminalPrint(
+                [
+                    "       ◈ EliteOS",
+                    "",
+                    `User: ${USERNAME}`,
+                    "OS: EliteOS 1.0",
+                    "Codename: Liquid Glass",
+                    "Architecture: Django Web Desktop",
+                ].join("\n")
+            );
+
+            break;
+
+        default:
+
+            terminalPrint(
+                `${name}: command not found`
+            );
+
+    }
+
+}
+
+
+function openBrowser() {
+
+    const windowElement =
+        createWindow(
+            "browser",
+            "Elite Browser",
+            `
+            <div class="browser-layout">
+
+                <div
+                    id="browser-tabs"
+                    class="browser-tabs"
+                ></div>
+
+                <div class="browser-bar">
+
+                    <button
+                        onclick="browserBack()"
+                    >
+                        ←
+                    </button>
+
+                    <button
+                        onclick="newBrowserTab()"
+                    >
+                        +
+                    </button>
+
+                    <input
+                        id="browser-url"
+                        class="browser-url"
+                        placeholder="Search or enter a URL"
+                    >
+
+                    <button
+                        onclick="navigateBrowser()"
+                    >
+                        Go
+                    </button>
+
+                </div>
+
+                <iframe
+                    id="browser-frame"
+                    class="browser-frame"
+                ></iframe>
+
+            </div>
+            `,
+            950,
+            650
+        );
+
+    initializeBrowser(
+        windowElement
+    );
+
+}
+
+
+let browserTabs = [];
+
+let activeBrowserTab = 0;
+
+
+function initializeBrowser(
+    windowElement
+) {
+
+    if (
+        browserTabs.length === 0
+    ) {
+
+        browserTabs.push(
+            {
+                title: "New Tab",
+                url: "",
+            }
+        );
+
+    }
+
+    const input =
+        windowElement.querySelector(
+            "#browser-url"
+        );
+
+    input.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter"
+            ) {
+
+                navigateBrowser();
+
+            }
+
+        }
+    );
+
+    renderBrowser();
+
+}
+
+
+function renderBrowser() {
+
+    const tabs =
+        document.getElementById(
+            "browser-tabs"
+        );
+
+    const input =
+        document.getElementById(
+            "browser-url"
+        );
+
+    const frame =
+        document.getElementById(
+            "browser-frame"
+        );
+
+    if (
+        !tabs ||
+        !input ||
+        !frame
+    ) {
+        return;
+    }
+
+    tabs.innerHTML =
+        browserTabs
+            .map(
+                (tab, index) => `
+
+                    <button
+                        class="browser-tab"
+                        onclick="switchBrowserTab(${index})"
+                    >
+                        ${tab.title}
+                    </button>
+
+                `
+            )
+            .join("");
+
+    const tab =
+        browserTabs[
+            activeBrowserTab
+        ];
+
+    input.value =
+        tab.url;
+
+    if (!tab.url) {
+
+        frame.srcdoc = `
+            <html>
+            <body
+                style="
+                    font-family:system-ui;
+                    padding:50px;
+                    background:#f8fafc;
+                "
+            >
+                <h1>Elite Browser</h1>
+                <p>
+                    Search or enter a website.
+                </p>
+            </body>
+            </html>
+        `;
+
+    } else {
+
+        frame.src =
+            tab.url;
+
+    }
+
+}
+
+
+function newBrowserTab() {
+
+    browserTabs.push(
+        {
+            title: "New Tab",
+            url: "",
+        }
+    );
+
+    activeBrowserTab =
+        browserTabs.length - 1;
+
+    renderBrowser();
+
+}
+
+
+function switchBrowserTab(index) {
+
+    activeBrowserTab =
+        index;
+
+    renderBrowser();
+
+}
+
+
+function navigateBrowser() {
+
+    let url =
+        document.getElementById(
+            "browser-url"
+        ).value.trim();
+
+    if (!url) {
+        return;
+    }
+
+    if (
+        !url.startsWith("http://") &&
+        !url.startsWith("https://")
+    ) {
+
+        if (
+            url.includes(".")
+        ) {
+
+            url =
+                "https://" + url;
+
+        } else {
+
+            url =
+                "https://www.google.com/search?q=" +
+                encodeURIComponent(
+                    url
+                );
+
+        }
+
+    }
+
+    browserTabs[
+        activeBrowserTab
+    ].url =
+        url;
+
+    browserTabs[
+        activeBrowserTab
+    ].title =
+        new URL(url).hostname;
+
+    localStorage.setItem(
+        "eliteos-browser-tabs",
+        JSON.stringify(
+            browserTabs
+        )
+    );
+
+    renderBrowser();
+
+}
+
+
+function browserBack() {
+
+    const frame =
+        document.getElementById(
+            "browser-frame"
+        );
+
+    try {
+
+        frame.contentWindow.history.back();
+
+    } catch {
+        notify(
+            "The website prevents browser history access."
+        );
+    }
+
+}
+
+
+async function openSettings() {
+
+    const response =
+        await apiFetch(
+            API.settings
+        );
+
+    const settings =
+        await response.json();
+
+    createWindow(
+        "settings",
+        "System Settings",
+        `
+        <div class="settings-layout">
+
+            <div class="setting-section">
+
+                <h3>
+                    Appearance
+                </h3>
+
+                <div class="setting-row">
+
+                    <label>
+                        Theme
+                    </label>
+
+                    <select
+                        id="setting-theme"
+                    >
+
+                        <option
+                            value="dark"
+                        >
+                            Dark
+                        </option>
+
+                        <option
+                            value="light"
+                        >
+                            Light
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="setting-row">
+
+                    <label>
+                        Accent
+                    </label>
+
+                    <input
+                        id="setting-accent"
+                        type="color"
+                    >
+
+                </div>
+
+                <div class="setting-row">
+
+                    <label>
+                        Transparency
+                    </label>
+
+                    <input
+                        id="setting-transparency"
+                        type="range"
+                        min="20"
+                        max="100"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="setting-section">
+
+                <h3>
+                    Wallpaper
+                </h3>
+
+                <textarea
+                    id="setting-wallpaper"
+                    style="
+                        width:100%;
+                        height:90px;
+                    "
+                ></textarea>
+
+            </div>
+
+
+            <div class="setting-section">
+
+                <h3>
+                    System
+                </h3>
+
+                <button
+                    onclick="resetFilesystem()"
+                >
+                    Reset Filesystem
+                </button>
+
+                <button
+                    onclick="saveSettings()"
+                >
+                    Save Settings
+                </button>
+
+            </div>
+
+        </div>
+        `,
+        700,
+        580
+    );
+
+    document.getElementById(
+        "setting-theme"
+    ).value =
+        settings.theme;
+
+    document.getElementById(
+        "setting-accent"
+    ).value =
+        settings.accent;
+
+    document.getElementById(
+        "setting-transparency"
+    ).value =
+        settings.transparency;
+
+    document.getElementById(
+        "setting-wallpaper"
+    ).value =
+        settings.wallpaper;
+
+}
+
+
+async function saveSettings() {
+
+    const settings = {
+
+        theme:
+            document.getElementById(
+                "setting-theme"
+            ).value,
+
+        accent:
+            document.getElementById(
+                "setting-accent"
+            ).value,
+
+        transparency:
+            document.getElementById(
+                "setting-transparency"
+            ).value,
+
+        wallpaper:
+            document.getElementById(
+                "setting-wallpaper"
+            ).value,
+
+    };
+
+    const response =
+        await apiFetch(
+            API.settings,
+            {
+                method: "POST",
+
+                body: JSON.stringify(
+                    settings
+                ),
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (data.success) {
+
+        applySettings(
+            settings
+        );
+
+        notify(
+            "Settings saved."
+        );
+
+    }
+
+}
+
+
+function applySettings(
+    settings
+) {
+
+    document.documentElement.style.setProperty(
+        "--accent",
+        settings.accent
+    );
+
+    document.getElementById(
+        "desktop"
+    ).style.background =
+        settings.wallpaper;
+
+}
+
+
+async function resetFilesystem() {
+
+    if (
+        !confirm(
+            "Reset your entire EliteOS filesystem?"
+        )
+    ) {
+        return;
+    }
+
+    const response =
+        await apiFetch(
+            API.resetFilesystem
+        );
+
+    const data =
+        await response.json();
+
+    if (data.success) {
+
+        filesystem =
+            data.filesystem;
+
+        currentPath =
+            "/home";
+
+        renderFiles();
+
+        notify(
+            "Filesystem reset successfully."
+        );
+
+    }
+
+}
+
+
+async function openStore() {
+
+    const windowElement =
+        createWindow(
+            "store",
+            "EliteOS App Store",
+            `
+            <div
+                id="store-grid"
+                class="store-grid"
+            >
+                Loading applications...
+            </div>
+            `,
+            900,
+            620
+        );
+
+    const response =
+        await apiFetch(
+            API.storeApps
+        );
+
+    const data =
+        await response.json();
+
+    const grid =
+        windowElement.querySelector(
+            "#store-grid"
+        );
+
+    grid.innerHTML =
+        data.apps
+            .map(
+                app => `
+
+                    <div
+                        class="store-card"
+                    >
+
+                        <div
+                            class="store-icon"
+                        >
+                            ${app.icon}
+                        </div>
+
+                        <h3>
+                            ${app.name}
+                        </h3>
+
+                        <p>
+                            ${app.description}
+                        </p>
+
+                        <small>
+                            Version ${app.version}
+                        </small>
+
+                        <button
+                            onclick="
+                                installApp(
+                                    '${app.id}'
+                                )
+                            "
+                        >
+
+                            ${
+                                app.installed
+                                    ? "Installed"
+                                    : (
+                                        app.builtin
+                                            ? "Open"
+                                            : "Install"
+                                    )
+                            }
+
+                        </button>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+}
+
+
+async function installApp(id) {
+
+    const response =
+        await apiFetch(
+            API.installApp(id),
+            {
+                method: "POST"
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (data.success) {
+
+        if (
+            data.builtin
+        ) {
+
+            openApp(id);
+
+        }
+
+        notify(
+            data.message ||
+            "Application installed."
+        );
+
+        return;
+
+    }
+
+    notify(
+        data.error ||
+        "Installation failed."
+    );
+
+}
+
+
+function toggleStart() {
+
+    document
+        .getElementById(
+            "start-menu"
+        )
+        .classList.toggle(
+            "open"
+        );
+
+}
+
+
+function updateClock() {
+
+    document
+        .getElementById(
+            "clock"
+        )
+        .textContent =
+            new Date()
+                .toLocaleTimeString(
+                    [],
+                    {
+                        hour:
+                            "2-digit",
+
+                        minute:
+                            "2-digit",
+                    }
+                );
+
+}
+
+
+async function bootSequence() {
+
+    const progress =
+        document.getElementById(
+            "progress-fill"
+        );
+
+    const status =
+        document.getElementById(
+            "boot-status"
+        );
+
+    const steps = [
+
+        [
+            10,
+            "Loading firmware..."
+        ],
+
+        [
+            25,
+            "Checking system services..."
+        ],
+
+        [
+            42,
+            "Mounting virtual filesystem..."
+        ],
+
+        [
+            63,
+            "Starting desktop services..."
+        ],
+
+        [
+            82,
+            "Loading applications..."
+        ],
+
+        [
+            100,
+            "EliteOS ready."
+        ],
+
+    ];
+
+    for (
+        const [percent, text]
+        of steps
+    ) {
+
+        progress.style.width =
+            percent + "%";
+
+        status.textContent =
+            text;
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    350
+                )
+        );
+
+    }
+
+    try {
+
+        await loadFilesystem();
+
+        await apiFetch(
+            API.boot,
+            {
+                method: "POST"
+            }
+        );
+
+        const settingsResponse =
+            await apiFetch(
+                API.settings
+            );
+
+        const settings =
+            await settingsResponse.json();
+
+        applySettings(
+            settings
+        );
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+        notify(
+            "Some EliteOS services failed to start."
+        );
+
+    }
+
+    document
+        .getElementById(
+            "boot-screen"
+        )
+        .style.display =
+            "none";
+
+}
+
+
+let biosCancelled =
+    false;
+
+
+function startBios() {
+
+    const bios =
+        document.getElementById(
+            "bios-screen"
+        );
+
+    const count =
+        document.getElementById(
+            "bios-count"
+        );
+
+    bios.style.display =
+        "block";
+
+    let seconds =
+        5;
+
+    const cancel =
+        () => {
+
+            biosCancelled =
+                true;
+
+            count.textContent =
+                "Automatic boot cancelled.";
+
+        };
+
+    window.addEventListener(
+        "keydown",
+        cancel,
+        {
+            once: true
+        }
+    );
+
+    const timer =
+        setInterval(
+            () => {
+
+                if (
+                    biosCancelled
+                ) {
+
+                    clearInterval(
+                        timer
+                    );
+
+                    setTimeout(
+                        () => {
+
+                            bios.style.display =
+                                "none";
+
+                            bootSequence();
+
+                        },
+                        1500
+                    );
+
+                    return;
+
+                }
+
+                count.textContent =
+                    `Booting EliteOS in ${seconds}...`;
+
+                seconds--;
+
+                if (
+                    seconds < 0
+                ) {
+
+                    clearInterval(
+                        timer
+                    );
+
+                    bios.style.display =
+                        "none";
+
+                    bootSequence();
+
+                }
+
+            },
+            1000
+        );
+
+}
+
+
+try {
+
+    const savedTabs =
+        JSON.parse(
+            localStorage.getItem(
+                "eliteos-browser-tabs"
+            )
+        );
+
+    if (
+        Array.isArray(
+            savedTabs
+        )
+    ) {
+
+        browserTabs =
+            savedTabs;
+
+    }
+
+} catch {}
+
+
+updateClock();
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+window.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            document
+                .getElementById(
+                    "start-menu"
+                )
+                .classList.remove(
+                    "open"
+                );
+
+        }
+
+    }
+);
+
+
+startBios();
+
+</script>
+
+</body>
+
+</html>

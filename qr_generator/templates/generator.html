@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}EliteDevelop // Custom QR Studio{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row g-4">
+
+        <div class="col-md-5">
+            <div class="card p-4 shadow-sm border-0">
+                <h3 class="mb-3 fw-bold"><i class="fa-solid fa-qrcode text-primary me-2"></i>QR Studio Engine</h3>
+                <hr class="text-muted mt-0 mb-4">
+
+                <form method="post" action="">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Target URL or Data payload</label>
+                        <textarea class="form-control" name="qr_data" rows="3" required placeholder="Paste link or text data string here...">{{ qr_data|default:'' }}</textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">QR Code Color</label>
+                            <input type="color" class="form-control form-control-color w-100" name="fill_color" value="{{ fill_color }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Background Color</label>
+                            <input type="color" class="form-control form-control-color w-100" name="back_color" value="{{ back_color }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Box Resolution Scale (Size)</label>
+                        <select class="form-select" name="box_size">
+                            <option value="5" {% if box_size == 5 %}selected{% endif %}>Compact (Tiny)</option>
+                            <option value="10" {% if box_size == 10 %}selected{% endif %}>Standard (Balanced)</option>
+                            <option value="15" {% if box_size == 15 %}selected{% endif %}>High Definition (Large)</option>
+                            <option value="20" {% if box_size == 20 %}selected{% endif %}>Ultra Density (Massive)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Outer Border Spacing Safety Margin</label>
+                        <select class="form-select" name="border_size">
+                            <option value="1" {% if border_size == 1 %}selected{% endif %}>Minimalist (1 Box)</option>
+                            <option value="4" {% if border_size == 4 %}selected{% endif %}>Default Safety Buffer (4 Boxes)</option>
+                            <option value="8" {% if border_size == 8 %}selected{% endif %}>Wide Canvas Isolation (8 Boxes)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
+                        <i class="fa-solid fa-gear fa-spin me-2"></i> Compile Custom Matrix
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-7 d-flex align-items-stretch">
+            <div class="card p-4 shadow-sm border-0 w-100 text-center d-flex flex-column justify-content-center align-items-center">
+                {% if qr_code %}
+                    <h4 class="fw-bold mb-3 text-success"><i class="fa-solid fa-circle-check"></i> Generation Complete!</h4>
+
+                    <div class="p-3 rounded bg-white border mb-4 d-inline-block shadow-sm">
+                        <img src="{{ qr_code }}" class="img-fluid d-block mx-auto" alt="Custom Matrix Profile Output" style="max-height: 320px;">
+                    </div>
+
+                    <div class="w-100 px-4">
+                        <a href="{{ qr_code }}" download="elitedevelop_qr_matrix.png" class="btn btn-success w-100 fw-bold py-2 mb-2">
+                            <i class="fa-solid fa-cloud-arrow-down me-2"></i> Download PNG Matrix
+                        </a>
+                        <small class="text-muted d-block mt-2">Render properties execution scale context metrics: <strong>{{ box_size }}px</strong> box engine modules.</small>
+                    </div>
+                {% else %}
+                    <div class="text-muted p-5">
+                        <i class="fa-solid fa-qrcode fa-5x mb-3 text-secondary opacity-50"></i>
+                        <h5>Awaiting Form Matrix Submission Parameters</h5>
+                        <p class="small text-muted">Input your configuration parameters on the left controls panel and click compile to instantly generate a custom-tailored zero-footprint vector matrix artifact stream.</p>
+                    </div>
+                {% endif %}
+
+                {% if error %}
+                    <div class="alert alert-danger w-100 mt-3 mb-0" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> {{ error }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

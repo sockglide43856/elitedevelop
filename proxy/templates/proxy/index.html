@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+
+{% block title %}Proxy{% endblock %}
+
+{% block content %}
+
+<style>
+    .proxy-wrapper {
+        max-width: 850px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .proxy-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 30px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.10);
+    }
+
+    .proxy-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .proxy-description {
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .proxy-form {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .proxy-input {
+        flex: 1;
+        min-width: 0;
+        padding: 15px 17px;
+        border: 1px solid #d7d7d7;
+        border-radius: 12px;
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .proxy-input:focus {
+        border-color: #888;
+    }
+
+    .proxy-go {
+        width: 55px;
+        min-width: 55px;
+        height: 55px;
+        border: none;
+        border-radius: 12px;
+        background: #d32f2f;
+        color: white;
+        font-size: 22px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+            transform 0.12s ease,
+            background 0.12s ease;
+    }
+
+    .proxy-go:hover {
+        background: #b71c1c;
+        transform: translateY(-1px);
+    }
+
+    .proxy-go:disabled {
+        opacity: 0.6;
+        cursor: wait;
+        transform: none;
+    }
+
+    .proxy-stats {
+        margin-top: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .proxy-stat {
+        background: #f5f5f5;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .proxy-stat strong {
+        font-weight: 700;
+    }
+
+    .proxy-error {
+        display: none;
+        margin-top: 18px;
+        padding: 13px 15px;
+        border-radius: 10px;
+        background: #ffebee;
+        color: #b71c1c;
+        font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+        .proxy-wrapper {
+            margin: 20px auto;
+            padding: 12px;
+        }
+
+        .proxy-card {
+            padding: 20px;
+        }
+
+        .proxy-form {
+            gap: 8px;
+        }
+
+        .proxy-go {
+            width: 50px;
+            min-width: 50px;
+            height: 50px;
+        }
+
+        .proxy-input {
+            font-size: 15px;
+        }
+    }
+</style>
+
+<div class="proxy-wrapper">
+
+    <div class="proxy-card">
+
+        <div class="proxy-title">
+            Web Proxy
+        </div>
+
+        <div class="proxy-description">
+            Enter a website URL to browse it through EliteDevelop.
+        </div>
+
+        <form
+            id="proxyForm"
+            class="proxy-form"
+        >
+
+            {% csrf_token %}
+
+            <input
+                id="urlInput"
+                class="proxy-input"
+                type="text"
+                inputmode="url"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="https://example.com"
+                aria-label="Website URL"
+                required
+            >
+
+            <button
+                id="goButton"
+                class="proxy-go"
+                type="submit"
+                aria-label="Go"
+                title="Go"
+            >
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+        </form>
+
+        <div class="proxy-stats">
+
+            <div class="proxy-stat">
+                Requests left:
+                <strong id="remaining">
+                    {{ remaining }}
+                </strong>
+            </div>
+
+            <div class="proxy-stat">
+                Requests used:
+                <strong id="used">
+                    {{ profile.proxy_requests_today }}
+                </strong>
+            </div>
+
+            <div class="proxy-stat">
+                Daily limit:
+                <strong>
+                    {{ profile.proxy_requests_per_day }}
+                </strong>
+            </div>
+
+        </div>
+
+        <div
+            id="errorBox"
+            class="proxy-error"
+        ></div>
+
+    </div>
+
+</div>
+
+<script>
+(function () {
+
+    const form =
+        document.getElementById(
+            "proxyForm"
+        );
+
+    const input =
+        document.getElementById(
+            "urlInput"
+        );
+
+    const button =
+        document.getElementById(
+            "goButton"
+        );
+
+    const errorBox =
+        document.getElementById(
+            "errorBox"
+        );
+
+    const remainingElement =
+        document.getElementById(
+            "remaining"
+        );
+
+    const usedElement =
+        document.getElementById(
+            "used"
+        );
+
+
+    const tokenEndpoint =
+        "{% url 'proxy:token' %}";
+
+
+    const workerURL =
+        "https://proxy.elitedevelop-official.workers.dev/";
+
+
+    function showError(message) {
+
+        errorBox.textContent =
+            message || "Something went wrong.";
+
+        errorBox.style.display =
+            "block";
+    }
+
+
+    function hideError() {
+
+        errorBox.textContent = "";
+
+        errorBox.style.display =
+            "none";
+    }
+
+
+    function normalizeURL(value) {
+
+        value = value.trim();
+
+        if (!value) {
+            return null;
+        }
+
+        /*
+         * Allow users to type:
+         *
+         * example.com
+         * www.example.com
+         * https://example.com
+         */
+
+        if (
+            !value.startsWith("http://") &&
+            !value.startsWith("https://")
+        ) {
+            value =
+                "https://" + value;
+        }
+
+        try {
+
+            const url =
+                new URL(value);
+
+            if (
+                url.protocol !== "http:" &&
+                url.protocol !== "https:"
+            ) {
+                return null;
+            }
+
+            return url.href;
+
+        } catch {
+
+            return null;
+
+        }
+    }
+
+
+    function makeProxyURL(
+        token,
+        targetURL
+    ) {
+
+        return (
+            workerURL +
+            "?token=" +
+            encodeURIComponent(token) +
+            "&url=" +
+            encodeURIComponent(targetURL)
+        );
+    }
+
+
+    form.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            hideError();
+
+            const url =
+                normalizeURL(
+                    input.value
+                );
+
+            if (!url) {
+
+                showError(
+                    "Please enter a valid HTTP or HTTPS URL."
+                );
+
+                input.focus();
+
+                return;
+            }
+
+
+            button.disabled = true;
+
+
+            const csrfToken =
+                document.querySelector(
+                    "[name=csrfmiddlewaretoken]"
+                )?.value;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        tokenEndpoint,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "Accept":
+                                    "application/json",
+
+                                "X-CSRFToken":
+                                    csrfToken || ""
+                            },
+
+                            credentials: "same-origin",
+
+                            body:
+                                JSON.stringify({
+                                    url: url
+                                })
+                        }
+                    );
+
+
+                const text =
+                    await response.text();
+
+
+                let data;
+
+
+                try {
+
+                    data =
+                        JSON.parse(text);
+
+                } catch {
+
+                    throw new Error(
+                        "The server returned an invalid response."
+                    );
+
+                }
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        "Unable to start the proxy session."
+                    );
+
+                }
+
+
+                if (!data.token) {
+
+                    throw new Error(
+                        "The server did not provide a proxy session token."
+                    );
+
+                }
+
+
+                if (!data.url) {
+
+                    throw new Error(
+                        "The server did not provide a destination URL."
+                    );
+
+                }
+
+
+                if (
+                    data.remaining !== undefined
+                ) {
+
+                    remainingElement.textContent =
+                        data.remaining;
+
+                    usedElement.textContent =
+                        Math.max(
+                            0,
+                            Number(
+                                "{{ profile.proxy_requests_per_day }}"
+                            ) -
+                            Number(
+                                data.remaining
+                            )
+                        );
+
+                }
+
+
+                window.location.href =
+                    makeProxyURL(
+                        data.token,
+                        data.url
+                    );
+
+
+            } catch (error) {
+
+                showError(
+                    error.message ||
+                    "Unable to start the proxy."
+                );
+
+                button.disabled = false;
+
+            }
+
+        }
+    );
+
+
+    /*
+     * Ctrl+L / Cmd+L focuses the proxy URL box
+     * while the user is on the proxy dashboard.
+     */
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                (event.ctrlKey ||
+                 event.metaKey) &&
+                event.key.toLowerCase() === "l"
+            ) {
+
+                event.preventDefault();
+
+                input.focus();
+
+                input.select();
+
+            }
+
+        }
+    );
+
+})();
+</script>
+
+{% endblock %}

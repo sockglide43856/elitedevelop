@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .dashboard-container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #f8f9fa; }
+    .btn-dash { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 0.9rem; font-weight: bold; display: inline-block;}
+    .btn-view { background: #3498db; color: white; margin-right: 5px;}
+    .btn-data { background: #e67e22; color: white; }
+</style>
+
+<div class="dashboard-container">
+    <h2>Welcome, {{ user.username }}</h2>
+    <h1 style="margin: 5px 0 20px 0;">Your Private Forms Manager</h1>
+    <a href="{% url 'build_form' %}" style="color: #3498db; font-weight: bold; text-decoration:none;">+ Create New Custom Layout</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Form Title</th>
+                <th>Public Code</th>
+                <th>Secret Token</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for form in forms %}
+            <tr>
+                <td><strong>{{ form.title }}</strong></td>
+                <td><code>{{ form.code }}</code></td>
+                <td><code style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:3px;">{{ form.secret_token }}</code></td>
+                <td>
+                    <a href="/forms/{{ form.code }}/" class="btn-dash btn-view" target="_blank">View Live</a>
+                    <a href="/forms/{{ form.code }}/responses/{{ form.secret_token }}/" class="btn-dash btn-data">View Responses</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center; padding:20px; color:#7f8c8d;">You haven't built any forms yet!</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

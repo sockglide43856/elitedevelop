@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}EliteDevelop Python Executer{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <div class="card shadow-sm border-0 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold m-0"><i class="fa-brands fa-python text-primary me-2"></i>Live Python Studio</h3>
+            <span class="badge bg-success shadow-sm" id="engine-status"><i class="fa-solid fa-microchip fa-spin me-1"></i> Booting Pyodide Runtime...</span>
+        </div>
+        <p class="text-muted small mt-0 mb-4">Execute real, sandboxed Python code directly in your browser viewport. Zero server overhead, zero security execution risk, full execution fidelity.</p>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="d-flex justify-content-between align-items-center bg-dark text-light px-3 py-2 rounded-top border-bottom border-secondary">
+                    <span class="small fw-bold text-secondary">main.py</span>
+                    <button class="btn btn-sm btn-primary px-3 fw-bold shadow-sm" id="run-code-btn" disabled>
+                        <i class="fa-solid fa-play me-1"></i> Run Code
+                    </button>
+                </div>
+                <textarea id="code-editor" class="form-control font-monospace text-white bg-dark p-3 rounded-bottom border-0 shadow-inner" style="height: 400px; resize: none; font-size: 14px; line-height: 1.5;"># Write real Python code here!
+def greet(name):
+    return f"Hello, {name}! Welcome to EliteDevelop."
+
+for i in range(1, 4):
+    print(f"Loop index iteration: {i}")
+
+print(greet("Developer"))
+</textarea>
+            </div>
+
+            <div class="col-md-6">
+                <div class="bg-dark text-light px-3 py-2 rounded-top border-bottom border-secondary">
+                    <span class="small fw-bold text-secondary">Console Terminal Output</span>
+                </div>
+                <div id="console-output" class="form-control font-monospace text-success bg-dark p-3 rounded-bottom border-0 overflow-auto" style="height: 400px; white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: #38bdf8 !important;">Loading WebAssembly engine profiles...
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+
+<script>
+    async function main() {
+        let outputConsole = document.getElementById("console-output");
+        let runButton = document.getElementById("run-code-btn");
+        let statusBadge = document.getElementById("engine-status");
+
+        try {
+            // Initialize the WebAssembly Python sandbox environment
+            let pyodide = await loadPyodide();
+
+            // Re-route Python's standard output print statements directly to our HTML console pane
+            pyodide.setStdout({
+                batched: (text) => {
+                    outputConsole.textContent += text + "\n";
+                }
+            });
+            pyodide.setStderr({
+                batched: (text) => {
+                    outputConsole.textContent += "[ERROR] " + text + "\n";
+                }
+            });
+
+            outputConsole.textContent = ">>> Python interpreter ready. Press 'Run Code' to execute scripts.\n";
+            statusBadge.textContent = "Engine Active";
+            statusBadge.className = "badge bg-primary shadow-sm";
+            runButton.disabled = false;
+
+            // Handle script execution sequence
+            runButton.addEventListener("click", async () => {
+                let code = document.getElementById("code-editor").value;
+                outputConsole.textContent = ""; // Clear console before outputting new results
+
+                try {
+                    await pyodide.runPythonAsync(code);
+                } catch (err) {
+                    outputConsole.textContent += "\n[Runtime Exception Encountered]:\n" + err;
+                }
+            });
+
+        } catch (initError) {
+            outputConsole.textContent = "Failed to initialize WebAssembly core: " + initError;
+            statusBadge.textContent = "Boot Failure";
+            statusBadge.className = "badge bg-danger shadow-sm";
+        }
+    }
+
+    // Fire up compiler runtime on document load sequence
+    main();
+</script>
+{% endblock %}

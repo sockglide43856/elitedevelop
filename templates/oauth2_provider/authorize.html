@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Authorize Application{% endblock %}
+
+{% block content %}
+<style>
+    .oauth-container {
+        max-width: 480px;
+        margin: 50px auto;
+        padding: 30px;
+        background: #ffffff;
+        border: 1px solid #e4e6eb;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .oauth-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+    }
+    .btn-approve {
+        flex: 1;
+        background: #0084ff;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .btn-deny {
+        flex: 1;
+        background: #e4e6eb;
+        color: #1c1e21;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+</style>
+
+<div class="oauth-container">
+    <h2>Authorize {{ application.name }}?</h2>
+
+    <p>
+        <strong>{{ application.name }}</strong> is requesting access to your account (<strong>{{ request.user.username }}</strong>).
+    </p>
+
+    {% if scopes_descriptions %}
+        <div style="text-align: left; margin: 20px 0; background: #f0f2f5; padding: 15px; border-radius: 8px;">
+            <p style="margin-top: 0; font-weight: bold;">This application will be able to:</p>
+            <ul>
+                {% for scope in scopes_descriptions %}
+                    <li>{{ scope }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form id="authorizationForm" method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+            {% if field.is_hidden %}
+                {{ field }}
+            {% endif %}
+        {% endfor %}
+
+        <div class="oauth-actions">
+            <input type="submit" name="allow" class="btn-approve" value="Authorize / OK" />
+            <input type="submit" name="cancel" class="btn-deny" value="Cancel" />
+        </div>
+    </form>
+</div>
+{% endblock %}

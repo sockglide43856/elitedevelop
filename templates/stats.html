@@ -1,0 +1,1220 @@
+{% extends "base.html" %}
+
+{% block title %}System Status{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --stats-radius: 18px;
+        --stats-transition: 180ms ease;
+    }
+
+    .stats-page {
+        width: 100%;
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 24px 18px 60px;
+    }
+
+    .stats-hero {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 24px;
+        padding: 34px;
+        margin-bottom: 24px;
+        background:
+            radial-gradient(
+                circle at 85% 20%,
+                rgba(var(--bs-primary-rgb), .16),
+                transparent 35%
+            ),
+            var(--bs-body-bg);
+    }
+
+    .stats-hero h1 {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 0;
+    }
+
+    .stats-hero p {
+        margin: 8px 0 0;
+        color: var(--bs-secondary-color);
+        font-size: 1.05rem;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(25, 135, 84, .12);
+        color: var(--bs-success);
+        font-size: .85rem;
+        font-weight: 700;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 0 5px rgba(25, 135, 84, .08);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 18px;
+    }
+
+    .stats-card {
+        min-width: 0;
+        border: 1px solid var(--bs-border-color);
+        border-radius: var(--stats-radius);
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        padding: 22px;
+        transition:
+            transform var(--stats-transition),
+            box-shadow var(--stats-transition),
+            border-color var(--stats-transition);
+    }
+
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, .08);
+    }
+
+    [data-bs-theme="dark"] .stats-card:hover,
+    .dark .stats-card:hover {
+        box-shadow: 0 12px 35px rgba(0, 0, 0, .25);
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .card-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .card-title h2,
+    .card-title h3 {
+        font-size: 1rem;
+        font-weight: 750;
+        margin: 0;
+    }
+
+    .card-title small {
+        color: var(--bs-secondary-color);
+    }
+
+    .metric {
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+    }
+
+    .metric-label {
+        color: var(--bs-secondary-color);
+        margin-top: 8px;
+        font-size: .9rem;
+    }
+
+    .metric-icon {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        background: rgba(var(--bs-primary-rgb), .12);
+        color: var(--bs-primary);
+        font-size: 1.15rem;
+    }
+
+    .metric-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .chart-wrap {
+        height: 260px;
+        position: relative;
+    }
+
+    canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .resource {
+        margin-bottom: 20px;
+    }
+
+    .resource:last-child {
+        margin-bottom: 0;
+    }
+
+    .resource-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 8px;
+        font-size: .9rem;
+    }
+
+    .resource-head strong {
+        font-weight: 700;
+    }
+
+    .progress {
+        height: 9px;
+        background: var(--bs-secondary-bg);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--bs-primary);
+        transition: width .45s ease;
+    }
+
+    .progress-bar.warning {
+        background: var(--bs-warning);
+    }
+
+    .progress-bar.danger {
+        background: var(--bs-danger);
+    }
+
+    .kv-list {
+        display: grid;
+        gap: 0;
+    }
+
+    .kv {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .kv:last-child {
+        border-bottom: 0;
+    }
+
+    .kv span:first-child {
+        color: var(--bs-secondary-color);
+    }
+
+    .kv span:last-child {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: .88rem;
+        text-align: right;
+        word-break: break-word;
+    }
+
+    .service-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .service {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 13px 14px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 12px;
+        background: var(--bs-tertiary-bg);
+    }
+
+    .service-left {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+    .service-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--bs-success);
+        box-shadow: 0 0 0 4px rgba(25, 135, 84, .1);
+    }
+
+    .service-name {
+        font-weight: 650;
+    }
+
+    .service-status {
+        color: var(--bs-success);
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    .counter-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+    }
+
+    .counter {
+        padding: 16px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 14px;
+        background: var(--bs-tertiary-bg);
+    }
+
+    .counter-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+    }
+
+    .counter-label {
+        color: var(--bs-secondary-color);
+        font-size: .8rem;
+        margin-top: 4px;
+    }
+
+    .interval-control {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 15px 17px;
+        margin-bottom: 20px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 14px;
+        background: var(--bs-tertiary-bg);
+    }
+
+    .interval-control strong {
+        display: block;
+    }
+
+    .interval-control small {
+        color: var(--bs-secondary-color);
+    }
+
+    .interval-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .interval-input input {
+        width: 110px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 9px;
+        padding: 7px 10px;
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+    }
+
+    .interval-input input:focus {
+        outline: none;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), .15);
+    }
+
+    .interval-value {
+        color: var(--bs-secondary-color);
+        font-family: ui-monospace, monospace;
+        font-size: .85rem;
+        min-width: 70px;
+    }
+
+    .last-update {
+        color: var(--bs-secondary-color);
+        font-size: .8rem;
+        margin-top: 20px;
+    }
+
+    .error-message {
+        display: none;
+        margin-top: 15px;
+        padding: 10px 13px;
+        border-radius: 10px;
+        background: rgba(var(--bs-danger-rgb), .1);
+        color: var(--bs-danger);
+        font-size: .85rem;
+    }
+
+    @media (max-width: 1100px) {
+        .span-3,
+        .span-4 {
+            grid-column: span 6;
+        }
+
+        .span-8 {
+            grid-column: span 12;
+        }
+
+        .counter-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 700px) {
+        .stats-page {
+            padding: 15px 10px 40px;
+        }
+
+        .stats-hero {
+            padding: 25px 20px;
+            border-radius: 18px;
+        }
+
+        .span-3,
+        .span-4,
+        .span-6,
+        .span-8,
+        .span-12 {
+            grid-column: span 12;
+        }
+
+        .counter-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .interval-control {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .interval-input {
+            justify-content: space-between;
+        }
+    }
+</style>
+
+<div class="stats-page">
+
+    <!-- HERO -->
+    <section class="stats-hero">
+        <h1>System Status</h1>
+        <p>Live infrastructure telemetry and application statistics.</p>
+
+        <div class="status-pill">
+            <span class="status-dot"></span>
+            All systems operational
+        </div>
+    </section>
+
+    <!-- STAFF-ONLY UPDATE CONTROL -->
+    {% if request.user.is_staff %}
+    <div class="interval-control">
+        <div>
+            <strong>Live update interval</strong>
+            <small>Staff only · choose between 1 and 10000 milliseconds</small>
+        </div>
+
+        <div class="interval-input">
+            <input
+                id="updateIntervalInput"
+                type="number"
+                min="1"
+                max="10000"
+                value="5000"
+                aria-label="Update interval in milliseconds"
+            >
+
+            <span class="interval-value" id="intervalValue">
+                5000 ms
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="stats-grid">
+
+        <!-- CPU -->
+        <section class="stats-card span-4">
+            <div class="card-title">
+                <h2>CPU Usage</h2>
+                <div class="metric-icon">⚡</div>
+            </div>
+
+            <div class="metric-top">
+                <div>
+                    <div class="metric" id="cpuValue">—%</div>
+                    <div class="metric-label">Current utilization</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEMORY -->
+        <section class="stats-card span-4">
+            <div class="card-title">
+                <h2>Memory</h2>
+                <div class="metric-icon">▣</div>
+            </div>
+
+            <div class="metric-top">
+                <div>
+                    <div class="metric" id="memoryValue">—%</div>
+                    <div class="metric-label">RAM utilization</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DISK -->
+        <section class="stats-card span-4">
+            <div class="card-title">
+                <h2>Storage</h2>
+                <div class="metric-icon">▤</div>
+            </div>
+
+            <div class="metric-top">
+                <div>
+                    <div class="metric" id="diskValue">—%</div>
+                    <div class="metric-label">Filesystem utilization</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CPU GRAPH -->
+        <section class="stats-card span-6">
+            <div class="card-title">
+                <div>
+                    <h2>CPU Activity</h2>
+                    <small>Live telemetry</small>
+                </div>
+                <strong id="cpuGraphValue">—%</strong>
+            </div>
+
+            <div class="chart-wrap">
+                <canvas id="cpuChart"></canvas>
+            </div>
+        </section>
+
+        <!-- MEMORY GRAPH -->
+        <section class="stats-card span-6">
+            <div class="card-title">
+                <div>
+                    <h2>Memory Activity</h2>
+                    <small>Live telemetry</small>
+                </div>
+                <strong id="memoryGraphValue">—%</strong>
+            </div>
+
+            <div class="chart-wrap">
+                <canvas id="memoryChart"></canvas>
+            </div>
+        </section>
+
+        <!-- RESOURCES -->
+        <section class="stats-card span-6">
+            <div class="card-title">
+                <h2>Resource Utilization</h2>
+            </div>
+
+            <div class="resource">
+                <div class="resource-head">
+                    <strong>CPU</strong>
+                    <span id="cpuBarText">—%</span>
+                </div>
+                <div class="progress">
+                    <div id="cpuBar" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="resource">
+                <div class="resource-head">
+                    <strong>Memory</strong>
+                    <span id="memoryBarText">—%</span>
+                </div>
+                <div class="progress">
+                    <div id="memoryBar" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="resource">
+                <div class="resource-head">
+                    <strong>Storage</strong>
+                    <span id="diskBarText">—%</span>
+                </div>
+                <div class="progress">
+                    <div id="diskBar" class="progress-bar"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LOAD -->
+        <section class="stats-card span-6">
+            <div class="card-title">
+                <h2>System Load</h2>
+                <small>Load average</small>
+            </div>
+
+            <div class="kv-list">
+                <div class="kv">
+                    <span>1 minute</span>
+                    <span id="load1">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>5 minutes</span>
+                    <span id="load5">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>15 minutes</span>
+                    <span id="load15">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- APPLICATION COUNTERS -->
+        <section class="stats-card span-12">
+            <div class="card-title">
+                <div>
+                    <h2>Application Data</h2>
+                    <small>Database-backed counters</small>
+                </div>
+            </div>
+
+            <div class="counter-grid">
+
+                <div class="counter">
+                    <div class="counter-value" id="users">—</div>
+                    <div class="counter-label">Users</div>
+                </div>
+
+                <div class="counter">
+                    <div class="counter-value" id="forms">—</div>
+                    <div class="counter-label">Forms</div>
+                </div>
+
+                <div class="counter">
+                    <div class="counter-value" id="privateMessages">—</div>
+                    <div class="counter-label">Private messages</div>
+                </div>
+
+
+                <div class="counter">
+                    <div class="counter-value" id="snippets">—</div>
+                    <div class="counter-label">Code snippets</div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SERVICES -->
+        <section class="stats-card span-6">
+            <div class="card-title">
+                <h2>Services</h2>
+            </div>
+
+            <div class="service-list">
+
+                <div class="service">
+                    <div class="service-left">
+                        <span class="service-dot"></span>
+                        <span class="service-name">Django</span>
+                    </div>
+                    <span class="service-status" style="color: red;">BROKEN</span>
+                </div>
+
+                <div class="service">
+                    <div class="service-left">
+                        <span class="service-dot"></span>
+                        <span class="service-name">Database</span>
+                    </div>
+                    <span class="service-status" style="color: blue;">Being fixed...</span>
+                </div>
+
+                <div class="service">
+                    <div class="service-left">
+                        <span class="service-dot"></span>
+                        <span class="service-name">Authentication</span>
+                    </div>
+                    <span class="service-status" style="color: red;">IN CHAOS</span>
+                </div>
+
+                <div class="service">
+                    <div class="service-left">
+                        <span class="service-dot"></span>
+                        <span class="service-name">API</span>
+                    </div>
+                    <span class="service-status" style="color: orange;">Having some issues...</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SYSTEM INFO -->
+        <section class="stats-card span-6">
+            <div class="card-title">
+                <h2>Runtime Information</h2>
+            </div>
+
+            <div class="kv-list">
+
+                <div class="kv">
+                    <span>Python</span>
+                    <span id="pythonVersion">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>Platform</span>
+                    <span id="platform">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>Architecture</span>
+                    <span id="architecture">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>CPU cores</span>
+                    <span id="cpuCount">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>Uptime</span>
+                    <span id="uptime">—</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- MEMORY DETAILS -->
+        <section class="stats-card span-6">
+            <div class="card-title">
+                <h2>Memory Details</h2>
+            </div>
+
+            <div class="kv-list">
+
+                <div class="kv">
+                    <span>Used</span>
+                    <span id="memoryUsed">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>Available</span>
+                    <span id="memoryAvailable">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>Total</span>
+                    <span id="memoryTotal">—</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- STORAGE DETAILS -->
+        <section class="stats-card span-6">
+            <div class="card-title">
+                <h2>Storage Details</h2>
+            </div>
+
+            <div class="kv-list">
+
+                <div class="kv">
+                    <span>Used</span>
+                    <span id="diskUsed">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>Free</span>
+                    <span id="diskFree">—</span>
+                </div>
+
+                <div class="kv">
+                    <span>Total</span>
+                    <span id="diskTotal">—</span>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <div class="last-update">
+        Last updated: <span id="lastUpdate">—</span>
+    </div>
+
+    <div class="error-message" id="errorMessage">
+        Unable to retrieve live system telemetry.
+    </div>
+
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    const IS_STAFF = {{ request.user.is_staff|yesno:"true,false" }};
+
+    let updateInterval = 5000;
+    let updateTimer = null;
+
+    const MAX_POINTS = 60;
+
+    const cpuHistory = [];
+    const memoryHistory = [];
+
+    const cpuCanvas = document.getElementById("cpuChart");
+    const memoryCanvas = document.getElementById("memoryChart");
+
+    function setupCanvas(canvas) {
+        if (!canvas) return null;
+
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+
+        canvas.width = Math.max(1, rect.width * dpr);
+        canvas.height = Math.max(1, rect.height * dpr);
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        return {
+            ctx,
+            width: rect.width,
+            height: rect.height
+        };
+    }
+
+    function getThemeColor(variable, fallback) {
+        const value = getComputedStyle(document.documentElement)
+            .getPropertyValue(variable)
+            .trim();
+
+        return value || fallback;
+    }
+
+    function drawGraph(canvas, values) {
+        const setup = setupCanvas(canvas);
+
+        if (!setup) return;
+
+        const { ctx, width, height } = setup;
+
+        ctx.clearRect(0, 0, width, height);
+
+        if (!values.length) return;
+
+        const textColor = getThemeColor("--bs-secondary-color", "#6c757d");
+        const borderColor = getThemeColor("--bs-border-color", "#dee2e6");
+        const primaryColor = getThemeColor("--bs-primary", "#0d6efd");
+
+        const padding = {
+            top: 15,
+            right: 8,
+            bottom: 22,
+            left: 32
+        };
+
+        const graphWidth = width - padding.left - padding.right;
+        const graphHeight = height - padding.top - padding.bottom;
+
+        // Grid
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = borderColor;
+        ctx.globalAlpha = .45;
+
+        for (let i = 0; i <= 4; i++) {
+            const y = padding.top + (graphHeight * i / 4);
+
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(width - padding.right, y);
+            ctx.stroke();
+        }
+
+        ctx.globalAlpha = 1;
+
+        // Y-axis labels
+        ctx.fillStyle = textColor;
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.textAlign = "right";
+
+        for (let i = 0; i <= 4; i++) {
+            const value = 100 - (i * 25);
+            const y = padding.top + (graphHeight * i / 4);
+
+            ctx.fillText(
+                `${value}%`,
+                padding.left - 7,
+                y + 4
+            );
+        }
+
+        if (values.length === 1) {
+            values.push(values[0]);
+        }
+
+        // Graph line
+        const points = values.map((value, index) => {
+            const x =
+                padding.left +
+                (index / Math.max(values.length - 1, 1)) * graphWidth;
+
+            const y =
+                padding.top +
+                graphHeight -
+                (Math.max(0, Math.min(100, value)) / 100) * graphHeight;
+
+            return { x, y };
+        });
+
+        // Fill
+        const gradient = ctx.createLinearGradient(
+            0,
+            padding.top,
+            0,
+            height
+        );
+
+        gradient.addColorStop(0, "rgba(13, 110, 253, .18)");
+        gradient.addColorStop(1, "rgba(13, 110, 253, 0)");
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, height - padding.bottom);
+
+        points.forEach(point => {
+            ctx.lineTo(point.x, point.y);
+        });
+
+        ctx.lineTo(
+            points[points.length - 1].x,
+            height - padding.bottom
+        );
+
+        ctx.closePath();
+
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Line
+        ctx.beginPath();
+
+        points.forEach((point, index) => {
+            if (index === 0) {
+                ctx.moveTo(point.x, point.y);
+            } else {
+                ctx.lineTo(point.x, point.y);
+            }
+        });
+
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 2.5;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        // Current point
+        const last = points[points.length - 1];
+
+        ctx.beginPath();
+        ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = primaryColor;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(last.x, last.y, 7, 0, Math.PI * 2);
+        ctx.strokeStyle = primaryColor;
+        ctx.globalAlpha = .25;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+
+    function formatBytes(bytes) {
+        if (!Number.isFinite(bytes)) return "—";
+
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let value = bytes;
+        let index = 0;
+
+        while (value >= 1024 && index < units.length - 1) {
+            value /= 1024;
+            index++;
+        }
+
+        return `${value.toFixed(index === 0 ? 0 : 2)} ${units[index]}`;
+    }
+
+    function formatUptime(seconds) {
+        if (!Number.isFinite(seconds)) return "—";
+
+        seconds = Math.max(0, Math.floor(seconds));
+
+        const days = Math.floor(seconds / 86400);
+        seconds %= 86400;
+
+        const hours = Math.floor(seconds / 3600);
+        seconds %= 3600;
+
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+
+        const parts = [];
+
+        if (days) parts.push(`${days}d`);
+        if (hours || days) parts.push(`${hours}h`);
+        if (minutes || hours || days) parts.push(`${minutes}m`);
+        parts.push(`${secs}s`);
+
+        return parts.join(" ");
+    }
+
+    function updateBar(id, value, textId) {
+        const bar = document.getElementById(id);
+        const text = document.getElementById(textId);
+
+        if (!bar || !text) return;
+
+        const number = Math.max(0, Math.min(100, Number(value) || 0));
+
+        bar.style.width = `${number}%`;
+        text.textContent = `${number.toFixed(1)}%`;
+
+        bar.classList.remove("warning", "danger");
+
+        if (number >= 90) {
+            bar.classList.add("danger");
+        } else if (number >= 75) {
+            bar.classList.add("warning");
+        }
+    }
+
+    function setText(id, value) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = value ?? "—";
+        }
+    }
+
+    async function updateStats() {
+        try {
+            const response = await fetch(
+                `{% url 'live-counts-api' %}`,
+                {
+                    method: "GET",
+                    cache: "no-store",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            document.getElementById("errorMessage").style.display = "none";
+
+            const cpu = Number(data.cpu) || 0;
+            const memory = Number(data.memory) || 0;
+            const disk = Number(data.disk) || 0;
+
+            // Metrics
+            setText("cpuValue", `${cpu.toFixed(1)}%`);
+            setText("memoryValue", `${memory.toFixed(1)}%`);
+            setText("diskValue", `${disk.toFixed(1)}%`);
+
+            setText("cpuGraphValue", `${cpu.toFixed(1)}%`);
+            setText("memoryGraphValue", `${memory.toFixed(1)}%`);
+
+            // History
+            cpuHistory.push(cpu);
+            memoryHistory.push(memory);
+
+            if (cpuHistory.length > MAX_POINTS) {
+                cpuHistory.shift();
+            }
+
+            if (memoryHistory.length > MAX_POINTS) {
+                memoryHistory.shift();
+            }
+
+            drawGraph(cpuCanvas, cpuHistory);
+            drawGraph(memoryCanvas, memoryHistory);
+
+            // Resource bars
+            updateBar("cpuBar", cpu, "cpuBarText");
+            updateBar("memoryBar", memory, "memoryBarText");
+            updateBar("diskBar", disk, "diskBarText");
+
+            // Load
+            setText(
+                "load1",
+                Number(data.load_1).toFixed(2)
+            );
+
+            setText(
+                "load5",
+                Number(data.load_5).toFixed(2)
+            );
+
+            setText(
+                "load15",
+                Number(data.load_15).toFixed(2)
+            );
+
+            // Application counters
+            setText(
+                "users",
+                Number(data.users || 0).toLocaleString()
+            );
+
+            setText(
+                "forms",
+                Number(data.forms || 0).toLocaleString()
+            );
+
+            setText(
+                "privateMessages",
+                Number(data.private_messages || 0).toLocaleString()
+            );
+
+
+            setText(
+                "snippets",
+                Number(data.snippets || 0).toLocaleString()
+            );
+
+            // Runtime
+            setText("pythonVersion", data.python_version);
+            setText("platform", data.platform);
+            setText("architecture", data.architecture);
+            setText("cpuCount", data.cpu_count);
+            setText(
+                "uptime",
+                formatUptime(Number(data.uptime_seconds))
+            );
+
+            // Memory
+            setText("memoryUsed", formatBytes(Number(data.memory_used)));
+            setText(
+                "memoryAvailable",
+                formatBytes(Number(data.memory_available))
+            );
+            setText("memoryTotal", formatBytes(Number(data.memory_total)));
+
+            // Storage
+            setText("diskUsed", formatBytes(Number(data.disk_used)));
+            setText("diskFree", formatBytes(Number(data.disk_free)));
+            setText("diskTotal", formatBytes(Number(data.disk_total)));
+
+            setText(
+                "lastUpdate",
+                new Date().toLocaleTimeString()
+            );
+
+        } catch (error) {
+            console.error("Stats update failed:", error);
+
+            document.getElementById("errorMessage").style.display = "block";
+        }
+    }
+
+    function scheduleUpdate() {
+        if (updateTimer) {
+            clearTimeout(updateTimer);
+        }
+
+        updateTimer = setTimeout(async () => {
+            await updateStats();
+            scheduleUpdate();
+        }, updateInterval);
+    }
+
+    {% if request.user.is_staff %}
+
+    const intervalInput =
+        document.getElementById("updateIntervalInput");
+
+    const intervalValue =
+        document.getElementById("intervalValue");
+
+    function setUpdateInterval(value) {
+        value = Number(value);
+
+        if (!Number.isFinite(value)) {
+            value = 5000;
+        }
+
+        value = Math.max(1, Math.min(10000, Math.round(value)));
+
+        updateInterval = value;
+
+        if (intervalInput) {
+            intervalInput.value = value;
+        }
+
+        if (intervalValue) {
+            intervalValue.textContent = `${value} ms`;
+        }
+
+        scheduleUpdate();
+    }
+
+    if (intervalInput) {
+        intervalInput.addEventListener("input", () => {
+            setUpdateInterval(intervalInput.value);
+        });
+
+        intervalInput.addEventListener("change", () => {
+            setUpdateInterval(intervalInput.value);
+        });
+    }
+
+    {% endif %}
+
+    // Initial update
+    updateStats();
+    scheduleUpdate();
+
+    // Redraw charts when the browser/window changes size
+    window.addEventListener("resize", () => {
+        drawGraph(cpuCanvas, cpuHistory);
+        drawGraph(memoryCanvas, memoryHistory);
+    });
+
+    // Redraw if Bootstrap/theme changes
+    const observer = new MutationObserver(() => {
+        drawGraph(cpuCanvas, cpuHistory);
+        drawGraph(memoryCanvas, memoryHistory);
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-bs-theme", "class"]
+    });
+
+})();
+</script>
+
+{% endblock %}

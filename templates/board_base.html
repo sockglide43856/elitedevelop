@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'machina/build/css/machina.board_theme.vendor.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'machina/build/css/vendor/easymde.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'machina/build/css/machina.board_theme.min.css' %}" />
+
+    <style>
+        /* 1. Neutralize your base template's universal reset inside the forum container */
+        .machina-scope *,
+        .machina-scope ::before,
+        .machina-scope ::after {
+            margin: initial;
+            padding: initial;
+            box-sizing: border-box;
+        }
+
+        /* 2. Re-stabilize Bootstrap rows and columns layout from crashing */
+        .machina-scope .row { margin-right: -15px; margin-left: -15px; display: flex; flex-wrap: wrap; }
+        .machina-scope .col-md-3, .machina-scope .col-md-9 { padding-right: 15px; padding-left: 15px; position: relative; width: 100%; }
+
+        /* 3. Re-map inputs so dark mode text rules don't break form inputs */
+        body.dark-theme .machina-scope input,
+        body.dark-theme .machina-scope textarea,
+        body.dark-theme .machina-scope select {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border: 1px solid #475569 !important;
+        }
+
+        /* Protect EasyMDE text editor toolbars from background clashing */
+        body.dark-theme .editor-toolbar button { color: #cbd5e1 !important; }
+        body.dark-theme .editor-toolbar button.active,
+        body.dark-theme .editor-toolbar button:hover { background: #334155 !important; }
+        body.dark-theme .CodeMirror { background: #1e293b !important; color: #f8fafc !important; }
+
+        /* 🌟 BULLETPROOF HIDING LAYER FOR ATTACHMENT FIELDS */
+        .machina-scope .attachment-formset,
+        .machina-scope #attachment_formset,
+        .machina-scope fieldset:has(input[type="file"]),
+        .machina-scope .control-group:has(input[type="file"]),
+        .machina-scope div[class*="attachment"],
+        .machina-scope div[id*="attachment"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
+{% endblock css %}
+
+{% block content %}
+    <div class="machina-scope container my-4">
+        {% block forum_content %}{% endblock forum_content %}
+    </div>
+{% endblock content %}
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            console.log("FORUM BASE READY");
+        });
+    </script>
+    <script src="{% static 'machina/build/js/machina.board_theme.vendor.min.js' %}" type="text/javascript" charset="utf-8"></script>
+    <script src="{% static 'machina/build/js/machina.board_theme.min.js' %}" type="text/javascript" charset="utf-8"></script>
+{% endblock js %}

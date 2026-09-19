@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Settings - EliteDevelop{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm p-3">
+                <div class="nav flex-column nav-pills" id="settingsTabs" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active text-start fw-semibold mb-2" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile" type="button" role="tab">
+                        <i class="fa-solid fa-user me-2 text-primary"></i> Profile
+                    </button>
+                    <button class="nav-link text-start fw-semibold mb-2" id="security-tab" data-bs-toggle="pill" data-bs-target="#security" type="button" role="tab">
+                        <i class="fa-solid fa-shield-halved me-2 text-warning"></i> Security & Accounts
+                    </button>
+                    <button class="nav-link text-start fw-semibold mb-2" id="display-tab" data-bs-toggle="pill" data-bs-target="#display" type="button" role="tab">
+                        <i class="fa-solid fa-palette me-2 text-info"></i> Appearance
+                    </button>
+                    <button class="nav-link text-start fw-semibold mb-2" id="sessions-tab" data-bs-toggle="pill" data-bs-target="#sessions" type="button" role="tab">
+                        <i class="fa-solid fa-desktop me-2 text-danger"></i> Active Devices
+                    </button>
+                    <button class="nav-link text-start fw-semibold" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics" type="button" role="tab">
+                        <i class="fa-solid fa-chart-line me-2 text-success"></i> Activity Stats
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="tab-content" id="settingsTabsContent">
+
+                <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="mb-3 text-dark fw-bold"><i class="fa-solid fa-user me-2 text-primary"></i> Personal Details</h5>
+                        <p class="text-muted small mb-4">Update your basic profile information and contact details.</p>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="update_profile" value="1">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label small fw-bold">First Name</label>
+                                    <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label small fw-bold">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Username</label>
+                                <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold">Email Address</label>
+                                <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="security" role="tabpanel">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="mb-3 text-dark fw-bold"><i class="fa-solid fa-lock me-2 text-warning"></i> Security & Social Accounts</h5>
+                        <p class="text-muted small mb-4">Manage your authentication settings and third-party account connections.</p>
+
+                        <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                            <div>
+                                <h6 class="mb-1 fw-bold">Two-Factor Authentication (2FA)</h6>
+                                <p class="text-muted small mb-0">Add an extra layer of protection to your account.</p>
+                            </div>
+                            <a href="/mfa" class="btn btn-outline-warning btn-sm fw-bold px-3">Manage 2FA</a>
+                        </div>
+
+                        {% load socialaccount %}
+                        {% get_social_accounts user as accounts %}
+                        <div class="d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold">Google Sign-In</h6>
+                                {% if accounts.google %}
+                                    <p class="text-muted small mb-0">
+                                        <b>Connected</b> - <a href="/accounts/3rdparty/">More Info...</a>
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted small mb-0">Link your Google account for quick, one-click sign-in.</p>
+                                {% endif %}
+                            </div>
+
+                            {% if accounts.google %}
+                                <form method="post" action="{% url 'socialaccount_connections' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="account" value="{{ accounts.google.0.id }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm fw-bold">Disconnect</button>
+                                </form>
+                            {% else %}
+                                <a href="{% provider_login_url 'google' process='connect' %}" class="btn btn-outline-primary btn-sm fw-bold">
+                                    <i class="fa-brands fa-google me-1"></i> Connect Google
+                                </a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="display" role="tabpanel">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="mb-3 text-dark fw-bold"><i class="fa-solid fa-palette me-2 text-info"></i> Theme & Customization</h5>
+                        <p class="text-muted small mb-4">Personalize your visual workspace preferences.</p>
+
+                        <div class="p-3 border rounded d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <label class="form-check-label fw-bold mb-0" for="themeToggleSwitch">
+                                    <i class="fa-solid fa-moon me-2 text-secondary"></i> Dark Mode
+                                </label>
+                                <div class="text-muted small">Switch between light and dark visual themes.</div>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" role="switch" id="themeToggleSwitch" style="transform: scale(1.3); cursor: pointer;">
+                            </div>
+                        </div>
+
+                        <div class="p-3 border rounded">
+                            <label class="form-label fw-bold mb-1"><i class="fa-solid fa-comment-dots me-2 text-primary"></i> Chat Bubble Color</label>
+                            <p class="text-muted small mb-3">Choose the default color for your outgoing chat messages.</p>
+
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="color" id="bubbleColorPicker" class="form-control form-control-color" value="#0d6efd" title="Choose your color">
+                                <span id="colorHexDisplay" class="font-monospace small text-muted">#0d6efd</span>
+                                <button id="btn-reset-bubble" class="btn btn-sm btn-link text-decoration-none text-danger fw-bold ms-auto">Reset to Default</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="sessions" role="tabpanel">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="mb-3 text-dark fw-bold"><i class="fa-solid fa-desktop me-2 text-danger"></i> Active Logged-In Devices</h5>
+                        <p class="text-muted small mb-3">View and manage devices currently logged into your account.</p>
+
+                        <div class="list-group list-group-flush border-top">
+                            {% for sess in active_sessions %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-0">
+                                    <div>
+                                        {% if sess.is_current %}
+                                            <span class="badge bg-success me-2">Current Device</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary me-2">Other Device</span>
+                                        {% endif %}
+
+                                        <span class="small text-muted font-monospace">ID: {{ sess.session_key|truncatechars:12 }}</span>
+                                        <div class="small mt-1 text-muted">Session expires: {{ sess.expire_date|date:"M d, Y @ H:i" }}</div>
+                                    </div>
+
+                                    {% if not sess.is_current %}
+                                        <a href="{% url 'revoke-session' sess.session_key %}" class="btn btn-sm btn-outline-danger fw-bold">
+                                            <i class="fa-solid fa-right-from-bracket me-1"></i> Log Out Device
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% empty %}
+                                <p class="text-muted small py-3 mb-0">No active session details available.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="analytics" role="tabpanel">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="mb-3 text-dark fw-bold"><i class="fa-solid fa-chart-bar me-2 text-success"></i> Message Activity</h5>
+                        <p class="text-muted small mb-4">Summary of your sent and received messages over the past 7 days.</p>
+
+                        <div style="position: relative; height:350px; width:100%">
+                            <canvas id="userAnalyticsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // 1. Dark Mode Persistence
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark') {
+        $('body').addClass('dark-theme');
+        $('#themeToggleSwitch').prop('checked', true);
+    }
+
+    $('#themeToggleSwitch').change(function() {
+        if ($(this).is(':checked')) {
+            $('body').addClass('dark-theme');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            $('body').removeClass('dark-theme');
+            localStorage.setItem('theme', 'light');
+        }
+    });
+
+    // 2. Chat Bubble Color Controls
+    const savedBubbleColor = localStorage.getItem('bubbleColor') || '#0d6efd';
+    $('#bubbleColorPicker').val(savedBubbleColor);
+    $('#colorHexDisplay').text(savedBubbleColor);
+
+    $('#bubbleColorPicker').on('input change', function() {
+        const selectedColor = $(this).val();
+        $('#colorHexDisplay').text(selectedColor);
+        document.documentElement.style.setProperty('--bubble-color-custom', selectedColor);
+        localStorage.setItem('bubbleColor', selectedColor);
+    });
+
+    $('#btn-reset-bubble').click(function() {
+        const defaultColor = '#0d6efd';
+        $('#bubbleColorPicker').val(defaultColor);
+        $('#colorHexDisplay').text(defaultColor);
+        document.documentElement.style.setProperty('--bubble-color-custom', defaultColor);
+        localStorage.setItem('bubbleColor', defaultColor);
+    });
+
+    // 3. Chart.js Analytics Bar Chart
+    const ctx = document.getElementById('userAnalyticsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [
+                {
+                    label: 'Private Sent',
+                    data: {{ private_sent_data|safe }},
+                    backgroundColor: '#0084ff'
+                },
+                {
+                    label: 'Public Sent',
+                    data: {{ public_sent_data|safe }},
+                    backgroundColor: '#28a745'
+                },
+                {
+                    label: 'Private Received',
+                    data: {{ private_received_data|safe }},
+                    backgroundColor: '#a855f7'
+                },
+                {
+                    label: 'Public Received',
+                    data: {{ public_received_data|safe }},
+                    backgroundColor: '#f77f00'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

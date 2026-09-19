@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}404 - Page Not Found | EliteDevelop{% endblock %}
+
+{% block head %}
+<style>
+    .error-wrapper {
+        min-height: calc(80vh - 100px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .error-card {
+        background-color: #ffffff;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.25rem;
+        padding: 3rem 2rem;
+        max-width: 520px;
+        width: 100%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .icon-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1.25rem;
+    }
+
+    .icon-main {
+        font-size: 4.25rem;
+        animation: floatPulse 3s ease-in-out infinite;
+    }
+
+    .badge-code {
+        position: absolute;
+        bottom: -4px;
+        right: -12px;
+        background-color: #f59e0b;
+        color: #0f172a;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: 800;
+        font-size: 0.85rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 20px;
+        border: 3px solid #ffffff;
+        transition: border-color 0.2s ease;
+    }
+
+    @keyframes floatPulse {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-8px) scale(1.03); }
+    }
+
+    /* --- DARK THEME OVERRIDES --- */
+    body.dark-theme .error-card,
+    html.dark-theme .error-card {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    body.dark-theme .badge-code,
+    html.dark-theme .badge-code {
+        border-color: #1e293b !important;
+    }
+
+    body.dark-theme .error-title,
+    html.dark-theme .error-title {
+        color: #f8fafc !important;
+    }
+
+    body.dark-theme .error-subtitle,
+    html.dark-theme .error-subtitle {
+        color: #94a3b8 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container error-wrapper">
+    <div class="error-card text-center shadow-lg">
+
+        <div class="icon-container">
+            <i class="fa-solid fa-compass-drafting icon-main text-warning"></i>
+            <span class="badge-code">404</span>
+        </div>
+
+        <h1 class="h2 fw-bold mb-2 error-title">Page Not Found</h1>
+        <p class="text-secondary mb-4 error-subtitle">
+            The page you are looking for might have been removed, renamed, or is temporarily unavailable.
+        </p>
+
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+            <a href="/" class="btn btn-primary px-4 py-2 fw-semibold rounded-pill">
+                <i class="fa-solid fa-house me-2"></i>Go Home
+            </a>
+            <button onclick="history.back()" class="btn btn-outline-secondary px-4 py-2 fw-semibold rounded-pill">
+                <i class="fa-solid fa-arrow-left me-2"></i>Go Back
+            </button>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load static %}
+{% load socialaccount %}
+
+{% block head %}
+    {{ block.super }}
+    <style>
+        /* Official Google Identity Button Styles */
+        .gsi-material-button {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            webkit-appearance: none;
+            background-color: WHITE;
+            background-image: none;
+            border: 1px solid #747775;
+            -webkit-border-radius: 12px;
+            border-radius: 12px;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            color: #1f1f1f;
+            cursor: pointer;
+            font-family: 'Roboto', arial, sans-serif;
+            font-size: 14px;
+            height: 48px;
+            letter-spacing: 0.25px;
+            outline: none;
+            overflow: hidden;
+            padding: 0 12px;
+            position: relative;
+            text-align: center;
+            -webkit-transition: background-color .218s, border-color .218s, box-shadow .218s;
+            transition: background-color .218s, border-color .218s, box-shadow .218s;
+            vertical-align: middle;
+            white-space: nowrap;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gsi-material-button .gsi-material-button-icon {
+            height: 20px;
+            min-width: 20px;
+            width: 20px;
+            margin-right: 12px;
+        }
+        .gsi-material-button .gsi-material-button-content-wrapper {
+            -webkit-align-items: center;
+            align-items: center;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            height: 100%;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+        }
+        .gsi-material-button .gsi-material-button-contents {
+            -webkit-flex-grow: 0;
+            flex-grow: 0;
+            font-family: inherit;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: top;
+        }
+        .gsi-material-button:hover {
+            -webkit-box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+            box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        }
+
+        /* Dark Mode Overrides for Google Button */
+        .dark .gsi-material-button {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        .dark .gsi-material-button:hover {
+            background-color: #334155;
+        }
+
+        /* Django Form Control Styling */
+        .django-form-container p {
+            margin-bottom: 1rem;
+        }
+        .django-form-container label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
+            color: inherit;
+        }
+        .django-form-container input[type="text"],
+        .django-form-container input[type="password"],
+        .django-form-container input[type="email"],
+        .django-form-container input[type="file"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border-width: 1px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease-in-out;
+            outline: none;
+        }
+        .django-form-container input {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        .django-form-container input:focus {
+            border-color: #0891b2;
+            box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.2);
+        }
+        .dark .django-form-container input {
+            background-color: #0f172a;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+        .dark .django-form-container input:focus {
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.25);
+        }
+        .django-form-container .helptext {
+            display: block;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-xl dark:shadow-2xl relative overflow-hidden transition-colors duration-200">
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500"></div>
+
+    <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mb-4 shadow-inner">
+            <i class="fa-solid fa-user-plus text-2xl text-cyan-600 dark:text-cyan-400"></i>
+        </div>
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Create Your Account</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">Join the EliteDevelop Platform</p>
+    </div>
+
+    <a href="{% provider_login_url 'google' %}" class="gsi-material-button mb-6">
+      <div class="gsi-material-button-state"></div>
+      <div class="gsi-material-button-content-wrapper">
+        <div class="gsi-material-button-icon">
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block; width: 20px; height: 20px;">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+            <path fill="none" d="M0 0h48v48H0z"></path>
+          </svg>
+        </div>
+        <span class="gsi-material-button-contents">Sign up with Google</span>
+      </div>
+    </a>
+
+    <div class="relative flex py-2 items-center mb-6">
+        <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+        <span class="flex-shrink mx-4 text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold">or fill details</span>
+        <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-4 text-slate-700 dark:text-slate-300">
+        {% csrf_token %}
+
+        <div class="django-form-container">
+            {{ form.as_p }}
+        </div>
+
+        <button type="submit"
+                class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl transition duration-300 shadow-lg shadow-cyan-900/20 dark:shadow-cyan-900/50 mt-6">
+            Get Started
+        </button>
+    </form>
+
+    <div class="text-center mt-6">
+        <p class="text-xs text-slate-400 dark:text-slate-500">
+            By creating an account, you agree to our
+            <a href="/legal" class="underline hover:text-cyan-500 transition">Terms & Privacy Policy</a>.
+        </p>
+    </div>
+
+    <div class="text-center mt-6 pt-5 border-t border-slate-200 dark:border-slate-800/60">
+        <p class="text-slate-500 dark:text-slate-400 text-sm">
+            Already have an account?
+            <a href="{% url 'login' %}" class="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 transition font-medium ml-1">Sign In</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

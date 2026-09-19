@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .sheet-wrapper { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; max-width: 95%; margin: 30px auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 25px; min-width: 600px;}
+    th, td { padding: 12px 15px; text-align: left; border: 1px solid #e1e8ed; font-size: 0.95rem; }
+    th { background-color: #f5f8fa; color: #5b7083; }
+</style>
+
+<div class="sheet-wrapper">
+    <h1 style="margin:0 0 5px 0;">Submissions for: {{ config.title }}</h1>
+    <p style="margin:0; color:#7f8c8d;">
+        Public Code: <code>{{ config.code }}</code> | Private Token: <code>{{ config.secret_token }}</code> |
+        <a href="{% url 'fdashboard' %}" style="color:#3498db; font-weight:bold; text-decoration:none;">← Dashboard Home</a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                {% for field in fields %}
+                    <th>{{ field.label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in submissions %}
+                <tr>
+                    <td style="color:#7f8c8d; font-size:0.85rem;">{{ sub.submitted_at|date:"M d, Y H:i" }}</td>
+                    {% for answer in sub.answers %}
+                        <td>{{ answer }}</td>
+                    {% endfor %}
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="{{ fields.count|add:1 }}" style="text-align: center; color: #999; padding: 30px;">
+                        No submissions recorded securely yet.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

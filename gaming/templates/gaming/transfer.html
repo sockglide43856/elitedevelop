@@ -1,0 +1,20 @@
+{% extends "gaming/base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto bg-slate-900 border border-cyan-500 rounded-xl p-8 shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+    <h2 class="text-2xl font-bold text-cyan-400 mb-6"><i class="fa-solid fa-paper-plane"></i> Transfer Electis</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="block text-slate-300">Recipient Username</label>
+            <input type="text" name="username" required class="w-full bg-slate-800 border border-cyan-500 rounded p-2 text-white">
+        </div>
+        <div class="mb-6">
+            <label class="block text-slate-300">Amount (⚡)</label>
+            <input type="number" name="amount" min="1" required class="w-full bg-slate-800 border border-cyan-500 rounded p-2 text-white">
+        </div>
+        <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded transition">
+            Send Electis
+        </button>
+    </form>
+</div>
+{% endblock %}

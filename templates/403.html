@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Access Denied | EliteDevelop{% endblock %}
+
+{% block head %}
+<style>
+    /* Center the error container cleanly in the viewport */
+    .error-wrapper {
+        min-height: calc(80vh - 100px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Access Denied Card Core */
+    .access-card {
+        background-color: #ffffff;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.25rem;
+        padding: 3rem 2rem;
+        max-width: 520px;
+        width: 100%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Floating Icon Pulse */
+    .icon-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
+
+    .icon-shield {
+        font-size: 4.5rem;
+        color: #ef4444;
+        animation: floatPulse 3s ease-in-out infinite;
+    }
+
+    .icon-lock-badge {
+        position: absolute;
+        bottom: 0;
+        right: -10px;
+        background-color: #f59e0b;
+        color: #0f172a;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        border: 3px solid #ffffff;
+        transition: border-color 0.2s ease;
+    }
+
+    @keyframes floatPulse {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-8px) scale(1.03); }
+    }
+
+    /* --- DARK THEME OVERRIDES --- */
+    body.dark-theme .access-card,
+    html.dark-theme .access-card {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    body.dark-theme .icon-lock-badge,
+    html.dark-theme .icon-lock-badge {
+        border-color: #1e293b !important;
+    }
+
+    body.dark-theme .access-title,
+    html.dark-theme .access-title {
+        color: #f8fafc !important;
+    }
+
+    body.dark-theme .access-subtitle,
+    html.dark-theme .access-subtitle {
+        color: #94a3b8 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container error-wrapper">
+    <div class="access-card text-center shadow-lg">
+
+        <div class="icon-container">
+            <i class="fa-solid fa-shield-halved icon-shield"></i>
+            <span class="icon-lock-badge"><i class="fa-solid fa-lock"></i></span>
+        </div>
+
+        <h1 class="h2 fw-bold mb-2 access-title">Sorry! You Can't Access This Page</h1>
+        <p class="text-secondary mb-4 access-subtitle">
+            You don't have permission to view this section or explicit authorization is required.
+            Trying to access the AI chat rooms? <a href="https://elitedevelop.pythonanywhere.com/forums/forum/site-bugs-and-suggestions-htmio3dioelitedevelop-2/topic/ai-chat-rooms-may-not-be-available-9/">See More Here</a>
+        </p>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+            <a href="/" class="btn btn-primary px-4 py-2 fw-semibold rounded-pill">
+                <i class="fa-solid fa-house me-2"></i>Go Home
+            </a>
+            <button onclick="history.back()" class="btn btn-outline-secondary px-4 py-2 fw-semibold rounded-pill">
+                <i class="fa-solid fa-arrow-left me-2"></i>Go Back
+            </button>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

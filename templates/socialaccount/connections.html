@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load socialaccount %}
+
+{% block head %}
+    <meta name="description" content="Manage third-party account connections for your EliteDevelop profile.">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm p-4 text-center">
+
+                <div class="mb-3">
+                    <i class="fa-solid fa-link text-primary fa-3x"></i>
+                </div>
+                <h2 class="h4 fw-bold mb-1">Account Connections</h2>
+                <p class="text-muted small mb-4">Manage linked third-party services for your account.</p>
+
+                {% if form.accounts %}
+                    <div class="text-start mb-3">
+                        <span class="text-uppercase small fw-bold text-muted tracking-wider">Currently Linked</span>
+                    </div>
+
+                    <form method="post" action="{% url 'socialaccount_connections' %}">
+                        {% csrf_token %}
+                        <div class="list-group mb-4 text-start">
+                            {% for base_account in form.accounts %}
+                                {% with account=base_account.get_provider_account %}
+                                    <label class="list-group-item d-flex align-items-center p-3 border rounded mb-2 cursor-pointer">
+                                        <input type="radio" name="account" id="id_account_{{ base_account.id }}" value="{{ base_account.id }}" class="form-check-input me-3">
+                                        <div>
+                                            <span class="fw-bold text-dark">{{ account.get_brand.name }}:</span>
+                                            <span class="text-muted small ms-1">{{ account }}</span>
+                                        </div>
+                                    </label>
+                                {% endwith %}
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-full fw-bold py-2 px-4 shadow-sm">
+                            <i class="fa-solid fa-trash me-2"></i> Remove Selected Account
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="p-4 bg-light border rounded mb-4">
+                        <p class="text-muted small mb-0">You currently have no third-party accounts linked.</p>
+                    </div>
+                {% endif %}
+
+                <hr class="my-4 text-muted">
+
+                <div class="mb-4">
+                    <h3 class="h6 fw-bold mb-3">Add More Accounts</h3>
+                    <a href="{% provider_login_url 'google' process='connect' %}" class="btn btn-outline-primary fw-bold w-100 py-2">
+                        <i class="fa-brands fa-google me-2 text-danger"></i> Connect Google Account
+                    </a>
+                </div>
+
+                <div>
+                    <a href="/settings/" class="text-decoration-none small text-primary fw-semibold">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Settings
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Users{% endblock %}
+
+
+{% block content %}
+
+
+<div class="user-controls">
+    <input type="text" id="userSearch" placeholder="Search users by name..." onkeyup="filterUsers()">
+
+    <select id="roleFilter" onchange="filterUsers()">
+        <option value="all">All Roles</option>
+        <option value="admin">Admins</option>
+        <option value="member">Members</option>
+    </select>
+</div>
+
+<div class="user-grid" id="userGrid">
+    {% for auser in ausers %}
+        <div class="user-card" data-username="{{ auser.get_username|lower }}" data-role="{% if auser.is_staff %}admin{% else %}member{% endif %}">
+            <div class="card-avatar">
+                {{ auser.get_username|slice:":1"|upper }}
+            </div>
+            <div class="card-body">
+                <h3 class="user-name">{{ auser.get_username }}</h3>
+                <span class="user-badge {% if auser.is_staff %}badge-admin{% else %}badge-member{% endif %}">
+                            {% if auser.is_staff %}Admin{% else %}Member{% endif %}
+                </span>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'user_detail' auser.pk %}" class="btn-profile">View Profile</a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <p>If you see this, please contact the admin: threedio@outlook.com, with the code: <strong>ERR_NO_USERS_AHSL29</strong></p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+{% block styles %}
+<style>
+    :root {
+        --bg-card: #000000;
+        --text-main: #ffffff;
+        --text-muted: #64748b;
+        --primary: #4f46e5; /* Elite Indigo */
+        --primary-hover: #4338ca;
+        --border-color: #e2e8f0;
+        --radius: 12px;
+    }
+
+    /* Controls Styling */
+    .user-controls {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        max-width: 600px;
+    }
+
+    .user-controls input,
+    .user-controls select {
+        padding: 10px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .user-controls input {
+        flex-grow: 1;
+    }
+
+    .user-controls input:focus,
+    .user-controls select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Grid Layout */
+    .user-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        width: 100%;
+    }
+
+    /* Card Styling */
+    .user-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+    }
+
+    .user-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Avatar Placeholder */
+    .card-avatar {
+        width: 64px;
+        height: 64px;
+        background: #f1f5f9;
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-bottom: 16px;
+        border: 2px solid var(--border-color);
+    }
+
+    .user-name {
+        font-size: 18px;
+        color: var(--text-main);
+        margin: 0 0 8px 0;
+        font-weight: 600;
+    }
+
+    /* Badges */
+    .user-badge {
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 99px;
+        font-weight: 500;
+    }
+
+    .badge-admin { background: #fee2e2; color: #ef4444; }
+    .badge-member { background: #e0f2fe; color: #0284c7; }
+
+    .card-body {
+        flex-grow: 1;
+        margin-bottom: 20px;
+    }
+
+    /* Elite Button */
+    .btn-profile {
+        display: inline-block;
+        width: 100%;
+        padding: 10px 20px;
+        background-color: var(--primary);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.2s ease;
+    }
+
+    .btn-profile:hover {
+        background-color: var(--primary-hover);
+    }
+
+    /* Empty State */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        color: var(--text-muted);
+        padding: 60px 20px;
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius);
+    }
+</style>
+{% endblock %}
+{% block script %}
+<script>
+    function filterUsers() {
+        const searchQuery = document.getElementById('userSearch').value.toLowerCase();
+        const roleQuery = document.getElementById('roleFilter').value;
+        const cards = document.querySelectorAll('.user-card');
+
+        cards.forEach(card => {
+            const username = card.getAttribute('data-username');
+            const role = card.getAttribute('data-role');
+
+            const matchesSearch = username.includes(searchQuery);
+            const matchesRole = (roleQuery === 'all') || (role === roleQuery);
+
+            if (matchesSearch && matchesRole) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}
+
+
+

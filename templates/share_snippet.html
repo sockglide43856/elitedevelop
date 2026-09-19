@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card p-4 mx-auto shadow" style="max-width: 800px; background-color: #0f172a; border: 1px solid #334155;">
+
+        <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+            <div>
+                <h3 class="text-white fw-bold mb-1"><i class="fa-solid fa-code text-warning me-2"></i>{{ snippet.title }}</h3>
+                <p class="text-muted small mb-0">Shared by <strong class="text-info">@{{ snippet.author.username }}</strong> on {{ snippet.timestamp|date:"F d, Y • G:i" }}</p>
+            </div>
+            <span class="badge bg-dark border border-secondary text-warning font-monospace px-3 py-2 uppercase">
+                {{ snippet.language }}
+            </span>
+        </div>
+
+        <div class="position-relative">
+            <pre class="bg-black text-success p-3 rounded-3 font-monospace m-0 shadow-inner" style="overflow-x: auto; max-height: 500px; border: 1px solid #1e293b;"><code id="raw-code-block">{{ decrypted_code }}</code></pre>
+        </div>
+
+        <div class="mt-3 text-end">
+            <button class="btn btn-sm btn-outline-secondary text-white" onclick="navigator.clipboard.writeText(document.getElementById('raw-code-block').innerText); alert('Copied to Clipboard!');">
+                <i class="fa-solid fa-copy me-1"></i> Copy Raw Code
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

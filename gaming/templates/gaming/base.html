@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html class="dark">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .neon-glow { text-shadow: 0 0 10px #22d3ee, 0 0 20px #22d3ee; }
+        body { background-color: #0f172a; color: #f8fafc; }
+    </style>
+</head>
+<body>
+    <nav class="bg-slate-900 border-b border-cyan-500 p-4 flex justify-between">
+        <div>
+            <a href="/" class="text-cyan-400 font-bold"><i class="fa-solid fa-arrow-left"></i> EliteDevelop</a>
+            <span class="ml-6 text-xl neon-glow">EliteDevelop Gaming</span>
+        </div>
+        <div>
+            <span><i class="fa-solid fa-user"></i> {{ user.username }}</span>
+            <span class="ml-4 text-cyan-400 font-bold">⚡ {{ user.wallet.electis_balance }} Electis</span>
+        </div>
+    </nav>
+    <main class="p-8">
+    {% if messages %}
+        <div class="max-w-md mx-auto mb-6">
+            {% for message in messages %}
+                <div class="p-4 rounded-lg font-bold border
+                    {% if message.tags == 'error' %} bg-red-950 text-red-400 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]
+                    {% else %} bg-emerald-950 text-emerald-400 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)] {% endif %}">
+                    <i class="fa-solid {% if message.tags == 'error' %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %} mr-2"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

@@ -1,0 +1,128 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% block head %}
+    <meta name="description" content="System Status & Analytics Dashboard for EliteDevelop.">
+    <title>System Status - EliteDevelop</title>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">
+                <i class="fa-solid fa-server text-primary me-2"></i>System Status
+            </h1>
+            <p class="text-muted small mb-0">Live metrics, disk performance, and recent request activity.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-sm fw-bold">
+            <i class="fa-solid fa-rotate me-1"></i> Refresh Stats
+        </a>
+    </div>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-uppercase small text-muted">Disk Usage</span>
+                    <i class="fa-solid fa-hard-drive fa-lg text-info"></i>
+                </div>
+                <h2 class="display-6 fw-bold mb-3">{{ disk_used_percent }}%</h2>
+                <div class="progress mb-2" style="height: 10px;">
+                    <div class="progress-bar bg-info"
+                         role="progressbar"
+                         style="width: {{ disk_used_percent }}%;"
+                         aria-valuenow="{{ disk_used_percent }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+                <small class="text-muted">Storage capacity utilized on PythonAnywhere server.</small>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-uppercase small text-muted">RAM Usage</span>
+                    <i class="fa-solid fa-memory fa-lg text-purple"></i>
+                </div>
+                <h2 class="display-6 fw-bold mb-3">{{ ram_used_percent }}%</h2>
+                <div class="progress mb-2" style="height: 10px;">
+                    <div class="progress-bar bg-purple"
+                         role="progressbar"
+                         style="width: {{ ram_used_percent }}%;"
+                         aria-valuenow="{{ ram_used_percent }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+                <small class="text-muted">Shared host memory consumption.</small>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="h5 fw-bold mb-0">
+                <i class="fa-solid fa-list-check text-success me-2"></i>Recent Request Activity
+            </h3>
+            <span class="badge bg-light text-dark border">Last 20 Requests</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Method</th>
+                        <th scope="col">Path</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col" class="text-end">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in recent_requests %}
+                    <tr>
+                        <td>
+                            <span class="badge {% if req.method == 'POST' %}bg-primary{% elif req.method == 'GET' %}bg-secondary{% else %}bg-dark{% endif %}">
+                                {{ req.method }}
+                            </span>
+                        </td>
+                        <td class="font-monospace small text-truncate" style="max-width: 250px;">
+                            {{ req.path }}
+                        </td>
+                        <td>
+                            {% if req.status_code < 300 %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    {{ req.status_code }}
+                                </span>
+                            {% elif req.status_code < 400 %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle">
+                                    {{ req.status_code }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                    {{ req.status_code }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ req.duration_ms }} ms</td>
+                        <td class="small text-muted text-end">{{ req.timestamp|date:"M d, H:i:s" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            No requests logged yet. Visit a few pages to see live metrics!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
