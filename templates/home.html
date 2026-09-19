@@ -1,1139 +1,527 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
 {% block head %}
 
 <style>
-/* ============================================================
-   ELITEDEVELOP — HOMEPAGE EXPERIENCE
-   ============================================================ */
+/* =========================================================
+   ELITEDEVELOP — PREMIUM HOMEPAGE
+   ========================================================= */
 :root {
-    --ed-bg: #05060a;
-    --ed-bg-soft: #090b11;
-    --ed-panel: rgba(255,255,255,.045);
-    --ed-panel-strong: rgba(255,255,255,.075);
-    --ed-border: rgba(255,255,255,.10);
-    --ed-text: #f8f9ff;
-    --ed-muted: #9297a5;
-    --ed-blue: #0a84ff;
-    --ed-cyan: #64d2ff;
-    --ed-purple: #bf5af2;
-    --ed-pink: #ff375f;
-    --ed-green: #30d158;
-    --ed-yellow: #ffd60a;
-    --ed-orange: #ff9f0a;
-    --ed-radius: 24px;
+    --ed-bg: #070a12;
+    --ed-surface: rgba(15, 20, 32, 0.72);
+    --ed-surface-strong: rgba(18, 24, 39, 0.92);
+    --ed-border: rgba(255, 255, 255, 0.085);
+    --ed-border-hover: rgba(120, 170, 255, 0.28);
+    --ed-text: #f5f7fb;
+    --ed-muted: #8d98ab;
+    --ed-dim: #626d80;
+    --ed-blue: #5b8cff;
+    --ed-cyan: #42d9ff;
+    --ed-purple: #9b7cff;
+    --ed-green: #49d99a;
+    --ed-radius: 22px;
+    --ed-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
-/* ============================================================
-   BASE
-   ============================================================ */
-#elite-home {
+/* ---------- PAGE ---------- */
+.ed-home {
     position: relative;
     min-height: 100vh;
     overflow: hidden;
-    color: var(--ed-text);
     background:
-        radial-gradient(
-            circle at 10% 0%,
-            rgba(10,132,255,.13),
-            transparent 28%
-        ),
-        radial-gradient(
-            circle at 90% 10%,
-            rgba(191,90,242,.12),
-            transparent 27%
-        ),
-        radial-gradient(
-            circle at 50% 100%,
-            rgba(48,209,88,.07),
-            transparent 30%
-        ),
+        radial-gradient(circle at 50% -10%, rgba(78, 125, 255, 0.12), transparent 34%),
         var(--ed-bg);
+    color: var(--ed-text);
 }
-#elite-home *,
-#elite-home *::before,
-#elite-home *::after {
-    box-sizing: border-box;
-}
-#elite-home a {
-    -webkit-tap-highlight-color: transparent;
-}
-/* ============================================================
-   AMBIENT BACKGROUND
-   ============================================================ */
-.ed-ambient {
+/* ---------- AMBIENT BACKGROUND ---------- */
+.ed-home::before {
+    content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    overflow: hidden;
-}
-.ed-blob {
-    position: absolute;
-    width: 420px;
-    height: 420px;
-    border-radius: 50%;
-    filter: blur(100px);
-    opacity: .12;
-    animation:
-        blobFloat 14s ease-in-out infinite alternate;
-}
-.ed-blob.one {
-    top: -180px;
-    left: -160px;
-    background: var(--ed-blue);
-}
-.ed-blob.two {
-    top: 20%;
-    right: -220px;
-    background: var(--ed-purple);
-    animation-delay: -5s;
-}
-.ed-blob.three {
-    bottom: -240px;
-    left: 35%;
-    background: var(--ed-green);
-    animation-delay: -9s;
-}
-@keyframes blobFloat {
-    from {
-        transform: translate3d(0,0,0) scale(1);
-    }
-    to {
-        transform: translate3d(35px,-25px,0) scale(1.12);
-    }
-}
-/* ============================================================
-   GRID
-   ============================================================ */
-.ed-grid-bg {
-    position: absolute;
-    inset: 0;
-    opacity: .18;
     background-image:
-        linear-gradient(
-            rgba(255,255,255,.035) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(255,255,255,.035) 1px,
-            transparent 1px
-        );
-    background-size: 48px 48px;
-    mask-image:
-        linear-gradient(
-            to bottom,
-            black,
-            transparent 80%
-        );
-    pointer-events: none;
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: linear-gradient(to bottom, black, transparent 75%);
+    opacity: .35;
 }
-/* ============================================================
-   BOOT EXPERIENCE
-   ============================================================ */
-#ed-boot {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    background:
-        radial-gradient(
-            circle at center,
-            #101722,
-            #020307 70%
-        );
-    transition:
-        opacity .75s ease,
-        transform 1s cubic-bezier(.15,.8,.2,1),
-        filter 1s ease;
-}
-#ed-boot.explode {
-    opacity: 0;
-    transform: scale(7);
-    filter: blur(25px);
-    pointer-events: none;
-}
-.ed-terminal {
-    width: min(920px, 100%);
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 20px;
-    background: rgba(8,10,14,.96);
-    box-shadow:
-        0 50px 140px rgba(0,0,0,.7),
-        0 0 100px rgba(10,132,255,.08);
-    font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        Monaco,
-        Consolas,
-        monospace;
-}
-.ed-terminal-bar {
-    height: 43px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 15px;
-    border-bottom: 1px solid rgba(255,255,255,.07);
-    background: rgba(255,255,255,.045);
-}
-.ed-terminal-dot {
-    width: 11px;
-    height: 11px;
+.ed-orb {
+    position: absolute;
+    width: 480px;
+    height: 480px;
     border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    opacity: .16;
+    animation: edFloat 12s ease-in-out infinite;
 }
-.ed-terminal-dot:nth-child(1) {
-    background: #ff5f57;
+.ed-orb.one {
+    top: -220px;
+    left: -180px;
+    background: #426dff;
 }
-.ed-terminal-dot:nth-child(2) {
-    background: #febc2e;
+.ed-orb.two {
+    top: 320px;
+    right: -240px;
+    background: #8b4dff;
+    animation-delay: -4s;
 }
-.ed-terminal-dot:nth-child(3) {
-    background: #28c840;
+.ed-orb.three {
+    top: 850px;
+    left: 30%;
+    background: #16c9ff;
+    animation-delay: -8s;
 }
-.ed-terminal-title {
-    flex: 1;
-    margin-right: 44px;
-    text-align: center;
-    color: #777c89;
-    font-size: 12px;
-}
-.ed-terminal-body {
-    min-height: 350px;
-    padding: 26px;
-    color: #d6ffd9;
-    font-size: 14px;
-    line-height: 1.8;
-}
-.ed-prompt {
-    color: var(--ed-cyan);
-}
-.ed-command {
-    color: white;
-}
-.ed-cursor {
-    display: inline-block;
-    width: 8px;
-    height: 17px;
-    margin-left: 2px;
-    vertical-align: -3px;
-    background: white;
-    animation:
-        edBlink 1s steps(2) infinite;
-}
-@keyframes edBlink {
+@keyframes edFloat {
+    0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
     50% {
-        opacity: 0;
+        transform: translate3d(0, 25px, 0) scale(1.06);
     }
 }
-.ed-boot-ok {
-    color: #70ef8c;
-}
-.ed-boot-info {
-    color: #777f8d;
-}
-/* ============================================================
-   MAIN CONTENT
-   ============================================================ */
-#ed-app {
+/* ---------- MAIN ---------- */
+.ed-container {
     position: relative;
     z-index: 2;
-    opacity: 0;
-    transform: translateY(20px);
-    transition:
-        opacity .8s ease,
-        transform .8s cubic-bezier(.2,.8,.2,1);
+    width: min(1180px, calc(100% - 36px));
+    margin: 0 auto;
 }
-#ed-app.ready {
-    opacity: 1;
-    transform: none;
-}
-.ed-container {
-    width: min(1180px, calc(100% - 32px));
-    margin-inline: auto;
-}
-/* ============================================================
-   HERO
-   ============================================================ */
+/* ---------- HERO ---------- */
 .ed-hero {
     position: relative;
-    min-height: 760px;
-    display: grid;
-    grid-template-columns: 1.05fr .95fr;
-    align-items: center;
-    gap: 55px;
-    padding: 85px 0 70px;
+    padding: 105px 0 70px;
+    text-align: center;
 }
-.ed-hero-copy {
-    position: relative;
-    z-index: 5;
-}
-.ed-status {
+.ed-eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 9px;
     padding: 8px 13px;
-    border: 1px solid rgba(48,209,88,.2);
+    border: 1px solid rgba(91, 140, 255, .2);
     border-radius: 999px;
-    background: rgba(48,209,88,.07);
-    color: #8fffa6;
-    font-size: 12px;
-    font-weight: 800;
+    background: rgba(91, 140, 255, .065);
+    color: #a9c2ff;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    animation: edAppear .7s ease both;
 }
-.ed-status-dot {
+.ed-eyebrow-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
     background: var(--ed-green);
-    box-shadow:
-        0 0 16px var(--ed-green);
-    animation:
-        statusPulse 2s ease-in-out infinite;
+    box-shadow: 0 0 14px rgba(73, 217, 154, .75);
+    animation: edPulse 2s ease-in-out infinite;
 }
-@keyframes statusPulse {
+@keyframes edPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: .8;
+    }
     50% {
-        opacity: .45;
-        transform: scale(.7);
+        transform: scale(1.35);
+        opacity: 1;
     }
 }
 .ed-hero h1 {
-    margin: 22px 0 20px;
-    font-size: clamp(55px, 7vw, 91px);
-    line-height: .9;
-    letter-spacing: -.075em;
-    font-weight: 950;
+    max-width: 850px;
+    margin: 24px auto 0;
+    font-size: clamp(3rem, 8vw, 6.4rem);
+    line-height: .96;
+    letter-spacing: -.065em;
+    font-weight: 850;
+    animation: edHeroIn .85s cubic-bezier(.2,.8,.2,1) both;
 }
 .ed-gradient-text {
-    background:
-        linear-gradient(
-            105deg,
-            #ffffff 0%,
-            #a9d5ff 28%,
-            #b99aff 55%,
-            #ff9bb4 78%,
-            #ffffff 100%
-        );
-    background-size: 220% auto;
+    background: linear-gradient(
+        110deg,
+        #ffffff 15%,
+        #a9c7ff 42%,
+        #72dfff 66%,
+        #b39cff 90%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation:
-        gradientMove 7s linear infinite;
+    background-size: 180% auto;
+    animation: edGradient 7s ease-in-out infinite alternate;
 }
-@keyframes gradientMove {
+@keyframes edGradient {
+    from {
+        background-position: 0% center;
+    }
     to {
-        background-position: 220% center;
+        background-position: 100% center;
     }
 }
-.ed-hero-subtitle {
-    max-width: 650px;
-    margin: 0;
+.ed-hero p {
+    max-width: 670px;
+    margin: 26px auto 0;
     color: var(--ed-muted);
-    font-size: clamp(17px, 2vw, 20px);
-    line-height: 1.65;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    line-height: 1.75;
+    animation: edAppear 1s .15s ease both;
 }
-.ed-hero-subtitle strong {
-    color: white;
-}
-.ed-hero-actions {
+.ed-actions {
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
-    gap: 11px;
-    margin-top: 29px;
+    gap: 12px;
+    margin-top: 34px;
+    animation: edAppear 1s .25s ease both;
 }
-.ed-btn {
-    min-height: 52px;
+.ed-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 9px;
-    padding: 0 20px;
-    border-radius: 15px;
+    min-height: 48px;
+    padding: 0 21px;
+    border-radius: 13px;
+    border: 1px solid var(--ed-border);
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 800;
+    font-weight: 700;
+    font-size: .93rem;
     transition:
         transform .22s ease,
+        border-color .22s ease,
         box-shadow .22s ease,
         background .22s ease;
 }
-.ed-btn:hover {
-    transform: translateY(-4px);
-}
-.ed-btn-primary {
-    color: white;
-    background:
-        linear-gradient(
-            135deg,
-            var(--ed-blue),
-            #7257ff
-        );
-    box-shadow:
-        0 13px 38px rgba(10,132,255,.24);
-}
-.ed-btn-primary:hover {
-    box-shadow:
-        0 18px 50px rgba(10,132,255,.4);
-}
-.ed-btn-secondary {
-    color: white;
-    border: 1px solid rgba(255,255,255,.1);
-    background: rgba(255,255,255,.055);
-}
-.ed-btn-secondary:hover {
-    background: rgba(255,255,255,.1);
-}
-.ed-helper {
-    margin-top: 13px;
-    color: #6e7380;
-    font-size: 12px;
-}
-/* ============================================================
-   HERO COMMAND CENTER
-   ============================================================ */
-.ed-command-center {
-    position: relative;
-    min-height: 500px;
-    display: grid;
-    place-items: center;
-}
-.ed-ring {
-    position: absolute;
-    width: 480px;
-    height: 480px;
-    border: 1px solid rgba(255,255,255,.055);
-    border-radius: 50%;
-    animation:
-        edRotate 30s linear infinite;
-}
-.ed-ring::before,
-.ed-ring::after {
-    content: "";
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-}
-.ed-ring::before {
-    top: 35px;
-    left: 50%;
-    background: var(--ed-blue);
-    box-shadow:
-        0 0 30px var(--ed-blue);
-}
-.ed-ring::after {
-    right: 25px;
-    bottom: 75px;
-    background: var(--ed-purple);
-    box-shadow:
-        0 0 30px var(--ed-purple);
-}
-@keyframes edRotate {
-    to {
-        transform: rotate(360deg);
-    }
-}
-.ed-dashboard {
-    position: relative;
-    z-index: 4;
-    width: min(455px, 100%);
-    padding: 15px;
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 28px;
-    background:
-        linear-gradient(
-            145deg,
-            rgba(28,32,44,.94),
-            rgba(8,10,15,.97)
-        );
-    box-shadow:
-        0 45px 110px rgba(0,0,0,.6),
-        0 0 80px rgba(10,132,255,.08);
-    transform:
-        perspective(1200px)
-        rotateY(-7deg)
-        rotateX(3deg);
-    transition:
-        transform .45s cubic-bezier(.2,.8,.2,1);
-}
-.ed-dashboard:hover {
-    transform:
-        perspective(1200px)
-        rotateY(0deg)
-        rotateX(0deg)
-        translateY(-7px);
-}
-.ed-dashboard-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 7px 15px;
-    color: #a6aab5;
-    font-size: 11px;
-}
-.ed-dashboard-live {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #7cf596;
-}
-.ed-dashboard-live span {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--ed-green);
-    box-shadow:
-        0 0 10px var(--ed-green);
-}
-.ed-dashboard-main {
-    padding: 25px;
-    border: 1px solid rgba(255,255,255,.07);
-    border-radius: 21px;
-    background:
-        radial-gradient(
-            circle at 90% 0%,
-            rgba(191,90,242,.14),
-            transparent 38%
-        ),
-        radial-gradient(
-            circle at 0% 100%,
-            rgba(10,132,255,.12),
-            transparent 40%
-        ),
-        rgba(255,255,255,.035);
-}
-.ed-dashboard-main small {
-    color: #777d89;
-    font-size: 11px;
-}
-.ed-dashboard-main h3 {
-    margin: 5px 0 4px;
-    font-size: 29px;
-    letter-spacing: -.05em;
-}
-.ed-dashboard-main p {
-    margin: 0;
-    color: #838895;
-    font-size: 12px;
-}
-.ed-mini-grid {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 8px;
-    margin-top: 9px;
-}
-.ed-mini-card {
-    min-height: 82px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 8px;
-    padding: 11px;
-    border: 1px solid rgba(255,255,255,.06);
-    border-radius: 16px;
-    background: rgba(255,255,255,.04);
-    transition:
-        transform .2s ease,
-        background .2s ease;
-}
-.ed-mini-card:hover {
+.ed-button:hover {
     transform: translateY(-3px);
+}
+.ed-button.primary {
+    color: white;
+    border-color: transparent;
+    background: linear-gradient(135deg, #527fff, #765cff);
+    box-shadow: 0 12px 35px rgba(83, 113, 255, .25);
+}
+.ed-button.primary:hover {
+    box-shadow: 0 18px 45px rgba(83, 113, 255, .38);
+}
+.ed-button.secondary {
+    color: var(--ed-text);
+    background: rgba(255,255,255,.045);
+}
+.ed-button.secondary:hover {
+    border-color: var(--ed-border-hover);
     background: rgba(255,255,255,.075);
 }
-.ed-mini-card i {
-    font-size: 17px;
-}
-.ed-mini-card span {
-    color: #8f94a1;
-    font-size: 10px;
-}
-/* ============================================================
-   FLOATING WIDGETS
-   ============================================================ */
-.ed-float {
-    position: absolute;
-    z-index: 6;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 10px 13px;
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 14px;
-    background: rgba(14,16,23,.88);
-    box-shadow:
-        0 15px 40px rgba(0,0,0,.35);
-    backdrop-filter: blur(15px);
-    color: #dfe2eb;
-    font-size: 11px;
-    animation:
-        floatWidget 5s ease-in-out infinite;
-}
-.ed-float i {
-    font-size: 14px;
-}
-.ed-float-a {
-    top: 15%;
-    right: -5px;
-    color: var(--ed-cyan);
-}
-.ed-float-b {
-    bottom: 16%;
-    left: -10px;
-    color: var(--ed-green);
-    animation-delay: -2s;
-}
-.ed-float-c {
-    top: 65%;
-    right: -32px;
-    color: var(--ed-purple);
-    animation-delay: -3.5s;
-}
-@keyframes floatWidget {
-    50% {
-        transform: translateY(-11px);
-    }
-}
-/* ============================================================
-   QUICK COMMAND BAR
-   ============================================================ */
-.ed-command-bar {
+/* ---------- HERO PRODUCT CARD ---------- */
+.ed-product {
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 15px 0 70px;
-    padding: 13px 15px;
-    border: 1px solid rgba(255,255,255,.09);
-    border-radius: 18px;
-    background: rgba(255,255,255,.04);
-    box-shadow:
-        0 20px 60px rgba(0,0,0,.15);
-}
-.ed-command-icon {
-    width: 34px;
-    height: 34px;
-    flex: 0 0 auto;
-    display: grid;
-    place-items: center;
-    border-radius: 10px;
-    background: rgba(10,132,255,.12);
-    color: var(--ed-blue);
-}
-.ed-command-text {
-    flex: 1;
-    color: #8e93a0;
-    font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        monospace;
-    font-size: 12px;
-}
-.ed-command-key {
-    padding: 5px 8px;
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 7px;
-    color: #777d8a;
-    font-size: 10px;
-}
-/* ============================================================
-   SECTION
-   ============================================================ */
-.ed-section {
-    padding: 70px 0;
-}
-.ed-section-heading {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 30px;
-    margin-bottom: 28px;
-}
-.ed-eyebrow {
-    color: var(--ed-blue);
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-}
-.ed-section-heading h2 {
-    margin: 7px 0 8px;
-    font-size: clamp(31px, 4vw, 48px);
-    line-height: 1;
-    letter-spacing: -.06em;
-}
-.ed-section-heading p {
-    max-width: 600px;
-    margin: 0;
-    color: var(--ed-muted);
-    line-height: 1.6;
-}
-.ed-section-link {
-    color: #9da2af;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-.ed-section-link:hover {
-    color: white;
-}
-/* ============================================================
-   FEATURE GRID
-   ============================================================ */
-.ed-feature-grid {
-    display: grid;
-    grid-template-columns:
-        repeat(12, 1fr);
-    gap: 13px;
-}
-.ed-feature {
-    position: relative;
-    min-height: 235px;
-    grid-column: span 4;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    overflow: hidden;
-    padding: 25px;
+    margin: 70px auto 0;
+    max-width: 1000px;
     border: 1px solid var(--ed-border);
-    border-radius: var(--ed-radius);
-    background: var(--ed-panel);
-    color: white;
-    text-decoration: none;
-    transition:
-        transform .28s ease,
-        border-color .28s ease,
-        background .28s ease,
-        box-shadow .28s ease;
-}
-.ed-feature.large {
-    grid-column: span 6;
-}
-.ed-feature::before {
-    content: "";
-    position: absolute;
-    inset: -50%;
+    border-radius: 26px;
     background:
-        radial-gradient(
-            circle at var(--mouse-x,50%) var(--mouse-y,50%),
-            var(--feature-glow,rgba(10,132,255,.18)),
-            transparent 32%
-        );
-    opacity: 0;
-    transition: opacity .25s ease;
-}
-.ed-feature:hover::before {
-    opacity: 1;
-}
-.ed-feature:hover {
-    transform: translateY(-7px);
-    border-color: rgba(255,255,255,.17);
-    background: var(--ed-panel-strong);
-    box-shadow:
-        0 25px 65px rgba(0,0,0,.3);
-}
-.ed-feature > * {
-    position: relative;
-    z-index: 2;
-}
-.ed-feature-icon {
-    width: 52px;
-    height: 52px;
-    display: grid;
-    place-items: center;
-    border-radius: 16px;
-    background: rgba(255,255,255,.065);
-    font-size: 21px;
-}
-.ed-feature h3 {
-    margin: 20px 0 7px;
-    font-size: 21px;
-    letter-spacing: -.035em;
-}
-.ed-feature p {
-    max-width: 390px;
-    margin: 0;
-    color: #8d929f;
-    font-size: 13px;
-    line-height: 1.55;
-}
-.ed-feature-arrow {
-    position: absolute;
-    right: 22px;
-    bottom: 21px;
-    color: #646a76;
-    transition:
-        transform .2s ease,
-        color .2s ease;
-}
-.ed-feature:hover .ed-feature-arrow {
-    color: white;
-    transform: translateX(5px);
-}
-/* ============================================================
-   FEATURE COLORS
-   ============================================================ */
-.feature-chat {
-    --feature-glow: rgba(10,132,255,.22);
-}
-.feature-qr {
-    --feature-glow: rgba(48,209,88,.22);
-}
-.feature-python {
-    --feature-glow: rgba(255,159,10,.2);
-}
-.feature-proxy {
-    --feature-glow: rgba(100,210,255,.2);
-}
-.feature-forums {
-    --feature-glow: rgba(255,55,95,.2);
-}
-.feature-users {
-    --feature-glow: rgba(255,214,10,.18);
-}
-.feature-settings {
-    --feature-glow: rgba(255,255,255,.15);
-}
-.feature-stats {
-    --feature-glow: rgba(48,209,88,.18);
-}
-/* ============================================================
-   LIVE ACTIVITY
-   ============================================================ */
-.ed-activity {
-    display: grid;
-    grid-template-columns: .85fr 1.15fr;
-    gap: 14px;
-}
-.ed-activity-panel {
-    min-height: 330px;
-    padding: 28px;
-    border: 1px solid var(--ed-border);
-    border-radius: var(--ed-radius);
-    background: var(--ed-panel);
-}
-.ed-activity-panel h3 {
-    margin: 0 0 7px;
-    font-size: 21px;
-    letter-spacing: -.04em;
-}
-.ed-activity-panel > p {
-    margin: 0;
-    color: #858a97;
-    font-size: 13px;
-}
-.ed-stat-row {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 8px;
-    margin-top: 30px;
-}
-.ed-stat {
-    padding: 15px;
-    border: 1px solid rgba(255,255,255,.06);
-    border-radius: 15px;
-    background: rgba(255,255,255,.035);
-}
-.ed-stat strong {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 24px;
-    letter-spacing: -.04em;
-}
-.ed-stat span {
-    color: #777c88;
-    font-size: 10px;
-}
-.ed-bars {
-    height: 150px;
-    display: flex;
-    align-items: end;
-    gap: 7px;
-    margin-top: 25px;
-    padding: 0 5px;
-}
-.ed-bar {
-    flex: 1;
-    min-height: 20px;
-    border-radius: 8px 8px 3px 3px;
-    background:
-        linear-gradient(
-            to top,
-            var(--ed-blue),
-            var(--ed-purple)
-        );
-    opacity: .72;
-    transform-origin: bottom;
-    animation:
-        barPulse 2.5s ease-in-out infinite alternate;
-}
-.ed-bar:nth-child(2) { height: 48%; animation-delay: -.3s; }
-.ed-bar:nth-child(3) { height: 72%; animation-delay: -.7s; }
-.ed-bar:nth-child(4) { height: 54%; animation-delay: -1.1s; }
-.ed-bar:nth-child(5) { height: 86%; animation-delay: -.5s; }
-.ed-bar:nth-child(6) { height: 63%; animation-delay: -1.6s; }
-.ed-bar:nth-child(7) { height: 93%; animation-delay: -.9s; }
-.ed-bar:nth-child(8) { height: 76%; animation-delay: -1.8s; }
-.ed-bar:nth-child(9) { height: 98%; animation-delay: -.2s; }
-.ed-bar:nth-child(10) { height: 67%; animation-delay: -1.3s; }
-.ed-bar:nth-child(11) { height: 82%; animation-delay: -.8s; }
-.ed-bar:nth-child(12) { height: 58%; animation-delay: -1.9s; }
-@keyframes barPulse {
-    to {
-        transform: scaleY(.78);
-    }
-}
-/* ============================================================
-   FRIENDLY EXPLAINER
-   ============================================================ */
-.ed-friendly {
-    display: grid;
-    grid-template-columns: .8fr 1.2fr;
-    gap: 14px;
-}
-.ed-friendly-main,
-.ed-friendly-items {
-    border: 1px solid var(--ed-border);
-    border-radius: var(--ed-radius);
-    background: var(--ed-panel);
-}
-.ed-friendly-main {
-    padding: 34px;
-}
-.ed-friendly-main h2 {
-    margin: 9px 0 12px;
-    font-size: 34px;
-    letter-spacing: -.055em;
-}
-.ed-friendly-main p {
-    margin: 0 0 12px;
-    color: #8e93a0;
-    line-height: 1.65;
-}
-.ed-friendly-items {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+        linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+        var(--ed-surface);
+    box-shadow: var(--ed-shadow);
+    backdrop-filter: blur(24px);
     overflow: hidden;
+    text-align: left;
+    animation: edProductIn 1s .35s cubic-bezier(.2,.8,.2,1) both;
 }
-.ed-friendly-item {
-    padding: 27px;
-    border-bottom: 1px solid rgba(255,255,255,.07);
-}
-.ed-friendly-item:nth-child(odd) {
-    border-right: 1px solid rgba(255,255,255,.07);
-}
-.ed-friendly-item:nth-last-child(-n+2) {
-    border-bottom: 0;
-}
-.ed-friendly-number {
-    color: var(--ed-purple);
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: .1em;
-}
-.ed-friendly-item h3 {
-    margin: 8px 0 6px;
-    font-size: 16px;
-}
-.ed-friendly-item p {
-    margin: 0;
-    color: #818692;
-    font-size: 12px;
-    line-height: 1.55;
-}
-/* ============================================================
-   QR SPOTLIGHT
-   ============================================================ */
-.ed-spotlight {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr 250px;
-    align-items: center;
-    gap: 35px;
-    overflow: hidden;
-    padding: 42px;
-    border: 1px solid rgba(48,209,88,.16);
-    border-radius: 30px;
-    background:
-        radial-gradient(
-            circle at 90% 50%,
-            rgba(48,209,88,.14),
-            transparent 36%
-        ),
-        rgba(255,255,255,.045);
-}
-.ed-spotlight h2 {
-    margin: 8px 0 10px;
-    font-size: clamp(29px,4vw,43px);
-    letter-spacing: -.055em;
-}
-.ed-spotlight p {
-    max-width: 600px;
-    margin: 0;
-    color: #8e939f;
-    line-height: 1.6;
-}
-.ed-qr-visual {
-    width: 180px;
-    height: 180px;
-    margin: auto;
-    padding: 11px;
-    border-radius: 20px;
-    background: white;
-    box-shadow:
-        0 25px 60px rgba(0,0,0,.4);
-    transform: rotate(4deg);
-    transition:
-        transform .3s ease;
-}
-.ed-qr-visual:hover {
-    transform:
-        rotate(0deg)
-        scale(1.06);
-}
-.ed-qr-pattern {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    background:
-        repeating-linear-gradient(
-            90deg,
-            #000 0 8px,
-            transparent 8px 17px
-        ),
-        repeating-linear-gradient(
-            0deg,
-            #000 0 8px,
-            transparent 8px 17px
-        );
-}
-.ed-qr-pattern::before,
-.ed-qr-pattern::after {
-    content: "";
-    position: absolute;
-    width: 43px;
-    height: 43px;
-    border: 9px solid #000;
-    background: white;
-}
-.ed-qr-pattern::before {
-    top: 4px;
-    left: 4px;
-}
-.ed-qr-pattern::after {
-    right: 4px;
-    bottom: 4px;
-}
-/* ============================================================
-   COMMAND PALETTE
-   ============================================================ */
-#ed-command-palette {
-    position: fixed;
-    inset: 0;
-    z-index: 100000;
-    display: none;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 12vh;
-    background: rgba(0,0,0,.58);
-    backdrop-filter: blur(10px);
-}
-#ed-command-palette.open {
-    display: flex;
-    animation:
-        paletteFade .18s ease;
-}
-@keyframes paletteFade {
+@keyframes edProductIn {
     from {
         opacity: 0;
+        transform: translateY(35px) scale(.97);
     }
     to {
         opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
-.ed-palette {
-    width: min(600px, calc(100% - 24px));
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 20px;
-    background: #10131b;
-    box-shadow:
-        0 40px 100px rgba(0,0,0,.6);
-}
-.ed-palette-input {
-    width: 100%;
-    height: 60px;
-    padding: 0 20px;
-    border: 0;
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    outline: 0;
-    background: transparent;
-    color: white;
-    font-size: 16px;
-}
-.ed-palette-input::placeholder {
-    color: #6e7481;
-}
-.ed-palette-list {
-    padding: 8px;
-}
-.ed-palette-item {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 13px;
-    border: 0;
-    border-radius: 12px;
-    background: transparent;
-    color: white;
-    text-align: left;
-    cursor: pointer;
-}
-.ed-palette-item:hover {
-    background: rgba(255,255,255,.07);
-}
-.ed-palette-item i {
-    width: 25px;
-    text-align: center;
-    color: var(--ed-blue);
-}
-.ed-palette-item small {
-    display: block;
-    margin-top: 2px;
-    color: #727885;
-    font-size: 10px;
-}
-/* ============================================================
-   FOOTER
-   ============================================================ */
-.ed-footer {
-    margin-top: 50px;
-    padding: 45px 0 60px;
-    border-top: 1px solid rgba(255,255,255,.07);
-    color: #686e7b;
-    font-size: 12px;
-}
-.ed-footer-inner {
+.ed-product-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+    padding: 16px 19px;
+    border-bottom: 1px solid var(--ed-border);
 }
-.ed-footer a {
-    color: #969ba7;
-    text-decoration: none;
+.ed-product-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .85rem;
+    font-weight: 750;
 }
-.ed-footer a:hover {
-    color: white;
+.ed-product-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    object-fit: contain;
 }
-/* ============================================================
-   REVEAL
-   ============================================================ */
+.ed-window-dots {
+    display: flex;
+    gap: 6px;
+}
+.ed-window-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.16);
+}
+.ed-product-body {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    min-height: 310px;
+}
+.ed-sidebar {
+    padding: 18px;
+    border-right: 1px solid var(--ed-border);
+    background: rgba(0,0,0,.1);
+}
+.ed-side-label {
+    margin: 8px 9px 12px;
+    color: var(--ed-dim);
+    font-size: .65rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+.ed-side-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 11px;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    color: #8792a7;
+    font-size: .82rem;
+}
+.ed-side-item.active {
+    color: #dce6ff;
+    background: rgba(91,140,255,.12);
+}
+.ed-side-item i {
+    width: 17px;
+    text-align: center;
+}
+.ed-workspace {
+    padding: 27px;
+}
+.ed-workspace-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+.ed-workspace-heading h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    letter-spacing: -.025em;
+}
+.ed-workspace-heading p {
+    margin: 6px 0 0;
+    color: var(--ed-dim);
+    font-size: .8rem;
+}
+.ed-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: rgba(73,217,154,.08);
+    color: #76e4b3;
+    font-size: .68rem;
+    font-weight: 750;
+}
+.ed-status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ed-green);
+    box-shadow: 0 0 10px rgba(73,217,154,.65);
+}
+.ed-work-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 25px;
+}
+.ed-mini {
+    padding: 17px;
+    min-height: 105px;
+    border: 1px solid var(--ed-border);
+    border-radius: 15px;
+    background: rgba(255,255,255,.025);
+    transition: transform .25s ease, background .25s ease, border-color .25s ease;
+}
+.ed-mini:hover {
+    transform: translateY(-4px);
+    background: rgba(255,255,255,.045);
+    border-color: var(--ed-border-hover);
+}
+.ed-mini i {
+    font-size: .9rem;
+    color: #82a8ff;
+}
+.ed-mini strong {
+    display: block;
+    margin-top: 12px;
+    font-size: .84rem;
+}
+.ed-mini span {
+    display: block;
+    margin-top: 4px;
+    color: var(--ed-dim);
+    font-size: .7rem;
+}
+/* ---------- SECTION ---------- */
+.ed-section {
+    padding: 70px 0;
+}
+.ed-section-heading {
+    max-width: 650px;
+    margin-bottom: 28px;
+}
+.ed-section-heading .label {
+    color: #7fa4ff;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+.ed-section-heading h2 {
+    margin: 10px 0 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+.ed-section-heading p {
+    margin: 13px 0 0;
+    color: var(--ed-muted);
+    line-height: 1.7;
+}
+/* ---------- FEATURES ---------- */
+.ed-features {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 13px;
+}
+.ed-feature {
+    position: relative;
+    min-height: 190px;
+    padding: 23px;
+    border: 1px solid var(--ed-border);
+    border-radius: var(--ed-radius);
+    background: rgba(255,255,255,.025);
+    overflow: hidden;
+    transition:
+        transform .3s cubic-bezier(.2,.8,.2,1),
+        border-color .3s ease,
+        background .3s ease,
+        box-shadow .3s ease;
+}
+.ed-feature::before {
+    content: "";
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    top: -100px;
+    right: -100px;
+    border-radius: 50%;
+    background: var(--feature-glow, #527fff);
+    filter: blur(60px);
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+.ed-feature:hover {
+    transform: translateY(-7px);
+    border-color: var(--ed-border-hover);
+    background: rgba(255,255,255,.045);
+    box-shadow: 0 20px 55px rgba(0,0,0,.22);
+}
+.ed-feature:hover::before {
+    opacity: .22;
+}
+.ed-feature-icon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(91,140,255,.11);
+    color: #8db0ff;
+}
+.ed-feature h3 {
+    position: relative;
+    z-index: 1;
+    margin: 18px 0 7px;
+    font-size: 1rem;
+}
+.ed-feature p {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: var(--ed-muted);
+    font-size: .82rem;
+    line-height: 1.6;
+}
+/* ---------- CALL TO ACTION ---------- */
+.ed-cta {
+    position: relative;
+    padding: 65px 30px;
+    margin: 30px 0 80px;
+    text-align: center;
+    border: 1px solid var(--ed-border);
+    border-radius: 28px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(91,140,255,.16), transparent 55%),
+        rgba(255,255,255,.025);
+}
+.ed-cta::after {
+    content: "";
+    position: absolute;
+    width: 500px;
+    height: 1px;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, transparent, rgba(100,160,255,.65), transparent);
+    animation: edScan 4s ease-in-out infinite;
+}
+@keyframes edScan {
+    0%, 100% {
+        opacity: .25;
+        transform: translateX(-50%) scaleX(.5);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-50%) scaleX(1);
+    }
+}
+.ed-cta h2 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    letter-spacing: -.045em;
+}
+.ed-cta p {
+    position: relative;
+    z-index: 1;
+    max-width: 580px;
+    margin: 14px auto 25px;
+    color: var(--ed-muted);
+    line-height: 1.7;
+}
+/* ---------- REVEAL ---------- */
 .ed-reveal {
     opacity: 0;
     transform: translateY(25px);
@@ -1141,193 +529,92 @@
         opacity .7s ease,
         transform .7s cubic-bezier(.2,.8,.2,1);
 }
-.ed-reveal.ed-visible {
+.ed-reveal.visible {
     opacity: 1;
-    transform: none;
+    transform: translateY(0);
 }
-/* ============================================================
-   ACCESSIBILITY
-   ============================================================ */
-#elite-home a:focus-visible,
-#elite-home button:focus-visible,
-#elite-home input:focus-visible {
-    outline: 3px solid rgba(100,210,255,.7);
-    outline-offset: 3px;
-}
-/* ============================================================
-   TABLET
-   ============================================================ */
-@media (max-width: 950px) {
-    .ed-hero {
-        grid-template-columns: 1fr;
-        text-align: center;
-        gap: 30px;
+@keyframes edAppear {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
     }
-    .ed-hero-subtitle {
-        margin-inline: auto;
-    }
-    .ed-hero-actions {
-        justify-content: center;
-    }
-    .ed-command-center {
-        min-height: 430px;
-    }
-    .ed-feature {
-        grid-column: span 6;
-    }
-    .ed-feature.large {
-        grid-column: span 6;
-    }
-    .ed-activity {
-        grid-template-columns: 1fr;
-    }
-    .ed-friendly {
-        grid-template-columns: 1fr;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
-/* ============================================================
-   MOBILE
-   ============================================================ */
-@media (max-width: 700px) {
-    .ed-container {
-        width: calc(100% - 22px);
+@keyframes edHeroIn {
+    from {
+        opacity: 0;
+        transform: translateY(25px) scale(.98);
     }
-    .ed-hero {
-        min-height: auto;
-        padding: 55px 0 40px;
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
-    .ed-hero h1 {
-        font-size: clamp(47px, 14vw, 66px);
+}
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 900px) {
+    .ed-product-body {
+        grid-template-columns: 1fr;
     }
-    .ed-hero-subtitle {
-        font-size: 16px;
-    }
-    .ed-hero-actions {
-        flex-direction: column;
-    }
-    .ed-btn {
-        width: 100%;
-        min-height: 55px;
-    }
-    .ed-command-center {
-        min-height: 350px;
-    }
-    .ed-ring {
-        width: 290px;
-        height: 290px;
-    }
-    .ed-dashboard {
-        transform: none;
-        padding: 12px;
-        border-radius: 21px;
-    }
-    .ed-dashboard:hover {
-        transform: none;
-    }
-    .ed-dashboard-main {
-        padding: 18px;
-    }
-    .ed-dashboard-main h3 {
-        font-size: 24px;
-    }
-    .ed-mini-card {
-        min-height: 67px;
-    }
-    .ed-float {
-        font-size: 9px;
-    }
-    .ed-float-a {
-        top: 4%;
-        right: 0;
-    }
-    .ed-float-b {
-        bottom: 4%;
-        left: 0;
-    }
-    .ed-float-c {
+    .ed-sidebar {
         display: none;
     }
-    .ed-command-bar {
-        margin-bottom: 40px;
-    }
-    .ed-command-text {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-    .ed-section {
-        padding: 48px 0;
-    }
-    .ed-section-heading {
-        display: block;
-    }
-    .ed-section-link {
-        display: inline-block;
-        margin-top: 15px;
-    }
-    .ed-feature-grid {
-        grid-template-columns: 1fr;
-    }
-    .ed-feature,
-    .ed-feature.large {
-        grid-column: span 1;
-        min-height: 200px;
-    }
-    .ed-stat-row {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
-    .ed-stat strong {
-        font-size: 19px;
-    }
-    .ed-friendly-items {
-        grid-template-columns: 1fr;
-    }
-    .ed-friendly-item {
-        border-right: 0 !important;
-        border-bottom: 1px solid rgba(255,255,255,.07) !important;
-    }
-    .ed-friendly-item:last-child {
-        border-bottom: 0 !important;
-    }
-    .ed-spotlight {
-        grid-template-columns: 1fr;
-        padding: 29px;
-        text-align: center;
-    }
-    .ed-spotlight p {
-        margin-inline: auto;
-    }
-    .ed-qr-visual {
-        width: 155px;
-        height: 155px;
-    }
-    .ed-footer-inner {
-        flex-direction: column;
-        text-align: center;
+    .ed-features {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
-/* ============================================================
-   REDUCED MOTION
-   ============================================================ */
+@media (max-width: 650px) {
+    .ed-container {
+        width: min(100% - 24px, 1180px);
+    }
+    .ed-hero {
+        padding: 75px 0 45px;
+    }
+    .ed-hero h1 {
+        font-size: clamp(2.7rem, 15vw, 4.5rem);
+    }
+    .ed-actions {
+        flex-direction: column;
+    }
+    .ed-button {
+        width: 100%;
+    }
+    .ed-product {
+        margin-top: 45px;
+        border-radius: 19px;
+    }
+    .ed-workspace {
+        padding: 20px;
+    }
+    .ed-work-grid {
+        grid-template-columns: 1fr;
+    }
+    .ed-features {
+        grid-template-columns: 1fr;
+    }
+    .ed-section {
+        padding: 45px 0;
+    }
+    .ed-cta {
+        margin-bottom: 45px;
+        padding: 45px 20px;
+    }
+}
+/* ---------- REDUCED MOTION ---------- */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
-        animation-duration: .001ms !important;
+        animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: .001ms !important;
-    }
-    html {
-        scroll-behavior: auto;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
     }
     .ed-reveal {
         opacity: 1;
         transform: none;
-    }
-    .ed-ring,
-    .ed-blob,
-    .ed-float {
-        animation: none;
     }
 }
 </style>
@@ -1336,1018 +623,219 @@
 
 {% block content %}
 
-<div id="elite-home">
-<!-- ======================================================
-     BACKGROUND
-     ====================================================== -->
-<div class="ed-ambient" aria-hidden="true">
-    <div class="ed-blob one"></div>
-    <div class="ed-blob two"></div>
-    <div class="ed-blob three"></div>
-    <div class="ed-grid-bg"></div>
-</div>
-<!-- ======================================================
-     BOOT SCREEN
-     ====================================================== -->
-<div id="ed-boot" aria-hidden="true">
-    <div class="ed-terminal">
-        <div class="ed-terminal-bar">
-            <span class="ed-terminal-dot"></span>
-            <span class="ed-terminal-dot"></span>
-            <span class="ed-terminal-dot"></span>
-            <span class="ed-terminal-title">
-                EliteDevelop — Terminal
-            </span>
+<div class="ed-home">
+<div class="ed-orb one"></div>
+<div class="ed-orb two"></div>
+<div class="ed-orb three"></div>
+<main class="ed-container">
+    <!-- HERO -->
+    <section class="ed-hero">
+        <div class="ed-eyebrow">
+            <span class="ed-eyebrow-dot"></span>
+            EliteDevelop
         </div>
-        <div class="ed-terminal-body">
-            <span class="ed-prompt">
-                {% if user.is_authenticated %}
-                    {{ user.username }}
-                {% else %}
-                    guest
-                {% endif %}@elitedevelop:~$
-            </span>
-            <span id="ed-command"></span>
-            <span class="ed-cursor"></span>
-            <div id="ed-boot-output"></div>
-        </div>
-    </div>
-</div>
-<!-- ======================================================
-     APP
-     ====================================================== -->
-<div id="ed-app">
-    <main class="ed-container">
-        <!-- ==================================================
-             HERO
-             ================================================== -->
-        <section class="ed-hero">
-            <div class="ed-hero-copy ed-reveal">
-                <div class="ed-status">
-                    <span class="ed-status-dot"></span>
-                    {% if user.is_authenticated %}
-                        You're signed in
-                    {% else %}
-                        EliteDevelop is ready
-                    {% endif %}
-                </div>
-                {% if user.is_authenticated %}
-                    <h1>
-                        Welcome back,
-                        <br>
-                        <span class="ed-gradient-text">
-                            {{ user.username }}.
-                        </span>
-                    </h1>
-                    <p class="ed-hero-subtitle">
-                        Everything is ready.
-                        Jump into <strong>Chat</strong>,
-                        make something with <strong>QR Studio</strong>,
-                        or explore the community.
-                    </p>
-                {% else %}
-                    <h1>
-                        One place.
-                        <br>
-                        <span class="ed-gradient-text">
-                            Endless
-                        </span>
-                        possibilities.
-                    </h1>
-                    <p class="ed-hero-subtitle">
-                        EliteDevelop brings together
-                        <strong>chat, QR tools, coding,
-                        forums, and community features</strong>
-                        without making you learn a bunch
-                        of complicated software first.
-                    </p>
-                {% endif %}
-                <div class="ed-hero-actions">
-                    <a
-                        href="{% url 'chat-page' %}"
-                        class="ed-btn ed-btn-primary"
-                    >
-                        <i class="fa-solid fa-comments"></i>
-                        Open Chat
-                    </a>
-                    <a
-                        href="/qr/"
-                        class="ed-btn ed-btn-secondary"
-                    >
-                        <i class="fa-solid fa-qrcode"></i>
-                        Make a QR
-                    </a>
-                </div>
-                <div class="ed-helper">
-                    Tip: press <strong>⌘ K</strong> or
-                    <strong>Ctrl K</strong> to open Quick Actions.
-                </div>
-            </div>
-            <!-- ==============================================
-                 COMMAND CENTER
-                 ============================================== -->
-            <div class="ed-command-center ed-reveal">
-                <div class="ed-ring"></div>
-                <div class="ed-float ed-float-a">
-                    <i class="fa-solid fa-bolt"></i>
-                    Fast & ready
-                </div>
-                <div class="ed-float ed-float-b">
-                    <i class="fa-solid fa-circle-check"></i>
-                    Systems online
-                </div>
-                <div class="ed-float ed-float-c">
-                    <i class="fa-solid fa-sparkles"></i>
-                    Explore
-                </div>
-                <div class="ed-dashboard">
-                    <div class="ed-dashboard-top">
-                        <span>
-                            ELITEDEVELOP / WORKSPACE
-                        </span>
-                        <span class="ed-dashboard-live">
-                            <span></span>
-                            LIVE
-                        </span>
-                    </div>
-                    <div class="ed-dashboard-main">
-                        <small>
-                            YOUR TOOLS
-                        </small>
-                        <h3>
-                            Ready when you are.
-                        </h3>
-                        <p>
-                            Choose something and get started.
-                        </p>
-                    </div>
-                    <div class="ed-mini-grid">
-                        <div class="ed-mini-card">
-                            <i
-                                class="fa-solid fa-comments"
-                                style="color:var(--ed-blue);"
-                            ></i>
-                            <span>Chat</span>
-                        </div>
-                        <div class="ed-mini-card">
-                            <i
-                                class="fa-solid fa-qrcode"
-                                style="color:var(--ed-green);"
-                            ></i>
-                            <span>QR</span>
-                        </div>
-                        <div class="ed-mini-card">
-                            <i
-                                class="fa-solid fa-code"
-                                style="color:var(--ed-orange);"
-                            ></i>
-                            <span>Python</span>
-                        </div>
-                        <div class="ed-mini-card">
-                            <i
-                                class="fa-solid fa-globe"
-                                style="color:var(--ed-cyan);"
-                            ></i>
-                            <span>Proxy</span>
-                        </div>
-                        <div class="ed-mini-card">
-                            <i
-                                class="fa-solid fa-users"
-                                style="color:var(--ed-yellow);"
-                            ></i>
-                            <span>People</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- ==================================================
-             COMMAND BAR
-             ================================================== -->
-        <button
-            type="button"
-            class="ed-command-bar ed-reveal"
-            id="ed-open-palette"
-            style="
-                width:100%;
-                color:inherit;
-                text-align:left;
-                cursor:pointer;
-            "
-        >
-            <span class="ed-command-icon">
-                <i class="fa-solid fa-terminal"></i>
-            </span>
-            <span class="ed-command-text">
-                What do you want to do?
-            </span>
-            <span class="ed-command-key">
-                Ctrl K
-            </span>
-        </button>
-        <!-- ==================================================
-             FEATURES
-             ================================================== -->
-        <section class="ed-section">
-            <div class="ed-section-heading ed-reveal">
-                <div>
-                    <div class="ed-eyebrow">
-                        Your toolbox
-                    </div>
-                    <h2>
-                        Pick a tool.
-                        <br>
-                        Make something happen.
-                    </h2>
-                    <p>
-                        No hunting through menus.
-                        The stuff you actually want is right here.
-                    </p>
-                </div>
-                <a
-                    href="/forums/"
-                    class="ed-section-link"
-                >
-                    Explore the community
-                    <i class="fa-solid fa-arrow-right"></i>
+        {% if user.is_authenticated %}
+            <h1>
+                Welcome back,<br>
+                <span class="ed-gradient-text">{{ user.username }}</span>
+            </h1>
+            <p>
+                Your workspace for building, creating, experimenting,
+                and managing everything across EliteDevelop.
+            </p>
+        {% else %}
+            <h1>
+                Build things.<br>
+                <span class="ed-gradient-text">Make them yours.</span>
+            </h1>
+            <p>
+                EliteDevelop brings useful tools, creative projects,
+                and your digital workspace together in one place.
+            </p>
+        {% endif %}
+        <div class="ed-actions">
+            {% if user.is_authenticated %}
+                <a href="{% url 'chat-page' %}" class="ed-button primary">
+                    <i class="fa-solid fa-comments"></i>
+                    Open Chat
                 </a>
-            </div>
-            <div class="ed-feature-grid">
-                <!-- CHAT -->
-                <a
-                    href="{% url 'chat-page' %}"
-                    class="ed-feature large feature-chat ed-reveal"
-                >
-                    <div>
-                        <div
-                            class="ed-feature-icon"
-                            style="color:var(--ed-blue);"
-                        >
-                            <i class="fa-solid fa-comments"></i>
-                        </div>
-                        <h3>
-                            Chat with people
-                        </h3>
-                        <p>
-                            Jump into conversations and
-                            connect with people on EliteDevelop.
-                        </p>
-                    </div>
-                    <span class="ed-feature-arrow">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </span>
-                </a>
-                <!-- QR -->
-                <a
-                    href="/qr/"
-                    class="ed-feature feature-qr ed-reveal"
-                >
-                    <div>
-                        <div
-                            class="ed-feature-icon"
-                            style="color:var(--ed-green);"
-                        >
-                            <i class="fa-solid fa-qrcode"></i>
-                        </div>
-                        <h3>
-                            QR Studio
-                        </h3>
-                        <p>
-                            Make a QR code in seconds.
-                        </p>
-                    </div>
-                    <span class="ed-feature-arrow">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </span>
-                </a>
-                <!-- PYTHON -->
-                <a
-                    href="{% url 'py' %}"
-                    class="ed-feature feature-python ed-reveal"
-                >
-                    <div>
-                        <div
-                            class="ed-feature-icon"
-                            style="color:var(--ed-orange);"
-                        >
-                            <i class="fa-solid fa-code"></i>
-                        </div>
-                        <h3>
-                            Python
-                        </h3>
-                        <p>
-                            Experiment and run Python.
-                        </p>
-                    </div>
-                    <span class="ed-feature-arrow">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </span>
-                </a>
-                <!-- PROXY -->
-                <a
-                    href="/proxy/"
-                    class="ed-feature feature-proxy ed-reveal"
-                >
-                    <div>
-                        <div
-                            class="ed-feature-icon"
-                            style="color:var(--ed-cyan);"
-                        >
-                            <i class="fa-solid fa-globe"></i>
-                        </div>
-                        <h3>
-                            Proxy
-                        </h3>
-                        <p>
-                            Use the EliteDevelop proxy.
-                        </p>
-                    </div>
-                    <span class="ed-feature-arrow">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </span>
-                </a>
-                <!-- FORUMS -->
-                <a
-                    href="/forums/"
-                    class="ed-feature feature-forums ed-reveal"
-                >
-                    <div>
-                        <div
-                            class="ed-feature-icon"
-                            style="color:var(--ed-pink);"
-                        >
-                            <i class="fa-solid fa-comments"></i>
-                        </div>
-                        <h3>
-                            Forums
-                        </h3>
-                        <p>
-                            Ask questions and join discussions.
-                        </p>
-                    </div>
-                    <span class="ed-feature-arrow">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </span>
-                </a>
-                <!-- USERS -->
-                <a
-                    href="{% url 'view_users' %}"
-                    class="ed-feature feature-users ed-reveal"
-                >
-                    <div>
-                        <div
-                            class="ed-feature-icon"
-                            style="color:var(--ed-yellow);"
-                        >
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <h3>
-                            People
-                        </h3>
-                        <p>
-                            Find people and explore profiles.
-                        </p>
-                    </div>
-                    <span class="ed-feature-arrow">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </span>
-                </a>
-                <!-- SETTINGS -->
-                <a
-                    href="{% url 'settings-hub' %}"
-                    class="ed-feature feature-settings ed-reveal"
-                >
-                    <div>
-                        <div class="ed-feature-icon">
-                            <i class="fa-solid fa-sliders"></i>
-                        </div>
-                        <h3>
-                            Settings
-                        </h3>
-                        <p>
-                            Manage your account and preferences.
-                        </p>
-                    </div>
-                    <span class="ed-feature-arrow">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </span>
-                </a>
-                <!-- STATS -->
-                <a
-                    href="{% url 'stats' %}"
-                    class="ed-feature feature-stats ed-reveal"
-                >
-                    <div>
-                        <div
-                            class="ed-feature-icon"
-                            style="color:var(--ed-green);"
-                        >
-                            <i class="fa-solid fa-chart-line"></i>
-                        </div>
-                        <h3>
-                            Stats
-                        </h3>
-                        <p>
-                            See platform activity and statistics.
-                        </p>
-                    </div>
-                    <span class="ed-feature-arrow">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </span>
-                </a>
-            </div>
-        </section>
-        <!-- ==================================================
-             ACTIVITY
-             ================================================== -->
-        <section class="ed-section">
-            <div class="ed-section-heading ed-reveal">
-                <div>
-                    <div
-                        class="ed-eyebrow"
-                        style="color:var(--ed-green);"
-                    >
-                        Behind the scenes
-                    </div>
-                    <h2>
-                        Alive, not boring.
-                    </h2>
-                    <p>
-                        EliteDevelop is built to feel like a
-                        workspace rather than another static website.
-                    </p>
-                </div>
-            </div>
-            <div class="ed-activity">
-                <div class="ed-activity-panel ed-reveal">
-                    <h3>
-                        Platform snapshot
-                    </h3>
-                    <p>
-                        A quick look at the EliteDevelop experience.
-                    </p>
-                    <div class="ed-stat-row">
-                        <div class="ed-stat">
-                            <strong>
-                                <span class="ed-counter"
-                                      data-target="100">
-                                    0
-                                </span>%
-                            </strong>
-                            <span>
-                                Feature access
-                            </span>
-                        </div>
-                        <div class="ed-stat">
-                            <strong>
-                                <span class="ed-counter"
-                                      data-target="24">
-                                    0
-                                </span>/7
-                            </strong>
-                            <span>
-                                Available
-                            </span>
-                        </div>
-                        <div class="ed-stat">
-                            <strong>
-                                <span class="ed-counter"
-                                      data-target="0">
-                                    0
-                                </span>
-                            </strong>
-                            <span>
-                                Paywalls
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- ==================================================
-             BEGINNER FRIENDLY
-             ================================================== -->
-        <section class="ed-section">
-            <div class="ed-friendly">
-                <div class="ed-friendly-main ed-reveal">
-                    <div class="ed-eyebrow"
-                         style="color:var(--ed-purple);">
-                        No experience required
-                    </div>
-                    <h2>
-                        You don't need to
-                        be a developer.
-                    </h2>
-                    <p>
-                        There's technical stuff underneath
-                        EliteDevelop, but you don't need to
-                        understand it.
-                    </p>
-                    <p>
-                        If you can click a button,
-                        you can use most of EliteDevelop.
-                    </p>
-                </div>
-                <div class="ed-friendly-items ed-reveal">
-                    <div class="ed-friendly-item">
-                        <span class="ed-friendly-number">
-                            01
-                        </span>
-                        <h3>
-                            Want to talk?
-                        </h3>
-                        <p>
-                            Open Chat and start talking.
-                        </p>
-                    </div>
-                    <div class="ed-friendly-item">
-                        <span class="ed-friendly-number">
-                            02
-                        </span>
-                        <h3>
-                            Need a QR?
-                        </h3>
-                        <p>
-                            QR Studio handles it.
-                        </p>
-                    </div>
-                    <div class="ed-friendly-item">
-                        <span class="ed-friendly-number">
-                            03
-                        </span>
-                        <h3>
-                            Want to code?
-                        </h3>
-                        <p>
-                            Open Python and experiment.
-                        </p>
-                    </div>
-                    <div class="ed-friendly-item">
-                        <span class="ed-friendly-number">
-                            04
-                        </span>
-                        <h3>
-                            Want to explore?
-                        </h3>
-                        <p>
-                            Check out the forums and people.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- ==================================================
-             QR SPOTLIGHT
-             ================================================== -->
-        <section class="ed-section">
-            <div class="ed-spotlight ed-reveal">
-                <div>
-                    <div
-                        class="ed-eyebrow"
-                        style="color:var(--ed-green);"
-                    >
-                        QR Studio
-                    </div>
-                    <h2>
-                        Make something useful
-                        in seconds.
-                    </h2>
-                    <p>
-                        Turn links into QR codes without
-                        digging through complicated websites.
-                    </p>
-                    <div style="margin-top:23px;">
-                        <a
-                            href="/qr/"
-                            class="ed-btn ed-btn-primary"
-                        >
-                            <i class="fa-solid fa-qrcode"></i>
-                            Open QR Studio
-                        </a>
-                    </div>
-                </div>
-                <div class="ed-qr-visual">
-                    <div class="ed-qr-pattern"></div>
-                </div>
-            </div>
-        </section>
-    </main>
-    <!-- ==================================================
-         FOOTER
-         ================================================== -->
-    <footer class="ed-footer">
-        <div class="ed-container ed-footer-inner">
-            <span>
-                © {% now "Y" %} EliteDevelop
-            </span>
-            <span>
-                <a href="{% url 'legal' %}">
-                    Legal
-                </a>
-                &nbsp; • &nbsp;
-                <a href="{% url 'settings-hub' %}">
-                    Settings
-                </a>
-            </span>
-        </div>
-    </footer>
-</div>
-<!-- ======================================================
-     COMMAND PALETTE
-     ====================================================== -->
-<div
-    id="ed-command-palette"
-    role="dialog"
-    aria-modal="true"
-    aria-label="Quick Actions"
->
-    <div class="ed-palette">
-        <input
-            id="ed-palette-input"
-            class="ed-palette-input"
-            type="text"
-            autocomplete="off"
-            placeholder="What do you want to open?"
-            aria-label="Search actions"
-        >
-        <div class="ed-palette-list">
-            <button
-                class="ed-palette-item"
-                data-url="{% url 'chat-page' %}"
-            >
-                <i class="fa-solid fa-comments"></i>
-                <span>
-                    Chat
-                    <small>
-                        Talk with people
-                    </small>
-                </span>
-            </button>
-            <button
-                class="ed-palette-item"
-                data-url="/qr/"
-            >
-                <i class="fa-solid fa-qrcode"></i>
-                <span>
+                <a href="/qr/" class="ed-button secondary">
+                    <i class="fa-solid fa-qrcode"></i>
                     QR Studio
-                    <small>
-                        Create a QR code
-                    </small>
-                </span>
-            </button>
-            <button
-                class="ed-palette-item"
-                data-url="{% url 'py' %}"
-            >
-                <i class="fa-solid fa-code"></i>
-                <span>
-                    Python
-                    <small>
-                        Run Python
-                    </small>
-                </span>
-            </button>
-            <button
-                class="ed-palette-item"
-                data-url="/forums/"
-            >
-                <i class="fa-solid fa-comments"></i>
-                <span>
-                    Forums
-                    <small>
-                        Join discussions
-                    </small>
-                </span>
-            </button>
-            <button
-                class="ed-palette-item"
-                data-url="{% url 'view_users' %}"
-            >
-                <i class="fa-solid fa-users"></i>
-                <span>
-                    People
-                    <small>
-                        Browse users
-                    </small>
-                </span>
-            </button>
-            <button
-                class="ed-palette-item"
-                data-url="{% url 'settings-hub' %}"
-            >
-                <i class="fa-solid fa-gear"></i>
-                <span>
-                    Settings
-                    <small>
-                        Manage your account
-                    </small>
-                </span>
-            </button>
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="ed-button primary">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    Get Started
+                </a>
+                <a href="#features" class="ed-button secondary">
+                    Explore EliteDevelop
+                    <i class="fa-solid fa-arrow-down"></i>
+                </a>
+            {% endif %}
+    </section>
+    <!-- FEATURES -->
+    <section class="ed-section" id="features">
+        <div class="ed-section-heading ed-reveal">
+            <div class="label">Everything in one place</div>
+            <h2>
+                Tools that stay<br>
+                out of your way.
+            </h2>
+            <p>
+                Open what you need, use it, and get back to what
+                you were actually trying to do.
+            </p>
         </div>
-    </div>
-</div>
+        <div class="ed-features">
+            <a
+                href="{% url 'chat-page' %}"
+                class="ed-feature ed-reveal"
+                style="--feature-glow:#527fff;"
+            >
+                <div class="ed-feature-icon">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <h3>Chat</h3>
+                <p>
+                    A simple place to talk, collaborate, and get things done.
+                </p>
+            </a>
+            <a
+                href="/qr/"
+                class="ed-feature ed-reveal"
+                style="--feature-glow:#42d9ff;"
+            >
+                <div class="ed-feature-icon">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <h3>QR Studio</h3>
+                <p>
+                    Quickly create and work with QR codes without the clutter.
+                </p>
+            </a>
+            <a
+                href="{% url 'py' %}"
+                class="ed-feature ed-reveal"
+                style="--feature-glow:#9b7cff;"
+            >
+                <div class="ed-feature-icon">
+                    <i class="fa-brands fa-python"></i>
+                </div>
+                <h3>Python</h3>
+                <p>
+                    Experiment with Python projects directly from EliteDevelop.
+                </p>
+            </a>
+            <a
+                href="/proxy/"
+                class="ed-feature ed-reveal"
+                style="--feature-glow:#49d99a;"
+            >
+                <div class="ed-feature-icon">
+                    <i class="fa-solid fa-globe"></i>
+                </div>
+                <h3>Proxy</h3>
+                <p>
+                    A straightforward gateway for the tools and services you use.
+                </p>
+            </a>
+            <a
+                href="/forums/"
+                class="ed-feature ed-reveal"
+                style="--feature-glow:#ff8b5c;"
+            >
+                <div class="ed-feature-icon">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <h3>Forums</h3>
+                <p>
+                    Share ideas, ask questions, and take part in the community.
+                </p>
+            </a>
+            <a
+                href="{% url 'view_users' %}"
+                class="ed-feature ed-reveal"
+                style="--feature-glow:#e477ff;"
+            >
+                <div class="ed-feature-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3>People</h3>
+                <p>
+                    Discover the people and profiles that make up EliteDevelop.
+                </p>
+            </a>
+            <a
+                href="{% url 'settings-hub' %}"
+                class="ed-feature ed-reveal"
+                style="--feature-glow:#7fa4ff;"
+            >
+                <div class="ed-feature-icon">
+                    <i class="fa-solid fa-sliders"></i>
+                </div>
+                <h3>Settings</h3>
+                <p>
+                    Personalize your account and control your preferences.
+                </p>
+            </a>
+            <a
+                href="{% url 'stats' %}"
+                class="ed-feature ed-reveal"
+                style="--feature-glow:#ffd166;"
+            >
+                <div class="ed-feature-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <h3>Stats</h3>
+                <p>
+                    Keep an eye on your activity and your EliteDevelop usage.
+                </p>
+            </a>
+        </div>
+    </section>
+</main>
 </div>
 <script>
-(function () {
-    "use strict";
-    /* =========================================================
-       BOOT
-       ========================================================= */
-    const boot =
-        document.getElementById("ed-boot");
-    const app =
-        document.getElementById("ed-app");
-    const command =
-        document.getElementById("ed-command");
-    const output =
-        document.getElementById("ed-boot-output");
-    const bootLines = [
-        "[ OK ] Loading EliteDevelop core",
-        "[ OK ] Connecting to services",
-        "[ OK ] Starting messaging engine",
-        "[ OK ] Starting QR Studio",
-        "[ OK ] Loading community tools",
-        "[ OK ] Checking session",
-        "[ OK ] All systems operational",
-        "[ WARN ] Don't tell anybody this line existed"
-    ];
-    function sleep(ms) {
-        return new Promise(
-            resolve => setTimeout(resolve, ms)
-        );
-    }
-    async function typeCommand() {
-        const text =
-            "./elitedevelop.sh";
-        for (const character of text) {
-            command.textContent += character;
-            await sleep(40);
-        }
-    }
-    async function bootSequence() {
-        await sleep(300);
-        await typeCommand();
-        await sleep(200);
-        for (const line of bootLines) {
-            const element =
-                document.createElement("div");
-            element.className =
-                "ed-boot-ok";
-            element.textContent =
-                line;
-            output.appendChild(element);
-            await sleep(130);
-        }
-        await sleep(550);
-        boot.classList.add("explode");
-        app.classList.add("ready");
-        setTimeout(() => {
-            boot.style.display =
-                "none";
-        }, 1100);
-    }
-    const reducedMotion =
-        window.matchMedia &&
-        window.matchMedia(
-            "(prefers-reduced-motion: reduce)"
-        ).matches;
-    if (reducedMotion) {
-        boot.style.display = "none";
-        app.classList.add("ready");
-    } else {
-        bootSequence();
-    }
-    /* =========================================================
-       SCROLL REVEALS
-       ========================================================= */
-    const revealElements =
-        document.querySelectorAll(".ed-reveal");
+document.addEventListener("DOMContentLoaded", () => {
+    /* Scroll reveal */
+    const revealItems = document.querySelectorAll(".ed-reveal");
     if ("IntersectionObserver" in window) {
-        const observer =
-            new IntersectionObserver(
-                entries => {
-                    entries.forEach(entry => {
-                        if (
-                            entry.isIntersecting
-                        ) {
-                            entry.target.classList.add(
-                                "ed-visible"
-                            );
-                            observer.unobserve(
-                                entry.target
-                            );
-                        }
-                    });
-                },
-                {
-                    threshold: .12
-                }
-            );
-        revealElements.forEach(
-            element => observer.observe(element)
-        );
-    } else {
-        revealElements.forEach(
-            element =>
-                element.classList.add("ed-visible")
-        );
-    }
-    /* =========================================================
-       FEATURE MOUSE LIGHTING
-       ========================================================= */
-    document
-        .querySelectorAll(".ed-feature")
-        .forEach(card => {
-            card.addEventListener(
-                "pointermove",
-                event => {
-                    const rect =
-                        card.getBoundingClientRect();
-                    const x =
-                        ((event.clientX - rect.left)
-                        / rect.width) * 100;
-                    const y =
-                        ((event.clientY - rect.top)
-                        / rect.height) * 100;
-                    card.style.setProperty(
-                        "--mouse-x",
-                        x + "%"
-                    );
-                    card.style.setProperty(
-                        "--mouse-y",
-                        y + "%"
-                    );
-                }
-            );
-        });
-    /* =========================================================
-       COMMAND PALETTE
-       ========================================================= */
-    const palette =
-        document.getElementById(
-            "ed-command-palette"
-        );
-    const paletteInput =
-        document.getElementById(
-            "ed-palette-input"
-        );
-    const openPalette =
-        document.getElementById(
-            "ed-open-palette"
-        );
-    function showPalette() {
-        palette.classList.add("open");
-        paletteInput.value = "";
-        setTimeout(() => {
-            paletteInput.focus();
-        }, 30);
-    }
-    function hidePalette() {
-        palette.classList.remove("open");
-    }
-    openPalette.addEventListener(
-        "click",
-        showPalette
-    );
-    palette.addEventListener(
-        "click",
-        event => {
-            if (
-                event.target === palette
-            ) {
-                hidePalette();
-            }
-        }
-    );
-    document
-        .querySelectorAll(".ed-palette-item")
-        .forEach(item => {
-            item.addEventListener(
-                "click",
-                () => {
-                    const url =
-                        item.dataset.url;
-                    if (url) {
-                        window.location.href =
-                            url;
+        const observer = new IntersectionObserver(
+            entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("visible");
+                        observer.unobserve(entry.target);
                     }
-                }
-            );
-        });
-    paletteInput.addEventListener(
-        "input",
-        () => {
-            const query =
-                paletteInput.value
-                    .trim()
-                    .toLowerCase();
-            document
-                .querySelectorAll(
-                    ".ed-palette-item"
-                )
-                .forEach(item => {
-                    const text =
-                        item.textContent
-                            .toLowerCase();
-                    item.style.display =
-                        !query ||
-                        text.includes(query)
-                            ? "flex"
-                            : "none";
                 });
-        }
-    );
-    document.addEventListener(
-        "keydown",
-        event => {
-            if (
-                (event.ctrlKey || event.metaKey) &&
-                event.key.toLowerCase() === "k"
-            ) {
-                event.preventDefault();
-                if (
-                    palette.classList.contains("open")
-                ) {
-                    hidePalette();
-                } else {
-                    showPalette();
-                }
+            },
+            {
+                threshold: 0.12
             }
-            if (
-                event.key === "Escape" &&
-                palette.classList.contains("open")
-            ) {
-                hidePalette();
-            }
-        }
-    );
-    /* =========================================================
-       COUNTERS
-       ========================================================= */
-    const counters =
-        document.querySelectorAll(
-            ".ed-counter"
         );
-    function animateCounter(element) {
-        const target =
-            Number(element.dataset.target);
-        if (target === 0) {
-            element.textContent = "0";
-            return;
-        }
-        let current = 0;
-        const duration = 1000;
-        const start =
-            performance.now();
-        function tick(now) {
-            const progress =
-                Math.min(
-                    (now - start) / duration,
-                    1
-                );
-            current =
-                Math.floor(
-                    progress * target
-                );
-            element.textContent =
-                current;
-            if (progress < 1) {
-                requestAnimationFrame(tick);
-            }
-        }
-        requestAnimationFrame(tick);
-    }
-    if ("IntersectionObserver" in window) {
-        const counterObserver =
-            new IntersectionObserver(
-                entries => {
-                    entries.forEach(entry => {
-                        if (
-                            entry.isIntersecting
-                        ) {
-                            animateCounter(
-                                entry.target
-                            );
-                            counterObserver.unobserve(
-                                entry.target
-                            );
-                        }
-                    });
-                },
-                {
-                    threshold: .5
-                }
-            );
-        counters.forEach(
-            counter =>
-                counterObserver.observe(counter)
-        );
+        revealItems.forEach((item, index) => {
+            item.style.transitionDelay = `${Math.min(index * 35, 180)}ms`;
+            observer.observe(item);
+        });
     } else {
-        counters.forEach(
-            animateCounter
-        );
+        revealItems.forEach(item => item.classList.add("visible"));
     }
-})();
+    /* Gentle mouse movement on the product preview */
+    const product = document.querySelector(".ed-product");
+    if (product && window.matchMedia("(pointer:fine)").matches) {
+        product.addEventListener("mousemove", event => {
+            const rect = product.getBoundingClientRect();
+            const x = (event.clientX - rect.left) / rect.width - .5;
+            const y = (event.clientY - rect.top) / rect.height - .5;
+            product.style.transform =
+                `perspective(1200px) rotateX(${y * -1.2}deg) rotateY(${x * 1.2}deg)`;
+        });
+        product.addEventListener("mouseleave", () => {
+            product.style.transform = "";
+        });
+    }
+});
 </script>
 
 {% endblock %}
