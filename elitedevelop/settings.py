@@ -54,7 +54,7 @@ AI_WORKER_SECRET = os.getenv("AI_WORKER_SECRET")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = ['elitedevelop.pythonanywhere.com']
 
 
