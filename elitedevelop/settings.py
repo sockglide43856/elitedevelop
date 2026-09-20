@@ -49,9 +49,12 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 RECAPTCHA_PUBLIC_KEY = os.environ["RECAPTCHA_PUBLIC_KEY"]
 RECAPTCHA_PRIVATE_KEY = os.environ["RECAPTCHA_PRIVATE_KEY"]
 
+AI_WORKER_URL = os.getenv("AI_WORKER_URL")
+AI_WORKER_SECRET = os.getenv("AI_WORKER_SECRET")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['elitedevelop.pythonanywhere.com']
 
 
@@ -72,6 +75,7 @@ INSTALLED_APPS = [
     'elitedevelop',
     'qr_generator',
     'proxy',
+    'ai',
     'eliteos',
     'gaming',
     'forms',

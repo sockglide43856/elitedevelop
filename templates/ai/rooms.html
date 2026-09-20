@@ -1,0 +1,1012 @@
+{% extends "base.html" %}
+
+{% block title %}Apex — EliteDevelop{% endblock %}
+
+{% block head %}
+<style>
+    /* =========================================================
+       APEX — ROOMS
+       Self-contained styling
+       ========================================================= */
+
+    .apex-page {
+        --apex-bg: #0b1220;
+        --apex-surface: #111827;
+        --apex-surface-2: #172033;
+        --apex-border: rgba(148, 163, 184, .16);
+        --apex-text: #f8fafc;
+        --apex-muted: #94a3b8;
+        --apex-accent: #6366f1;
+        --apex-accent-hover: #4f46e5;
+
+        min-height: calc(100vh - 70px);
+        padding: 40px 20px 60px;
+
+        background: var(--apex-bg);
+        color: var(--apex-text);
+    }
+
+    .apex-container {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* =========================================================
+       HERO
+       ========================================================= */
+
+    .apex-hero {
+        position: relative;
+        overflow: hidden;
+
+        padding: 38px;
+        margin-bottom: 28px;
+
+        border: 1px solid var(--apex-border);
+        border-radius: 24px;
+
+        background:
+            radial-gradient(
+                circle at 90% 10%,
+                rgba(99, 102, 241, .18),
+                transparent 35%
+            ),
+            var(--apex-surface);
+
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, .18);
+
+        animation: apexFadeUp .35s ease;
+    }
+
+    .apex-hero::after {
+        content: "";
+
+        position: absolute;
+
+        width: 180px;
+        height: 180px;
+
+        right: -70px;
+        bottom: -90px;
+
+        border-radius: 50%;
+
+        background: rgba(139, 92, 246, .10);
+
+        pointer-events: none;
+    }
+
+    .apex-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        margin-bottom: 12px;
+
+        color: #818cf8 !important;
+
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .apex-eyebrow i {
+        color: #818cf8 !important;
+    }
+
+    .apex-hero h1 {
+        position: relative;
+        z-index: 1;
+
+        margin: 0 0 10px;
+
+        color: #f8fafc !important;
+
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 800;
+        letter-spacing: -.04em;
+        line-height: 1.05;
+    }
+
+    .apex-hero p {
+        position: relative;
+        z-index: 1;
+
+        max-width: 600px;
+
+        margin: 0;
+
+        color: #94a3b8 !important;
+
+        font-size: 1rem;
+        line-height: 1.65;
+    }
+
+    .apex-hero-actions {
+        position: relative;
+        z-index: 2;
+
+        margin-top: 24px;
+    }
+
+    /* =========================================================
+       NEW ROOM BUTTON
+       ========================================================= */
+
+    .apex-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+
+        padding: 11px 17px;
+
+        border: 0;
+        border-radius: 12px;
+
+        background: var(--apex-accent);
+
+        color: #fff !important;
+
+        font-size: .9rem;
+        font-weight: 700;
+
+        text-decoration: none;
+
+        cursor: pointer;
+
+        box-shadow:
+            0 8px 24px rgba(99, 102, 241, .25);
+
+        transition:
+            transform .18s ease,
+            background .18s ease,
+            box-shadow .18s ease;
+    }
+
+    .apex-new i {
+        color: #fff !important;
+    }
+
+    .apex-new:hover {
+        transform: translateY(-2px);
+
+        background: var(--apex-accent-hover);
+
+        color: #fff !important;
+
+        box-shadow:
+            0 12px 30px rgba(99, 102, 241, .32);
+    }
+
+    .apex-new:active {
+        transform: translateY(0);
+    }
+
+    /* =========================================================
+       ROOM SECTION
+       ========================================================= */
+
+    .apex-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-bottom: 14px;
+    }
+
+    .apex-section-header h2 {
+        margin: 0;
+
+        color: #f8fafc !important;
+
+        font-size: 1.05rem;
+        font-weight: 750;
+    }
+
+    .apex-count {
+        color: #64748b !important;
+
+        font-size: .78rem;
+    }
+
+    /* =========================================================
+       ROOM GRID
+       ========================================================= */
+
+    .apex-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 14px;
+    }
+
+    .apex-room-card {
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+
+        min-height: 170px;
+
+        padding: 20px;
+
+        border: 1px solid var(--apex-border);
+        border-radius: 18px;
+
+        background: var(--apex-surface);
+
+        text-decoration: none;
+
+        color: var(--apex-text) !important;
+
+        transition:
+            transform .2s ease,
+            border-color .2s ease,
+            background .2s ease,
+            box-shadow .2s ease;
+
+        animation: apexFadeUp .35s ease both;
+    }
+
+    .apex-room-card:hover {
+        transform: translateY(-3px);
+
+        border-color: rgba(99, 102, 241, .4);
+
+        background: var(--apex-surface-2);
+
+        color: var(--apex-text) !important;
+
+        box-shadow:
+            0 14px 35px rgba(0, 0, 0, .16);
+    }
+
+    .apex-room-icon {
+        width: 42px;
+        height: 42px;
+
+        display: grid;
+        place-items: center;
+
+        margin-bottom: 18px;
+
+        border-radius: 13px;
+
+        background: rgba(99, 102, 241, .13);
+
+        color: #818cf8 !important;
+    }
+
+    .apex-room-icon i {
+        color: #818cf8 !important;
+    }
+
+    .apex-room-card h3 {
+        margin: 0 0 7px;
+
+        overflow: hidden;
+
+        color: #f8fafc !important;
+
+        font-size: .98rem;
+        font-weight: 700;
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .apex-room-card p {
+        margin: 0;
+
+        overflow: hidden;
+
+        color: #64748b !important;
+
+        font-size: .78rem;
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .apex-arrow {
+        position: absolute;
+
+        right: 18px;
+        bottom: 18px;
+
+        color: #475569 !important;
+
+        transition:
+            transform .18s ease,
+            color .18s ease;
+    }
+
+    .apex-room-card:hover .apex-arrow {
+        transform: translateX(3px);
+
+        color: #818cf8 !important;
+    }
+
+    /* =========================================================
+       DELETE BUTTON
+       ========================================================= */
+
+    .apex-delete {
+        position: absolute;
+
+        top: 16px;
+        right: 16px;
+
+        width: 30px;
+        height: 30px;
+
+        display: grid;
+        place-items: center;
+
+        border: 0;
+        border-radius: 9px;
+
+        background: transparent;
+
+        color: #64748b !important;
+
+        cursor: pointer;
+
+        opacity: 0;
+
+        transition:
+            opacity .18s ease,
+            background .18s ease,
+            color .18s ease;
+    }
+
+    .apex-room-card:hover .apex-delete,
+    .apex-delete:focus {
+        opacity: 1;
+    }
+
+    .apex-delete:hover {
+        background: rgba(239, 68, 68, .10);
+
+        color: #f87171 !important;
+    }
+
+    .apex-delete i {
+        color: inherit !important;
+    }
+
+    /* =========================================================
+       EMPTY STATE
+       ========================================================= */
+
+    .apex-empty {
+        padding: 60px 25px;
+
+        border: 1px dashed var(--apex-border);
+        border-radius: 20px;
+
+        background: rgba(17, 24, 39, .5);
+
+        text-align: center;
+
+        animation: apexFadeUp .35s ease;
+    }
+
+    .apex-empty-icon {
+        width: 58px;
+        height: 58px;
+
+        display: grid;
+        place-items: center;
+
+        margin: 0 auto 16px;
+
+        border-radius: 17px;
+
+        background: rgba(99, 102, 241, .13);
+
+        color: #818cf8 !important;
+
+        font-size: 22px;
+    }
+
+    .apex-empty-icon i {
+        color: #818cf8 !important;
+    }
+
+    .apex-empty h2 {
+        margin: 0 0 7px;
+
+        color: #f8fafc !important;
+
+        font-size: 1.15rem;
+    }
+
+    .apex-empty p {
+        max-width: 440px;
+
+        margin: 0 auto 20px;
+
+        color: #64748b !important;
+
+        line-height: 1.6;
+    }
+
+    /* =========================================================
+       LIGHT MODE
+       ========================================================= */
+
+    @media (prefers-color-scheme: light) {
+
+        .apex-page {
+            --apex-bg: #f8fafc;
+            --apex-surface: #ffffff;
+            --apex-surface-2: #f1f5f9;
+            --apex-border: rgba(15, 23, 42, .10);
+        }
+
+        .apex-hero h1,
+        .apex-section-header h2,
+        .apex-room-card h3,
+        .apex-empty h2 {
+            color: #0f172a !important;
+        }
+
+        .apex-hero p,
+        .apex-room-card p,
+        .apex-empty p {
+            color: #64748b !important;
+        }
+
+        .apex-empty {
+            background: rgba(255,255,255,.7);
+        }
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 850px) {
+
+        .apex-grid {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+    }
+
+    @media (max-width: 560px) {
+
+        .apex-page {
+            padding: 22px 12px 40px;
+        }
+
+        .apex-hero {
+            padding: 26px 22px;
+            border-radius: 20px;
+        }
+
+        .apex-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .apex-room-card {
+            min-height: 150px;
+        }
+
+        .apex-delete {
+            opacity: 1;
+        }
+
+    }
+
+    @keyframes apexFadeUp {
+
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="apex-page">
+
+    <div class="apex-container">
+
+        <!-- HERO -->
+
+        <section class="apex-hero">
+
+            <div class="apex-eyebrow">
+                <i class="fa-solid fa-sparkles"></i>
+                Apex
+            </div>
+
+            <h1>What are you building?</h1>
+
+            <p>
+                Create a conversation with Apex for coding,
+                ideas, questions, debugging, and everything
+                in between.
+            </p>
+
+            <div class="apex-hero-actions">
+
+                <button
+                    type="button"
+                    class="apex-new"
+                    id="new-room"
+                >
+                    <i class="fa-solid fa-plus"></i>
+                    New AI Room
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ROOMS -->
+
+        <div class="apex-section-header">
+
+            <h2>Your rooms</h2>
+
+            <span class="apex-count">
+                {{ rooms|length }}
+                {% if rooms|length == 1 %}
+                    room
+                {% else %}
+                    rooms
+                {% endif %}
+            </span>
+
+        </div>
+
+
+        {% if rooms %}
+
+            <div class="apex-grid">
+
+                {% for room in rooms %}
+
+                    <a
+                        href="{% url 'ai:room' room.id %}"
+                        class="apex-room-card"
+                    >
+
+                        <div class="apex-room-icon">
+                            <i class="fa-solid fa-sparkles"></i>
+                        </div>
+
+                        <h3>{{ room.name }}</h3>
+
+                        <p>
+                            {% if room.updated_at %}
+                                Updated {{ room.updated_at|date:"M j, Y" }}
+                            {% else %}
+                                AI conversation
+                            {% endif %}
+                        </p>
+
+                        <span class="apex-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+
+                        <button
+                            type="button"
+                            class="apex-delete"
+                            data-room-id="{{ room.id }}"
+                            aria-label="Delete {{ room.name }}"
+                        >
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="apex-empty">
+
+                <div class="apex-empty-icon">
+                    <i class="fa-solid fa-sparkles"></i>
+                </div>
+
+                <h2>No rooms yet</h2>
+
+                <p>
+                    Create your first Apex room and start
+                    chatting with your AI assistant.
+                </p>
+
+                <button
+                    type="button"
+                    class="apex-new"
+                    id="empty-new-room"
+                >
+                    <i class="fa-solid fa-plus"></i>
+                    Create your first room
+                </button>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const newRoomButton =
+        document.getElementById("new-room");
+
+    const emptyNewRoomButton =
+        document.getElementById("empty-new-room");
+
+
+    /* =========================================================
+       CSRF
+       ========================================================= */
+
+    function getCookie(name) {
+
+        const cookies =
+            document.cookie.split(";");
+
+        for (const cookie of cookies) {
+
+            const [key, ...value] =
+                cookie.trim().split("=");
+
+            if (key === name) {
+                return decodeURIComponent(
+                    value.join("=")
+                );
+            }
+
+        }
+
+        return null;
+    }
+
+
+    /* =========================================================
+       CREATE ROOM
+       ========================================================= */
+
+    async function createRoom(button) {
+
+        if (!button) {
+            return;
+        }
+
+        button.disabled = true;
+
+        const originalHTML =
+            button.innerHTML;
+
+        button.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Creating...
+        `;
+
+
+        const csrfToken =
+            getCookie("csrftoken");
+
+
+        if (!csrfToken) {
+
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+
+            alert(
+                "Security token missing. Please refresh the page and try again."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "{% url 'ai:create_room' %}",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "X-CSRFToken":
+                                csrfToken,
+
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+                        },
+
+                        credentials:
+                            "same-origin",
+                    }
+                );
+
+
+            const responseText =
+                await response.text();
+
+
+            let data;
+
+
+            try {
+
+                data =
+                    JSON.parse(
+                        responseText
+                    );
+
+            } catch {
+
+                console.error(
+                    "Apex room creation response:",
+                    responseText
+                );
+
+                throw new Error(
+                    `Server returned HTTP ${response.status}.`
+                );
+
+            }
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.error ||
+                    `Request failed with HTTP ${response.status}.`
+                );
+
+            }
+
+
+            window.location.href =
+                `/ai/room/${data.id}/`;
+
+
+        } catch (error) {
+
+            console.error(
+                "Failed to create Apex room:",
+                error
+            );
+
+            alert(
+                error.message ||
+                "Unable to create the room."
+            );
+
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+
+        }
+
+    }
+
+
+    if (newRoomButton) {
+
+        newRoomButton.addEventListener(
+            "click",
+            () => createRoom(newRoomButton)
+        );
+
+    }
+
+
+    if (emptyNewRoomButton) {
+
+        emptyNewRoomButton.addEventListener(
+            "click",
+            () => createRoom(emptyNewRoomButton)
+        );
+
+    }
+
+
+    /* =========================================================
+       DELETE ROOMS
+       ========================================================= */
+
+    document.querySelectorAll(
+        ".apex-delete"
+    ).forEach(button => {
+
+        button.addEventListener(
+            "click",
+            async (event) => {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+
+                const roomId =
+                    button.dataset.roomId;
+
+
+                if (!roomId) {
+                    return;
+                }
+
+
+                if (
+                    !confirm(
+                        "Delete this Apex room?"
+                    )
+                ) {
+                    return;
+                }
+
+
+                const csrfToken =
+                    getCookie("csrftoken");
+
+
+                if (!csrfToken) {
+
+                    alert(
+                        "Security token missing. Please refresh the page and try again."
+                    );
+
+                    return;
+                }
+
+
+                button.disabled = true;
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `/ai/room/${roomId}/delete/`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "X-CSRFToken":
+                                        csrfToken,
+
+                                    "X-Requested-With":
+                                        "XMLHttpRequest",
+                                },
+
+                                credentials:
+                                    "same-origin",
+                            }
+                        );
+
+
+                    const responseText =
+                        await response.text();
+
+
+                    let data;
+
+
+                    try {
+
+                        data =
+                            JSON.parse(
+                                responseText
+                            );
+
+                    } catch {
+
+                        console.error(
+                            "Apex delete response:",
+                            responseText
+                        );
+
+                        throw new Error(
+                            `Server returned HTTP ${response.status}.`
+                        );
+
+                    }
+
+
+                    if (
+                        !response.ok ||
+                        !data.success
+                    ) {
+
+                        throw new Error(
+                            data.error ||
+                            "Unable to delete room."
+                        );
+
+                    }
+
+
+                    const card =
+                        button.closest(
+                            ".apex-room-card"
+                        );
+
+
+                    if (card) {
+
+                        card.style.opacity = "0";
+                        card.style.transform =
+                            "translateY(5px) scale(.98)";
+
+                        card.style.transition =
+                            "opacity .2s ease, transform .2s ease";
+
+                        setTimeout(
+                            () => {
+                                card.remove();
+
+                                if (
+                                    !document.querySelector(
+                                        ".apex-room-card"
+                                    )
+                                ) {
+                                    window.location.reload();
+                                }
+                            },
+                            200
+                        );
+
+                    }
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Failed to delete Apex room:",
+                        error
+                    );
+
+                    alert(
+                        error.message ||
+                        "Unable to delete room."
+                    );
+
+                    button.disabled = false;
+
+                }
+
+            }
+        );
+
+    });
+
+});
+</script>
+
+{% endblock %}

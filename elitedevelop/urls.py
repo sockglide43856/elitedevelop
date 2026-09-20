@@ -32,6 +32,7 @@ urlpatterns = [
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('qr/', include('qr_generator.urls')),
     path('py/', TemplateView.as_view(template_name="pyexec.html"), name='py'),
+    path("ai/", include("ai.urls")),
     path('forms/', include('forms.urls')),
     path('eliteos/', include('eliteos.urls')),
     path('api/vault/save/', views.save_vault_snippet, name='api-vault-save'),

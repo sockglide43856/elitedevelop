@@ -1,0 +1,1513 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ room.name }} — Apex{% endblock %}
+
+{% block head %}
+<style>
+/* ============================================================
+   APEX CHAT ROOM
+   ============================================================ */
+
+.apex-page {
+    --apex-bg: #0b0f17;
+    --apex-panel: #111827;
+    --apex-border: rgba(148, 163, 184, 0.14);
+    --apex-text: #f8fafc;
+    --apex-muted: #94a3b8;
+    --apex-user: #2563eb;
+    --apex-input: #0f172a;
+
+    min-height: calc(100vh - 70px);
+    background: var(--apex-bg);
+    color: var(--apex-text);
+    display: flex;
+    flex-direction: column;
+}
+
+.apex-shell {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    padding: 22px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.apex-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--apex-border);
+    flex-shrink: 0;
+}
+
+.apex-logo {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    color: #94a3b8 !important;
+}
+
+.apex-logo i {
+    color: #94a3b8 !important;
+    font-size: 22px;
+}
+
+.apex-header-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.apex-header-title {
+    margin: 0;
+    color: var(--apex-text) !important;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.apex-header-subtitle {
+    margin: 3px 0 0;
+    color: var(--apex-muted) !important;
+    font-size: 0.78rem;
+}
+
+.apex-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    color: var(--apex-muted) !important;
+    text-decoration: none;
+    transition:
+        background .18s ease,
+        color .18s ease,
+        transform .18s ease;
+}
+
+.apex-back:hover {
+    background: rgba(148, 163, 184, .1);
+    color: var(--apex-text) !important;
+    transform: translateX(-2px);
+}
+
+/* ============================================================
+   CHAT
+   ============================================================ */
+
+.apex-chat {
+    flex: 1;
+    min-height: 300px;
+    overflow-y: auto;
+    padding: 26px 4px 30px;
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, .25) transparent;
+}
+
+.apex-chat::-webkit-scrollbar {
+    width: 7px;
+}
+
+.apex-chat::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.apex-chat::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, .22);
+    border-radius: 20px;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.apex-empty {
+    min-height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.apex-empty-inner {
+    max-width: 520px;
+}
+
+.apex-empty-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 18px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--apex-border);
+    border-radius: 17px;
+    background: var(--apex-panel);
+    color: #94a3b8 !important;
+    font-size: 24px;
+}
+
+.apex-empty h2 {
+    margin: 0 0 8px;
+    color: var(--apex-text) !important;
+    font-size: 1.45rem;
+}
+
+.apex-empty p {
+    margin: 0;
+    color: var(--apex-muted) !important;
+    line-height: 1.6;
+}
+
+/* ============================================================
+   MESSAGES
+   ============================================================ */
+
+.apex-message {
+    display: flex;
+    gap: 12px;
+    margin: 0 auto 22px;
+    max-width: 900px;
+    animation: apexMessageIn .22s ease both;
+}
+
+@keyframes apexMessageIn {
+    from {
+        opacity: 0;
+        transform: translateY(7px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.apex-message.user {
+    justify-content: flex-end;
+}
+
+.apex-message.assistant {
+    justify-content: flex-start;
+}
+
+.apex-avatar {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--apex-panel);
+    border: 1px solid var(--apex-border);
+    color: #94a3b8 !important;
+}
+
+.apex-avatar i {
+    color: inherit !important;
+    font-size: 14px;
+}
+
+.apex-message.user .apex-avatar {
+    order: 2;
+    background: var(--apex-user);
+    border-color: transparent;
+    color: #fff !important;
+}
+
+.apex-bubble {
+    max-width: min(760px, 82%);
+    min-width: 0;
+}
+
+.apex-message.user .apex-bubble {
+    order: 1;
+}
+
+.apex-role {
+    margin-bottom: 5px;
+    color: var(--apex-muted) !important;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.apex-message.user .apex-role {
+    text-align: right;
+}
+
+.apex-text {
+    color: var(--apex-text) !important;
+    font-size: .94rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+.apex-message.user .apex-text {
+    background: var(--apex-user);
+    color: #fff !important;
+    padding: 11px 15px;
+    border-radius: 16px 16px 4px 16px;
+    white-space: pre-wrap;
+}
+
+.apex-message.assistant .apex-text {
+    padding-top: 1px;
+}
+
+/* ============================================================
+   MARKDOWN
+   ============================================================ */
+
+.apex-markdown p {
+    margin: 0 0 10px;
+}
+
+.apex-markdown p:last-child {
+    margin-bottom: 0;
+}
+
+.apex-markdown h1,
+.apex-markdown h2,
+.apex-markdown h3,
+.apex-markdown h4,
+.apex-markdown h5,
+.apex-markdown h6 {
+    margin: 18px 0 9px;
+    color: var(--apex-text) !important;
+    line-height: 1.3;
+}
+
+.apex-markdown h1 {
+    font-size: 1.45rem;
+}
+
+.apex-markdown h2 {
+    font-size: 1.28rem;
+}
+
+.apex-markdown h3 {
+    font-size: 1.1rem;
+}
+
+.apex-markdown h4,
+.apex-markdown h5,
+.apex-markdown h6 {
+    font-size: 1rem;
+}
+
+.apex-markdown strong {
+    font-weight: 750;
+}
+
+.apex-markdown em {
+    font-style: italic;
+}
+
+.apex-markdown ul,
+.apex-markdown ol {
+    margin: 8px 0;
+    padding-left: 24px;
+}
+
+.apex-markdown li {
+    margin: 4px 0;
+}
+
+.apex-markdown a {
+    color: #60a5fa !important;
+    text-decoration: underline;
+}
+
+.apex-markdown code {
+    padding: 2px 5px;
+    border-radius: 5px;
+    background: rgba(148, 163, 184, .12);
+    color: #e2e8f0 !important;
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+    font-size: .86em;
+}
+
+.apex-markdown pre {
+    margin: 12px 0;
+    padding: 14px;
+    overflow-x: auto;
+    border: 1px solid var(--apex-border);
+    border-radius: 10px;
+    background: #080c13;
+}
+
+.apex-markdown pre code {
+    padding: 0;
+    background: transparent;
+    color: #e2e8f0 !important;
+    font-size: .84rem;
+    line-height: 1.55;
+    white-space: pre;
+}
+
+.apex-markdown blockquote {
+    margin: 10px 0;
+    padding: 8px 14px;
+    border-left: 3px solid #64748b;
+    color: var(--apex-muted) !important;
+}
+
+.apex-markdown hr {
+    margin: 16px 0;
+    border: 0;
+    border-top: 1px solid var(--apex-border);
+}
+
+.apex-markdown table {
+    width: 100%;
+    margin: 12px 0;
+    border-collapse: collapse;
+}
+
+.apex-markdown th,
+.apex-markdown td {
+    padding: 8px 10px;
+    border: 1px solid var(--apex-border);
+    text-align: left;
+}
+
+.apex-markdown th {
+    background: rgba(148, 163, 184, .08);
+    font-weight: 700;
+}
+
+.apex-markdown img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+/* ============================================================
+   THINKING
+   ============================================================ */
+
+.apex-thinking {
+    display: flex;
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto 22px;
+    animation: apexMessageIn .22s ease both;
+}
+
+.apex-thinking-avatar {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--apex-panel);
+    border: 1px solid var(--apex-border);
+    color: #94a3b8 !important;
+}
+
+.apex-thinking-avatar i {
+    color: inherit !important;
+    font-size: 14px;
+}
+
+.apex-thinking-content {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    color: var(--apex-muted) !important;
+    font-size: .85rem;
+}
+
+.apex-dots {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 7px;
+}
+
+.apex-dots span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: apexDot 1.2s infinite ease-in-out;
+}
+
+.apex-dots span:nth-child(2) {
+    animation-delay: .15s;
+}
+
+.apex-dots span:nth-child(3) {
+    animation-delay: .3s;
+}
+
+@keyframes apexDot {
+    0%, 60%, 100% {
+        opacity: .3;
+        transform: translateY(0);
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(-3px);
+    }
+}
+
+/* ============================================================
+   COMPOSER
+   ============================================================ */
+
+.apex-composer-wrap {
+    flex-shrink: 0;
+    padding-top: 8px;
+}
+
+.apex-form {
+    width: min(900px, 100%);
+    margin: 0 auto;
+}
+
+.apex-input-shell {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 10px;
+    background: var(--apex-input);
+    border: 1px solid var(--apex-border);
+    border-radius: 17px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .18);
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.apex-input-shell:focus-within {
+    border-color: rgba(96, 165, 250, .42);
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, .2),
+        0 0 0 3px rgba(37, 99, 235, .08);
+}
+
+.apex-input {
+    flex: 1;
+    width: 100%;
+    min-height: 24px;
+    max-height: 180px;
+    resize: none;
+    border: 0;
+    outline: 0;
+    background: transparent !important;
+    color: var(--apex-text) !important;
+    font: inherit;
+    font-size: .94rem;
+    line-height: 1.5;
+    padding: 7px 4px;
+}
+
+.apex-input::placeholder {
+    color: #64748b !important;
+}
+
+.apex-send {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: #2563eb;
+    color: #fff !important;
+    cursor: pointer;
+    transition:
+        transform .18s ease,
+        background .18s ease,
+        opacity .18s ease;
+}
+
+.apex-send:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.apex-send:active {
+    transform: translateY(0);
+}
+
+.apex-send:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.apex-hint {
+    margin: 8px 4px 0;
+    color: #64748b !important;
+    font-size: .7rem;
+    text-align: center;
+}
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.apex-error {
+    display: none;
+    width: min(900px, 100%);
+    margin: 0 auto 10px;
+    padding: 10px 13px;
+    border: 1px solid rgba(248, 113, 113, .2);
+    border-radius: 11px;
+    background: rgba(127, 29, 29, .18);
+    color: #fca5a5 !important;
+    font-size: .82rem;
+}
+
+.apex-error.show {
+    display: block;
+}
+
+/* ============================================================
+   LIGHT THEME
+   ============================================================ */
+
+[data-theme="light"] .apex-page {
+    --apex-bg: #f8fafc;
+    --apex-panel: #ffffff;
+    --apex-border: rgba(15, 23, 42, .1);
+    --apex-text: #0f172a;
+    --apex-muted: #64748b;
+    --apex-input: #ffffff;
+}
+
+[data-theme="light"] .apex-logo,
+[data-theme="light"] .apex-logo i,
+[data-theme="light"] .apex-avatar,
+[data-theme="light"] .apex-avatar i,
+[data-theme="light"] .apex-thinking-avatar,
+[data-theme="light"] .apex-thinking-avatar i,
+[data-theme="light"] .apex-empty-icon {
+    color: #64748b !important;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    .apex-shell {
+        padding: 14px 10px 15px;
+    }
+
+    .apex-header {
+        padding-bottom: 13px;
+    }
+
+    .apex-chat {
+        padding-top: 20px;
+    }
+
+    .apex-message,
+    .apex-thinking {
+        gap: 9px;
+    }
+
+    .apex-bubble {
+        max-width: 86%;
+    }
+
+    .apex-text {
+        font-size: .9rem;
+    }
+
+    .apex-empty {
+        min-height: 300px;
+    }
+
+    .apex-input-shell {
+        border-radius: 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .apex-message,
+    .apex-thinking,
+    .apex-dots span {
+        animation: none;
+    }
+
+    .apex-back,
+    .apex-send {
+        transition: none;
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="apex-page">
+
+    <div class="apex-shell">
+
+        <!-- HEADER -->
+        <header class="apex-header">
+
+            <a
+                href="{% url 'ai:rooms' %}"
+                class="apex-back"
+                aria-label="Back to Apex rooms"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+
+            <div class="apex-logo" aria-hidden="true">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+
+            <div class="apex-header-info">
+
+                <h1 class="apex-header-title">
+                    {{ room.name }}
+                </h1>
+
+                <p class="apex-header-subtitle">
+                    Apex
+                </p>
+
+            </div>
+
+        </header>
+
+
+        <!-- CHAT -->
+        <main
+            class="apex-chat"
+            id="apex-chat"
+        >
+
+            {% if aimessages %}
+
+                {% for aiMessage in aimessages %}
+
+                    <div
+                        class="apex-message {{ aiMessage.role }}"
+                    >
+
+                        {% if aiMessage.role == "user" %}
+
+                            <div class="apex-avatar">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+
+                            <div class="apex-bubble">
+
+                                <div class="apex-role">
+                                    You
+                                </div>
+
+                                <div class="apex-text">{{ aiMessage.content }}</div>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="apex-avatar">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+
+                            <div class="apex-bubble">
+
+                                <div class="apex-role">
+                                    Apex
+                                </div>
+
+                                <div
+                                    class="apex-text apex-markdown"
+                                    data-markdown="{{ aiMessage.content|escape }}"
+                                ></div>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div
+                    class="apex-empty"
+                    id="apex-empty"
+                >
+                    <div class="apex-empty-inner">
+
+                        <div class="apex-empty-icon">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+
+                        <h2>
+                            What are you building?
+                        </h2>
+
+                        <p>
+                            Ask Apex anything, brainstorm an idea,
+                            debug some code, or start working on
+                            something new.
+                        </p>
+
+                    </div>
+                </div>
+
+            {% endif %}
+
+        </main>
+
+
+        <!-- COMPOSER -->
+        <div class="apex-composer-wrap">
+
+            <div
+                class="apex-error"
+                id="apex-error"
+            ></div>
+
+            <form
+                class="apex-form"
+                id="apex-form"
+                method="post"
+                action="{% url 'ai:send_message' room.id %}"
+            >
+
+                {% csrf_token %}
+
+                <div class="apex-input-shell">
+
+                    <textarea
+                        class="apex-input"
+                        id="apex-input"
+                        name="message"
+                        rows="1"
+                        maxlength="10000"
+                        placeholder="Message Apex..."
+                        autocomplete="off"
+                    ></textarea>
+
+                    <button
+                        class="apex-send"
+                        id="apex-send"
+                        type="submit"
+                        aria-label="Send message"
+                    >
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+
+                </div>
+
+                <div class="apex-hint">
+                    Apex can make mistakes. Check important information.
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+
+<!-- Markdown renderer + sanitizer -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+
+<script>
+(function () {
+
+    "use strict";
+
+
+    /* ========================================================
+       MARKDOWN
+       ======================================================== */
+
+    marked.setOptions({
+        breaks: true,
+        gfm: true,
+    });
+
+
+    /* ========================================================
+       ELEMENTS
+       ======================================================== */
+
+    const form =
+        document.getElementById("apex-form");
+
+    const input =
+        document.getElementById("apex-input");
+
+    const sendButton =
+        document.getElementById("apex-send");
+
+    const chat =
+        document.getElementById("apex-chat");
+
+    const errorBox =
+        document.getElementById("apex-error");
+
+
+    let busy = false;
+
+
+    /* ========================================================
+       CSRF
+       ======================================================== */
+
+    function getCookie(name) {
+
+        const cookies =
+            document.cookie.split(";");
+
+        for (const cookie of cookies) {
+
+            const parts =
+                cookie.trim().split("=");
+
+            const key =
+                parts.shift();
+
+            if (key === name) {
+
+                return decodeURIComponent(
+                    parts.join("=")
+                );
+            }
+        }
+
+        return null;
+    }
+
+
+    /* ========================================================
+       SCROLL
+       ======================================================== */
+
+    function scrollToBottom() {
+
+        requestAnimationFrame(() => {
+
+            chat.scrollTop =
+                chat.scrollHeight;
+
+        });
+    }
+
+
+    /* ========================================================
+       ERROR
+       ======================================================== */
+
+    function showError(message) {
+
+        errorBox.textContent =
+            message || "Something went wrong.";
+
+        errorBox.classList.add("show");
+    }
+
+
+    function clearError() {
+
+        errorBox.textContent = "";
+
+        errorBox.classList.remove("show");
+    }
+
+
+    /* ========================================================
+       INPUT
+       ======================================================== */
+
+    function resizeInput() {
+
+        input.style.height = "auto";
+
+        input.style.height =
+            Math.min(
+                input.scrollHeight,
+                180
+            ) + "px";
+    }
+
+
+    input.addEventListener(
+        "input",
+        resizeInput
+    );
+
+
+    input.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                form.requestSubmit();
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       ADD MESSAGE
+       ======================================================== */
+
+    function addMessage(role, content) {
+
+        const empty =
+            document.getElementById(
+                "apex-empty"
+            );
+
+        if (empty) {
+            empty.remove();
+        }
+
+
+        const wrapper =
+            document.createElement("div");
+
+        wrapper.className =
+            `apex-message ${role}`;
+
+
+        const avatar =
+            document.createElement("div");
+
+        avatar.className =
+            "apex-avatar";
+
+
+        const icon =
+            document.createElement("i");
+
+        icon.className =
+            role === "user"
+                ? "fa-solid fa-user"
+                : "fa-solid fa-robot";
+
+
+        avatar.appendChild(icon);
+
+
+        const bubble =
+            document.createElement("div");
+
+        bubble.className =
+            "apex-bubble";
+
+
+        const roleLabel =
+            document.createElement("div");
+
+        roleLabel.className =
+            "apex-role";
+
+        roleLabel.textContent =
+            role === "user"
+                ? "You"
+                : "Apex";
+
+
+        const text =
+            document.createElement("div");
+
+        text.className =
+            "apex-text";
+
+
+        /*
+         * User messages are always plain text.
+         *
+         * Assistant messages are parsed as Markdown
+         * and then sanitized before being inserted.
+         */
+        if (role === "assistant") {
+
+            text.classList.add(
+                "apex-markdown"
+            );
+
+            text.innerHTML =
+                DOMPurify.sanitize(
+                    marked.parse(content)
+                );
+
+        } else {
+
+            text.textContent =
+                content;
+        }
+
+
+        bubble.appendChild(roleLabel);
+        bubble.appendChild(text);
+
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(bubble);
+
+        chat.appendChild(wrapper);
+
+        scrollToBottom();
+    }
+
+
+    /* ========================================================
+       RENDER EXISTING MARKDOWN
+       ======================================================== */
+
+    document
+        .querySelectorAll(".apex-markdown")
+        .forEach(function (element) {
+
+            const markdown =
+                element.dataset.markdown || "";
+
+            element.innerHTML =
+                DOMPurify.sanitize(
+                    marked.parse(markdown)
+                );
+        });
+
+
+    /* ========================================================
+       THINKING INDICATOR
+       ======================================================== */
+
+    function showThinking() {
+
+        removeThinking();
+
+
+        const thinking =
+            document.createElement("div");
+
+        thinking.className =
+            "apex-thinking";
+
+        thinking.id =
+            "apex-thinking";
+
+
+        const avatar =
+            document.createElement("div");
+
+        avatar.className =
+            "apex-thinking-avatar";
+
+
+        const icon =
+            document.createElement("i");
+
+        icon.className =
+            "fa-solid fa-robot";
+
+
+        avatar.appendChild(icon);
+
+
+        const content =
+            document.createElement("div");
+
+        content.className =
+            "apex-thinking-content";
+
+        content.textContent =
+            "Apex is thinking";
+
+
+        const dots =
+            document.createElement("span");
+
+        dots.className =
+            "apex-dots";
+
+
+        for (let i = 0; i < 3; i++) {
+
+            const dot =
+                document.createElement("span");
+
+            dots.appendChild(dot);
+        }
+
+
+        content.appendChild(dots);
+
+        thinking.appendChild(avatar);
+        thinking.appendChild(content);
+
+        chat.appendChild(thinking);
+
+        scrollToBottom();
+    }
+
+
+    function removeThinking() {
+
+        const thinking =
+            document.getElementById(
+                "apex-thinking"
+            );
+
+        if (thinking) {
+            thinking.remove();
+        }
+    }
+
+
+    /* ========================================================
+       POLL AI JOB
+       ======================================================== */
+
+    async function waitForAI(jobId) {
+
+        const statusUrl =
+            `/ai/job/${encodeURIComponent(jobId)}/`;
+
+
+        while (true) {
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        1200
+                    )
+            );
+
+
+            const response =
+                await fetch(
+                    statusUrl,
+                    {
+                        method: "GET",
+
+                        credentials:
+                            "same-origin",
+
+                        headers: {
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+                        },
+                    }
+                );
+
+
+            const responseText =
+                await response.text();
+
+
+            let data;
+
+            try {
+
+                data =
+                    JSON.parse(
+                        responseText
+                    );
+
+            } catch {
+
+                console.error(
+                    "Status response:",
+                    responseText
+                );
+
+                throw new Error(
+                    `Server returned HTTP ${response.status}.`
+                );
+            }
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.error ||
+                    "Unable to check AI status."
+                );
+            }
+
+
+            if (
+                data.status ===
+                "completed"
+            ) {
+
+                return data.response || "";
+            }
+
+
+            if (
+                data.status ===
+                "failed"
+            ) {
+
+                throw new Error(
+                    data.error ||
+                    "Apex could not complete the request."
+                );
+            }
+
+
+            /*
+             * queued / processing:
+             *
+             * Keep polling.
+             */
+        }
+    }
+
+
+    /* ========================================================
+       SEND MESSAGE
+       ======================================================== */
+
+    form.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+
+            if (busy) {
+                return;
+            }
+
+
+            const message =
+                input.value.trim();
+
+
+            if (!message) {
+                return;
+            }
+
+
+            clearError();
+
+
+            busy = true;
+
+            input.disabled = true;
+            sendButton.disabled = true;
+
+
+            addMessage(
+                "user",
+                message
+            );
+
+
+            input.value = "";
+
+            resizeInput();
+
+            showThinking();
+
+
+            try {
+
+                const csrfToken =
+                    getCookie("csrftoken");
+
+
+                if (!csrfToken) {
+
+                    throw new Error(
+                        "CSRF token is missing. Please refresh the page."
+                    );
+                }
+
+
+                /*
+                 * Django only queues the job.
+                 */
+                const response =
+                    await fetch(
+                        form.action,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/x-www-form-urlencoded; charset=UTF-8",
+
+                                "X-CSRFToken":
+                                    csrfToken,
+
+                                "X-Requested-With":
+                                    "XMLHttpRequest",
+                            },
+
+                            body:
+                                new URLSearchParams({
+                                    message,
+                                }),
+
+                            credentials:
+                                "same-origin",
+                        }
+                    );
+
+
+                const responseText =
+                    await response.text();
+
+
+                let data;
+
+                try {
+
+                    data =
+                        JSON.parse(
+                            responseText
+                        );
+
+                } catch {
+
+                    console.error(
+                        "Server response:",
+                        responseText
+                    );
+
+                    throw new Error(
+                        `Server returned HTTP ${response.status}.`
+                    );
+                }
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Unable to send message."
+                    );
+                }
+
+
+                if (!data.job_id) {
+
+                    throw new Error(
+                        "The AI worker did not return a job ID."
+                    );
+                }
+
+
+                /*
+                 * Django has finished.
+                 *
+                 * Now wait for the background
+                 * Worker/OpenRouter job.
+                 */
+                const answer =
+                    await waitForAI(
+                        data.job_id
+                    );
+
+
+                removeThinking();
+
+
+                addMessage(
+                    "assistant",
+                    answer
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Apex error:",
+                    error
+                );
+
+
+                removeThinking();
+
+
+                showError(
+                    error.message ||
+                    "Something went wrong."
+                );
+
+
+            } finally {
+
+                busy = false;
+
+                input.disabled = false;
+                sendButton.disabled = false;
+
+                input.focus();
+
+                scrollToBottom();
+            }
+
+        }
+    );
+
+
+    /* ========================================================
+       INITIALIZE
+       ======================================================== */
+
+    resizeInput();
+
+    scrollToBottom();
+
+    input.focus();
+
+})();
+</script>
+{% endblock %}
