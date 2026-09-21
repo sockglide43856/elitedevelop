@@ -13,7 +13,9 @@ PASSWORD_HASHERS = DEFAULT_PASSWORD_HASHERS + [
 
 PUSH_SUBSCRIPTION_MODEL = "chats.WebPushSubscription"
 
-
+AI_DEFAULT_MODEL = (
+    "nvidia/nemotron-3-ultra-550b-a55b:free"
+)
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

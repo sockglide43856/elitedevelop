@@ -1337,3 +1337,767 @@ if (C.csrfToken) {
 }
 
 })();
+
+/* =========================================================
+   GLOBAL APEX PAGE ASSISTANT
+   ========================================================= */
+
+(() => {
+    "use strict";
+
+    const root = document.getElementById("ed-apex");
+
+    if (!root) {
+        return;
+    }
+
+    const button = document.getElementById(
+        "ed-apex-button"
+    );
+
+    const panel = document.getElementById(
+        "ed-apex-panel"
+    );
+
+    const closeButton = document.getElementById(
+        "ed-apex-close"
+    );
+
+    const form = document.getElementById(
+        "ed-apex-form"
+    );
+
+    const input = document.getElementById(
+        "ed-apex-input"
+    );
+
+    const sendButton = document.getElementById(
+        "ed-apex-send"
+    );
+
+    const responseElement =
+        document.getElementById(
+            "ed-apex-response"
+        );
+
+    const statusElement =
+        document.getElementById(
+            "ed-apex-status"
+        );
+
+    const pageTitleElement =
+        document.getElementById(
+            "ed-apex-page-title"
+        );
+
+    const pageUrlElement =
+        document.getElementById(
+            "ed-apex-page-url"
+        );
+
+    const contextToggle =
+        document.getElementById(
+            "ed-apex-context-toggle"
+        );
+
+    if (
+        !button ||
+        !panel ||
+        !closeButton ||
+        !form ||
+        !input ||
+        !sendButton
+    ) {
+        return;
+    }
+
+    let contextEnabled = true;
+    let streaming = false;
+
+    const browserErrors = [];
+
+    function escapeHtml(value) {
+        const div = document.createElement("div");
+
+        div.textContent = String(
+            value || ""
+        );
+
+        return div.innerHTML;
+    }
+
+    function getVisiblePageText() {
+        const clone =
+            document.body.cloneNode(true);
+
+        /*
+         * Remove things that are not useful page
+         * content and may contain sensitive values.
+         */
+        clone
+            .querySelectorAll(
+                [
+                    "script",
+                    "style",
+                    "noscript",
+                    "template",
+                    "input[type=password]",
+                    "input[type=hidden]",
+                    "textarea",
+                    "[data-apex-ignore]"
+                ].join(",")
+            )
+            .forEach((element) => {
+                element.remove();
+            });
+
+        let text =
+            clone.innerText || "";
+
+        text = text
+            .replace(/\s+/g, " ")
+            .trim();
+
+        return text.slice(0, 12000);
+    }
+
+    function getSelectedText() {
+        try {
+            return (
+                window.getSelection()
+                    ?.toString()
+                    .trim()
+                    .slice(0, 6000)
+                || ""
+            );
+        } catch {
+            return "";
+        }
+    }
+
+    function getSelectedElementInfo() {
+        const selection =
+            window.getSelection();
+
+        if (
+            !selection ||
+            !selection.rangeCount
+        ) {
+            return {};
+        }
+
+        let node =
+            selection
+                .getRangeAt(0)
+                .commonAncestorContainer;
+
+        if (
+            node.nodeType !==
+            Node.ELEMENT_NODE
+        ) {
+            node = node.parentElement;
+        }
+
+        if (!node) {
+            return {};
+        }
+
+        /*
+         * Don't expose form fields or sensitive
+         * controls as page context.
+         */
+        if (
+            node.matches?.(
+                "input, textarea, select, [type=password]"
+            )
+        ) {
+            return {};
+        }
+
+        return {
+            tag: node.tagName || "",
+            text: (
+                node.innerText ||
+                node.textContent ||
+                ""
+            )
+                .replace(/\s+/g, " ")
+                .trim()
+                .slice(0, 2000),
+
+            ariaLabel:
+                node.getAttribute?.(
+                    "aria-label"
+                ) || "",
+
+            role:
+                node.getAttribute?.(
+                    "role"
+                ) || "",
+        };
+    }
+
+    function collectContext() {
+        const context = {
+            title:
+                document.title.slice(0, 300),
+
+            url:
+                window.location.pathname
+                    .slice(0, 500),
+
+            selectedText:
+                getSelectedText(),
+
+            element:
+                getSelectedElementInfo(),
+
+            errors:
+                browserErrors.slice(-10),
+        };
+
+        if (contextEnabled) {
+            context.visibleText =
+                getVisiblePageText();
+        } else {
+            context.visibleText = "";
+        }
+
+        return context;
+    }
+
+    function setOpen(open) {
+        root.classList.toggle(
+            "open",
+            open
+        );
+
+        button.setAttribute(
+            "aria-expanded",
+            String(open)
+        );
+
+        panel.setAttribute(
+            "aria-hidden",
+            String(!open)
+        );
+
+        if (open) {
+            setTimeout(() => {
+                input.focus();
+            }, 120);
+        }
+    }
+
+    function setStatus(text) {
+        statusElement.textContent =
+            text || "";
+    }
+
+    function clearResponse() {
+        responseElement.innerHTML = "";
+    }
+
+    function appendText(text) {
+        responseElement.textContent +=
+            text;
+
+        responseElement.scrollTop =
+            responseElement.scrollHeight;
+    }
+
+    function setLoading(loading) {
+        streaming = loading;
+
+        sendButton.disabled =
+            loading;
+
+        input.disabled =
+            loading;
+
+        document
+            .querySelectorAll(
+                ".ed-apex-action"
+            )
+            .forEach((action) => {
+                action.disabled =
+                    loading;
+            });
+
+        if (loading) {
+            sendButton.innerHTML =
+                '<i class="fa-solid fa-stop"></i>';
+        } else {
+            sendButton.innerHTML =
+                '<i class="fa-solid fa-arrow-up"></i>';
+        }
+    }
+
+    function showError(message) {
+        clearResponse();
+
+        responseElement.textContent =
+            message;
+
+        setStatus("Apex encountered an error.");
+    }
+
+    async function askApex(question) {
+        if (streaming) {
+            return;
+        }
+
+        question =
+            String(question || "")
+                .trim();
+
+        if (!question) {
+            return;
+        }
+
+        clearResponse();
+
+        setStatus(
+            "Apex is looking at the page..."
+        );
+
+        setLoading(true);
+
+        const csrfToken =
+            window.ED_CONFIG?.csrfToken || "";
+
+        try {
+            const response =
+                await fetch(
+                    "/ai/context/",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            "X-CSRFToken":
+                                csrfToken,
+
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+                        },
+
+                        credentials: "same-origin",
+
+                        body: JSON.stringify({
+                            question,
+                            context:
+                                collectContext(),
+                        }),
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+                throw new Error(
+                    data.error ||
+                    "Unable to contact Apex."
+                );
+            }
+
+            if (!data.stream_url) {
+                throw new Error(
+                    "Apex did not provide a stream."
+                );
+            }
+
+            setStatus(
+                "Apex is thinking..."
+            );
+
+            await streamResponse(
+                data.stream_url
+            );
+
+            setStatus("");
+
+        } catch (error) {
+            console.error(
+                "Apex error:",
+                error
+            );
+
+            showError(
+                error.message ||
+                "Something went wrong."
+            );
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function streamResponse(
+        streamUrl
+    ) {
+        const response =
+            await fetch(
+                streamUrl,
+                {
+                    method: "GET",
+                    credentials: "omit",
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                `Apex stream failed (${response.status}).`
+            );
+        }
+
+        if (!response.body) {
+            throw new Error(
+                "Streaming is not supported by this browser."
+            );
+        }
+
+        const reader =
+            response.body.getReader();
+
+        const decoder =
+            new TextDecoder();
+
+        let buffer = "";
+
+        while (true) {
+            const {
+                value,
+                done,
+            } = await reader.read();
+
+            if (done) {
+                break;
+            }
+
+            buffer += decoder.decode(
+                value,
+                {
+                    stream: true,
+                }
+            );
+
+            const events =
+                buffer.split("\n\n");
+
+            buffer =
+                events.pop() || "";
+
+            for (const event of events) {
+                const lines =
+                    event.split("\n");
+
+                for (const line of lines) {
+                    if (
+                        !line.startsWith(
+                            "data:"
+                        )
+                    ) {
+                        continue;
+                    }
+
+                    const payload =
+                        line
+                            .slice(5)
+                            .trim();
+
+                    if (!payload) {
+                        continue;
+                    }
+
+                    if (
+                        payload ===
+                        "[DONE]"
+                    ) {
+                        return;
+                    }
+
+                    try {
+                        const data =
+                            JSON.parse(
+                                payload
+                            );
+
+                        if (
+                            data.content
+                        ) {
+                            appendText(
+                                data.content
+                            );
+                        }
+
+                        if (
+                            data.error
+                        ) {
+                            throw new Error(
+                                data.error
+                            );
+                        }
+
+                    } catch (error) {
+                        /*
+                         * Ignore malformed/non-JSON
+                         * SSE lines unless they are
+                         * actual error payloads.
+                         */
+                        if (
+                            error instanceof
+                            SyntaxError
+                        ) {
+                            continue;
+                        }
+
+                        throw error;
+                    }
+                }
+            }
+        }
+    }
+
+    button.addEventListener(
+        "click",
+        () => {
+            setOpen(
+                !root.classList.contains(
+                    "open"
+                )
+            );
+        }
+    );
+
+    closeButton.addEventListener(
+        "click",
+        () => {
+            setOpen(false);
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        (event) => {
+            if (
+                event.key === "Escape" &&
+                root.classList.contains(
+                    "open"
+                )
+            ) {
+                setOpen(false);
+            }
+        }
+    );
+
+    contextToggle.addEventListener(
+        "click",
+        () => {
+            contextEnabled =
+                !contextEnabled;
+
+            contextToggle.classList.toggle(
+                "active",
+                contextEnabled
+            );
+
+            contextToggle.innerHTML =
+                contextEnabled
+                    ? '<i class="fa-solid fa-eye"></i>'
+                    : '<i class="fa-solid fa-eye-slash"></i>';
+
+            pageUrlElement.textContent =
+                contextEnabled
+                    ? "Page context enabled"
+                    : "Page context disabled";
+        }
+    );
+
+    form.addEventListener(
+        "submit",
+        async (event) => {
+            event.preventDefault();
+
+            if (streaming) {
+                return;
+            }
+
+            const question =
+                input.value.trim();
+
+            if (!question) {
+                return;
+            }
+
+            input.value = "";
+
+            await askApex(
+                question
+            );
+        }
+    );
+
+    input.addEventListener(
+        "keydown",
+        (event) => {
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+                event.preventDefault();
+
+                form.requestSubmit();
+            }
+        }
+    );
+
+    document
+        .querySelectorAll(
+            "[data-apex-action]"
+        )
+        .forEach((action) => {
+            action.addEventListener(
+                "click",
+                async () => {
+                    const type =
+                        action.dataset
+                            .apexAction;
+
+                    const selected =
+                        getSelectedText();
+
+                    if (
+                        type ===
+                        "explain-page"
+                    ) {
+                        await askApex(
+                            "Explain this page to me. "
+                            + "Tell me what the page is for, "
+                            + "what the important sections do, "
+                            + "and what I can do here."
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        type ===
+                        "selected-text"
+                    ) {
+                        if (!selected) {
+                            setStatus(
+                                "Select some text on the page first."
+                            );
+
+                            input.focus();
+
+                            return;
+                        }
+
+                        await askApex(
+                            "Explain the text I selected. "
+                            + "Give me the relevant context "
+                            + "from this page if useful."
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        type ===
+                        "find-error"
+                    ) {
+                        await askApex(
+                            "Look for a problem or error "
+                            + "on this page. Check the page "
+                            + "context and any browser errors "
+                            + "available to you. If you don't "
+                            + "see an actual problem, say so "
+                            + "rather than inventing one."
+                        );
+                    }
+                }
+            );
+        });
+
+    /*
+     * Capture useful browser errors without
+     * sending them anywhere until the user asks Apex.
+     */
+    window.addEventListener(
+        "error",
+        (event) => {
+            browserErrors.push({
+                type: "javascript",
+                message:
+                    String(
+                        event.message ||
+                        ""
+                    ).slice(0, 2000),
+
+                source:
+                    String(
+                        event.filename ||
+                        ""
+                    ).slice(0, 500),
+
+                line:
+                    event.lineno ||
+                    null,
+
+                column:
+                    event.colno ||
+                    null,
+            });
+
+            if (
+                browserErrors.length > 20
+            ) {
+                browserErrors.shift();
+            }
+        }
+    );
+
+    window.addEventListener(
+        "unhandledrejection",
+        (event) => {
+            browserErrors.push({
+                type:
+                    "unhandledrejection",
+
+                message:
+                    String(
+                        event.reason
+                            ?.message ||
+                        event.reason ||
+                        ""
+                    ).slice(0, 2000),
+
+                source: "",
+                line: null,
+                column: null,
+            });
+
+            if (
+                browserErrors.length > 20
+            ) {
+                browserErrors.shift();
+            }
+        }
+    );
+
+    pageTitleElement.textContent =
+        document.title ||
+        "This page";
+
+    pageUrlElement.textContent =
+        "Page context enabled";
+
+})();
+

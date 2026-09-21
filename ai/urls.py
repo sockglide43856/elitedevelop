@@ -84,4 +84,11 @@ urlpatterns = [
         views.delete_user_memory,
         name="delete_user_memory",
     ),
+
+    # Global page-aware Apex
+    path(
+        "context/",
+        views.page_context,
+        name="page_context",
+    ),
 ]

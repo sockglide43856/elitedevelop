@@ -17,14 +17,10 @@ def _worker_config():
     worker_secret = getattr(settings, "AI_WORKER_SECRET", None)
 
     if not worker_url:
-        raise AIServiceError(
-            "AI_WORKER_URL is not configured."
-        )
+        raise AIServiceError("AI_WORKER_URL is not configured.")
 
     if not worker_secret:
-        raise AIServiceError(
-            "AI_WORKER_SECRET is not configured."
-        )
+        raise AIServiceError("AI_WORKER_SECRET is not configured.")
 
     return worker_url.rstrip("/"), worker_secret
 
@@ -37,6 +33,7 @@ def queue_ai_job(
     user_settings=None,
     user_memories=None,
     room_memories=None,
+    page_context=None,
 ):
     worker_url, worker_secret = _worker_config()
 
@@ -48,6 +45,7 @@ def queue_ai_job(
         "user_settings": user_settings or {},
         "user_memories": user_memories or [],
         "room_memories": room_memories or [],
+        "page_context": page_context or {},
     }
 
     try:
@@ -109,7 +107,7 @@ def get_ai_job(job_id):
                 "job_id": job_id,
             },
             headers={
-                "Authorization": f"Bearer {worker_secret}",
+                "Authorization": f"Bearer {worker_secret}"
             },
             timeout=5,
         )
@@ -142,11 +140,6 @@ def get_ai_job(job_id):
 
 
 def create_stream_token(job_id, expires_in=300):
-    """
-    Creates a short-lived HMAC token that the browser
-    can present directly to the Cloudflare Worker.
-    """
-
     _, secret = _worker_config()
 
     expires = int(time.time()) + expires_in
@@ -156,12 +149,16 @@ def create_stream_token(job_id, expires_in=300):
         "exp": expires,
     }
 
-    encoded = base64.urlsafe_b64encode(
-        json.dumps(
-            payload,
-            separators=(",", ":"),
-        ).encode()
-    ).decode().rstrip("=")
+    encoded = (
+        base64.urlsafe_b64encode(
+            json.dumps(
+                payload,
+                separators=(",", ":"),
+            ).encode()
+        )
+        .decode()
+        .rstrip("=")
+    )
 
     signature = hmac.new(
         secret.encode(),
