@@ -1,17 +1,33 @@
 import secrets
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import AIRoom, AIMessage, AIJob
+from .models import (
+    AIJob,
+    AIMessage,
+    AIRoom,
+    AIRoomMemory,
+    AIUserMemory,
+    AIUserSettings,
+)
 from .services import (
     AIServiceError,
+    create_stream_token,
     queue_ai_job,
-    get_ai_job,
 )
+
+
+def get_user_ai_settings(user):
+    apex_settings, _ = AIUserSettings.objects.get_or_create(
+        user=user
+    )
+
+    return apex_settings
 
 
 @login_required
@@ -43,6 +59,7 @@ def room(request, room_id):
         {
             "room": ai_room,
             "aimessages": ai_room.messages.all(),
+            "room_memories": ai_room.memories.all(),
         },
     )
 
@@ -50,15 +67,61 @@ def room(request, room_id):
 @login_required
 @require_POST
 def create_room(request):
-    room = AIRoom.objects.create(
+    ai_room = AIRoom.objects.create(
         user=request.user,
         name="New AI Room",
     )
 
     return JsonResponse({
         "success": True,
-        "id": room.id,
-        "name": room.name,
+        "id": ai_room.id,
+        "name": ai_room.name,
+    })
+
+
+@login_required
+@require_POST
+def rename_room(request, room_id):
+    ai_room = get_object_or_404(
+        AIRoom,
+        id=room_id,
+        user=request.user,
+    )
+
+    name = request.POST.get(
+        "name",
+        "",
+    ).strip()
+
+    if not name:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Room name cannot be empty.",
+            },
+            status=400,
+        )
+
+    if len(name) > 100:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Room name is too long.",
+            },
+            status=400,
+        )
+
+    ai_room.name = name
+    ai_room.save(
+        update_fields=[
+            "name",
+            "updated_at",
+        ]
+    )
+
+    return JsonResponse({
+        "success": True,
+        "name": ai_room.name,
     })
 
 
@@ -119,10 +182,10 @@ def send_message(request, room_id):
 
     history = [
         {
-            "role": aimessage.role,
-            "content": aimessage.content,
+            "role": aiMessage.role,
+            "content": aiMessage.content,
         }
-        for aimessage in previous_messages
+        for aiMessage in previous_messages
     ]
 
     AIMessage.objects.create(
@@ -136,11 +199,54 @@ def send_message(request, room_id):
         "content": message,
     })
 
+    apex_settings = get_user_ai_settings(
+        request.user
+    )
+
+    user_memories = []
+
+    if apex_settings.memory_enabled:
+        user_memories = list(
+            AIUserMemory.objects.filter(
+                user=request.user
+            ).values_list(
+                "content",
+                flat=True,
+            )
+        )
+
+    room_memories = []
+
+    if ai_room.memory_enabled:
+        room_memories = list(
+            AIRoomMemory.objects.filter(
+                room=ai_room
+            ).values_list(
+                "content",
+                flat=True,
+            )
+        )
+
+    user_settings = {
+        "preferred_name":
+            apex_settings.preferred_name,
+
+        "title":
+            apex_settings.title,
+
+        "about":
+            apex_settings.about,
+
+        "instructions":
+            apex_settings.instructions,
+    }
+
     job = AIJob.objects.create(
         room=ai_room,
         user=request.user,
         job_id=secrets.token_urlsafe(32),
         message=message,
+        status="queued",
     )
 
     try:
@@ -149,6 +255,9 @@ def send_message(request, room_id):
             model=ai_room.model,
             system_prompt=ai_room.system_prompt,
             messages=history,
+            user_settings=user_settings,
+            user_memories=user_memories,
+            room_memories=room_memories,
         )
 
     except AIServiceError as exc:
@@ -170,97 +279,285 @@ def send_message(request, room_id):
             status=502,
         )
 
+    job.status = "processing"
+
+    job.save(
+        update_fields=["status"]
+    )
+
+    stream_token = create_stream_token(
+        job.job_id
+    )
+
+    worker_url = (
+        settings.AI_WORKER_URL
+        .rstrip("/")
+    )
+
+    stream_url = (
+        f"{worker_url}"
+        f"?action=stream"
+        f"&job_id={job.job_id}"
+        f"&token={stream_token}"
+    )
+
     return JsonResponse({
         "success": True,
         "job_id": job.job_id,
         "status": "processing",
+        "stream_url": stream_url,
     })
 
 
 @login_required
-def job_status(request, job_id):
+@require_POST
+def complete_job(request, job_id):
     job = get_object_or_404(
         AIJob,
         job_id=job_id,
         user=request.user,
     )
 
-    try:
-        data = get_ai_job(job.job_id)
-
-    except AIServiceError as exc:
-        return JsonResponse(
-            {
-                "success": False,
-                "error": str(exc),
-            },
-            status=502,
-        )
-
-    status = data.get(
-        "status",
-        "processing",
-    )
-
-    if status == "completed":
-
-        answer = data.get(
-            "content",
-            "",
-        )
-
-        if answer and job.status != "completed":
-
-            AIMessage.objects.create(
-                room=job.room,
-                role="assistant",
-                content=answer,
-            )
-
-            job.status = "completed"
-            job.response = answer
-            job.completed_at = timezone.now()
-
-            job.save(
-                update_fields=[
-                    "status",
-                    "response",
-                    "completed_at",
-                ]
-            )
-
+    if job.status == "completed":
         return JsonResponse({
             "success": True,
             "status": "completed",
-            "response": answer,
+            "response": job.response,
         })
 
+    answer = request.POST.get(
+        "response",
+        "",
+    )
 
-    if status == "failed":
-
-        error = data.get(
-            "error",
-            "AI request failed.",
+    if not answer:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Response cannot be empty.",
+            },
+            status=400,
         )
 
-        job.status = "failed"
-        job.error = error
+    AIMessage.objects.create(
+        room=job.room,
+        role="assistant",
+        content=answer,
+    )
 
-        job.save(
-            update_fields=[
-                "status",
-                "error",
-            ]
-        )
+    job.status = "completed"
+    job.response = answer
+    job.completed_at = timezone.now()
 
-        return JsonResponse({
-            "success": True,
-            "status": "failed",
-            "error": error,
-        })
+    job.save(
+        update_fields=[
+            "status",
+            "response",
+            "completed_at",
+        ]
+    )
 
+    job.room.updated_at = timezone.now()
+
+    job.room.save(
+        update_fields=["updated_at"]
+    )
 
     return JsonResponse({
         "success": True,
-        "status": status,
+        "status": "completed",
+    })
+
+
+# ============================================================
+# USER SETTINGS
+# ============================================================
+
+@login_required
+def settings_view(request):
+    apex_settings = get_user_ai_settings(
+        request.user
+    )
+
+    memories = AIUserMemory.objects.filter(
+        user=request.user
+    )
+
+    return render(
+        request,
+        "ai/settings.html",
+        {
+            "apex_settings": apex_settings,
+            "memories": memories,
+        },
+    )
+
+
+@login_required
+@require_POST
+def update_settings(request):
+    apex_settings = get_user_ai_settings(
+        request.user
+    )
+
+    apex_settings.preferred_name = (
+        request.POST.get(
+            "preferred_name",
+            "",
+        ).strip()
+    )
+
+    apex_settings.title = (
+        request.POST.get(
+            "title",
+            "",
+        ).strip()
+    )
+
+    apex_settings.about = (
+        request.POST.get(
+            "about",
+            "",
+        ).strip()
+    )
+
+    apex_settings.instructions = (
+        request.POST.get(
+            "instructions",
+            "",
+        ).strip()
+    )
+
+    apex_settings.memory_enabled = (
+        request.POST.get(
+            "memory_enabled"
+        ) == "on"
+    )
+
+    apex_settings.save()
+
+    return JsonResponse({
+        "success": True,
+    })
+
+
+# ============================================================
+# USER MEMORY
+# ============================================================
+
+@login_required
+@require_POST
+def create_user_memory(request):
+    content = request.POST.get(
+        "content",
+        "",
+    ).strip()
+
+    if not content:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Memory cannot be empty.",
+            },
+            status=400,
+        )
+
+    if len(content) > 2000:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Memory is too long.",
+            },
+            status=400,
+        )
+
+    memory = AIUserMemory.objects.create(
+        user=request.user,
+        content=content,
+    )
+
+    return JsonResponse({
+        "success": True,
+        "id": memory.id,
+        "content": memory.content,
+    })
+
+
+@login_required
+@require_POST
+def delete_user_memory(request, memory_id):
+    memory = get_object_or_404(
+        AIUserMemory,
+        id=memory_id,
+        user=request.user,
+    )
+
+    memory.delete()
+
+    return JsonResponse({
+        "success": True,
+    })
+
+
+# ============================================================
+# ROOM MEMORY
+# ============================================================
+
+@login_required
+@require_POST
+def create_room_memory(request, room_id):
+    ai_room = get_object_or_404(
+        AIRoom,
+        id=room_id,
+        user=request.user,
+    )
+
+    content = request.POST.get(
+        "content",
+        "",
+    ).strip()
+
+    if not content:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Memory cannot be empty.",
+            },
+            status=400,
+        )
+
+    if len(content) > 2000:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Memory is too long.",
+            },
+            status=400,
+        )
+
+    memory = AIRoomMemory.objects.create(
+        room=ai_room,
+        content=content,
+    )
+
+    return JsonResponse({
+        "success": True,
+        "id": memory.id,
+        "content": memory.content,
+    })
+
+
+@login_required
+@require_POST
+def delete_room_memory(request, memory_id):
+    memory = get_object_or_404(
+        AIRoomMemory,
+        id=memory_id,
+        room__user=request.user,
+    )
+
+    memory.delete()
+
+    return JsonResponse({
+        "success": True,
     })

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Apex Settings{% endblock %}
+
+{% block content %}
+
+<div style="
+    max-width:900px;
+    margin:0 auto;
+    padding:30px 18px;
+">
+
+    <h1>Apex Settings</h1>
+
+    <p style="opacity:.7;">
+        Customize what Apex knows about you.
+    </p>
+
+
+    <form
+        method="post"
+        action="{% url 'ai:update_settings' %}"
+    >
+
+        {% csrf_token %}
+
+        <label>
+            Preferred name
+        </label>
+
+        <input
+            type="text"
+            name="preferred_name"
+            value="{{ apex_settings.preferred_name }}"
+            maxlength="100"
+        >
+
+
+        <label>
+            Title
+        </label>
+
+        <input
+            type="text"
+            name="title"
+            value="{{ apex_settings.title }}"
+            maxlength="100"
+        >
+
+
+        <label>
+            About you
+        </label>
+
+        <textarea
+            name="about"
+            rows="5"
+        >{{ apex_settings.about }}</textarea>
+
+
+        <label>
+            Instructions for Apex
+        </label>
+
+        <textarea
+            name="instructions"
+            rows="6"
+        >{{ apex_settings.instructions }}</textarea>
+
+
+        <label>
+            <input
+                type="checkbox"
+                name="memory_enabled"
+                {% if apex_settings.memory_enabled %}
+                    checked
+                {% endif %}
+            >
+
+            Enable Apex memory
+        </label>
+
+
+        <button type="submit">
+            Save settings
+        </button>
+
+    </form>
+
+
+    <hr>
+
+
+    <h2>User Memory</h2>
+
+    <p>
+        These are facts Apex can remember across rooms.
+    </p>
+
+
+    {% for memory in memories %}
+
+        <div>
+
+            {{ memory.content }}
+
+            <form
+                method="post"
+                action="{% url 'ai:delete_user_memory' memory.id %}"
+                style="display:inline;"
+            >
+
+                {% csrf_token %}
+
+                <button type="submit">
+                    Delete
+                </button>
+
+            </form>
+
+        </div>
+
+    {% empty %}
+
+        <p>No user memories yet.</p>
+
+    {% endfor %}
+
+
+    <form
+        method="post"
+        action="{% url 'ai:create_user_memory' %}"
+    >
+
+        {% csrf_token %}
+
+        <textarea
+            name="content"
+            maxlength="2000"
+            placeholder="Something Apex should remember..."
+            required
+        ></textarea>
+
+        <button type="submit">
+            Add memory
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

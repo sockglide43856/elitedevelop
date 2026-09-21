@@ -24,6 +24,10 @@ class AIRoom(models.Model):
         default="",
     )
 
+    memory_enabled = models.BooleanField(
+        default=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -68,6 +72,7 @@ class AIMessage(models.Model):
 
     def __str__(self):
         return f"{self.role}: {self.content[:50]}"
+
 
 class AIJob(models.Model):
     STATUS_CHOICES = [
@@ -127,3 +132,92 @@ class AIJob(models.Model):
 
     def __str__(self):
         return f"{self.job_id} — {self.status}"
+
+
+class AIUserSettings(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ai_settings",
+    )
+
+    preferred_name = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+    )
+
+    title = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+    )
+
+    about = models.TextField(
+        blank=True,
+        default="",
+    )
+
+    instructions = models.TextField(
+        blank=True,
+        default="",
+    )
+
+    memory_enabled = models.BooleanField(
+        default=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+        return f"Apex settings — {self.user}"
+
+
+class AIUserMemory(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ai_memories",
+    )
+
+    content = models.TextField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"User memory — {self.content[:60]}"
+
+
+class AIRoomMemory(models.Model):
+    room = models.ForeignKey(
+        AIRoom,
+        on_delete=models.CASCADE,
+        related_name="memories",
+    )
+
+    content = models.TextField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Room memory — {self.content[:60]}"

@@ -1,3 +1,9 @@
+import base64
+import hashlib
+import hmac
+import json
+import time
+
 import requests
 from django.conf import settings
 
@@ -20,7 +26,7 @@ def _worker_config():
             "AI_WORKER_SECRET is not configured."
         )
 
-    return worker_url, worker_secret
+    return worker_url.rstrip("/"), worker_secret
 
 
 def queue_ai_job(
@@ -28,14 +34,20 @@ def queue_ai_job(
     model,
     system_prompt,
     messages,
+    user_settings=None,
+    user_memories=None,
+    room_memories=None,
 ):
     worker_url, worker_secret = _worker_config()
 
     payload = {
         "job_id": job_id,
         "model": model,
-        "system_prompt": system_prompt,
+        "system_prompt": system_prompt or "",
         "messages": messages,
+        "user_settings": user_settings or {},
+        "user_memories": user_memories or [],
+        "room_memories": room_memories or [],
     }
 
     try:
@@ -43,9 +55,7 @@ def queue_ai_job(
             worker_url,
             json=payload,
             headers={
-                "Authorization": (
-                    f"Bearer {worker_secret}"
-                ),
+                "Authorization": f"Bearer {worker_secret}",
                 "Content-Type": "application/json",
             },
             timeout=10,
@@ -74,7 +84,7 @@ def queue_ai_job(
         data = response.json()
     except ValueError as exc:
         raise AIServiceError(
-            "AI worker returned an invalid response."
+            "AI worker returned invalid JSON."
         ) from exc
 
     if not data.get("success"):
@@ -99,9 +109,7 @@ def get_ai_job(job_id):
                 "job_id": job_id,
             },
             headers={
-                "Authorization": (
-                    f"Bearer {worker_secret}"
-                ),
+                "Authorization": f"Bearer {worker_secret}",
             },
             timeout=5,
         )
@@ -129,5 +137,36 @@ def get_ai_job(job_id):
         return response.json()
     except ValueError as exc:
         raise AIServiceError(
-            "AI worker returned an invalid response."
+            "AI worker returned invalid JSON."
         ) from exc
+
+
+def create_stream_token(job_id, expires_in=300):
+    """
+    Creates a short-lived HMAC token that the browser
+    can present directly to the Cloudflare Worker.
+    """
+
+    _, secret = _worker_config()
+
+    expires = int(time.time()) + expires_in
+
+    payload = {
+        "job_id": job_id,
+        "exp": expires,
+    }
+
+    encoded = base64.urlsafe_b64encode(
+        json.dumps(
+            payload,
+            separators=(",", ":"),
+        ).encode()
+    ).decode().rstrip("=")
+
+    signature = hmac.new(
+        secret.encode(),
+        encoded.encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+    return f"{encoded}.{signature}"
