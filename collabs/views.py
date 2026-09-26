@@ -440,12 +440,14 @@ def collab_share(request, collab_id):
 
             if user:
                 member["username"] = user.username
+                member["first_name"] = user.first_name.strip() or ""
                 member["display_name"] = (
                     user.get_full_name().strip()
                     or user.username
                 )
             else:
                 member["username"] = "Unknown user"
+                member["first_name"] = ""
                 member["display_name"] = "Unknown user"
 
     except Exception as e:

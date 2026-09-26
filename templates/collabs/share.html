@@ -229,10 +229,8 @@
                                             class="flex-grow-1"
                                         >
 
-                                            <div
-                                                class="fw-semibold"
-                                            >
-                                                User #{{ member.user_id }}
+                                            <div class="fw-semibold">
+                                                @{{ member.username }} {% if member.first_name %} <span class="text-muted">({{ member.first_name }})</span> {% endif %}
                                             </div>
 
                                             <div
