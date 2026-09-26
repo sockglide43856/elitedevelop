@@ -1,41 +1,43 @@
 from django.urls import path
-
 from . import views
-
 
 app_name = "collabs"
 
-
 urlpatterns = [
+    path("", views.collabs_home, name="home"),
+    path("create/", views.create_collab, name="create"),
+    path("join/", views.join_collab, name="join"),
 
-    path(
-        "",
-        views.collabs_home,
-        name="home",
-    ),
-
-    path(
-        "create/",
-        views.create_collab,
-        name="create",
-    ),
-
-    path(
-        "join/",
-        views.join_collab,
-        name="join",
-    ),
-
-    path(
-        "<str:collab_id>/",
-        views.collab_detail,
-        name="detail",
-    ),
+    path("<str:collab_id>/", views.collab_detail, name="detail"),
 
     path(
         "<str:collab_id>/files/",
         views.collab_files,
         name="files",
+    ),
+
+    path(
+        "<str:collab_id>/files/<str:file_id>/open/",
+        views.open_file,
+        name="open_file",
+    ),
+
+    path(
+        "<str:collab_id>/files/<str:file_id>/download/",
+        views.download_file,
+        name="download_file",
+    ),
+
+    path(
+        "<str:collab_id>/files/action/",
+        views.file_action,
+        name="file_action",
+    ),
+
+    path(
+        "<str:collab_id>/files/<str:file_id>/share/",
+        views.share_file,
+        name="share_file",
     ),
 
     path(

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+Share {{ file.name }} — {{ collab.name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <a
+        href="{% url 'collabs:files' collab.id %}"
+        class="text-decoration-none"
+    >
+        ← Back to Files
+    </a>
+
+    <div class="card mt-4">
+
+        <div class="card-body">
+
+            <h2>
+                💬 Share in Private Chat
+            </h2>
+
+            <p class="text-muted">
+                Share <strong>{{ file.name }}</strong>
+                with one of your existing private chats.
+            </p>
+
+            {% if memberships %}
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Private chat
+                        </label>
+
+                        <select
+                            name="membership_id"
+                            class="form-select"
+                            required
+                        >
+
+                            <option value="">
+                                Select a chat...
+                            </option>
+
+                            {% for membership in memberships %}
+
+                                <option value="{{ membership.id }}">
+
+                                    {% if membership.room.icon %}
+                                        {{ membership.room.icon }}
+                                    {% else %}
+                                        💬
+                                    {% endif %}
+
+                                    {{ membership.room.name }}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        💬 Share File
+                    </button>
+
+                </form>
+
+            {% else %}
+
+                <div class="alert alert-info">
+                    You don't have any private chats yet.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

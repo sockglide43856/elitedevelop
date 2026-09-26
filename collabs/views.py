@@ -2,10 +2,110 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-
+import base64
+import io
+import mimetypes
+import os
+import posixpath
+import zipfile
+from django.http import HttpResponse
 from . import cloudflare
+from chat.models import (
+    PrivateChatMembership,
+    PrivateMessage,
+)
+
+
 
 User = get_user_model()
+
+@login_required
+def share_file(request, collab_id, file_id):
+    try:
+        file = cloudflare.get_file(
+            file_id
+        )["file"]
+
+    except Exception as e:
+        messages.error(
+            request,
+            f"Could not load file: {e}",
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    memberships = (
+        PrivateChatMembership.objects
+        .filter(user=request.user)
+        .select_related("room")
+        .order_by("room__name")
+    )
+
+    if request.method == "POST":
+
+        membership_id = request.POST.get(
+            "membership_id"
+        )
+
+        membership = (
+            memberships
+            .filter(id=membership_id)
+            .first()
+        )
+
+        if not membership:
+            messages.error(
+                request,
+                "That private chat could not be found.",
+            )
+
+            return redirect(
+                "collabs:share_file",
+                collab_id=collab_id,
+                file_id=file_id,
+            )
+
+        share_url = request.build_absolute_uri(
+            f"/collabs/{collab_id}/files/"
+            f"{file_id}/download/"
+        )
+
+        message_text = (
+            f'📎 Shared file: {file["name"]}\n'
+            f'{share_url}'
+        )
+
+        PrivateMessage.objects.create(
+            room=membership.room,
+            author=request.user,
+            message=message_text,
+        )
+
+        messages.success(
+            request,
+            f'Shared "{file["name"]}" in '
+            f'{membership.room.name}.',
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    return render(
+        request,
+        "collabs/share_file.html",
+        {
+            "collab": cloudflare.get_collab(
+                collab_id
+            )["collab"],
+            "file": file,
+            "memberships": memberships,
+        },
+    )
 
 @login_required
 def collabs_home(request):
@@ -289,15 +389,574 @@ def collab_files(request, collab_id):
             collab_id=collab_id,
         )
 
+    current_folder = request.GET.get("folder") or None
+
+    file_map = {
+        file["id"]: file
+        for file in files
+    }
+
+    visible_files = []
+
+    for file in files:
+        if file.get("parent_id") == current_folder:
+            visible_files.append(file)
+
+    breadcrumbs = []
+
+    folder = file_map.get(current_folder)
+
+    while folder:
+        breadcrumbs.insert(
+            0,
+            folder,
+        )
+
+        folder = file_map.get(
+            folder.get("parent_id")
+        )
+
     return render(
         request,
         "collabs/files.html",
         {
             "collab": collab,
-            "files": files,
+            "files": visible_files,
+            "all_files": files,
+            "current_folder": current_folder,
+            "breadcrumbs": breadcrumbs,
         },
     )
 
+
+@login_required
+def open_file(request, collab_id, file_id):
+    try:
+        result = cloudflare.get_file(
+            file_id
+        )
+
+        file = result["file"]
+
+    except Exception as e:
+        messages.error(
+            request,
+            f"Could not open file: {e}",
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    if file.get("is_directory"):
+        return redirect(
+            f"{request.path.rsplit('/', 2)[0]}/?folder={file_id}"
+        )
+
+    encoded = file.get("data")
+
+    if not encoded:
+        messages.error(
+            request,
+            "This file has no stored data.",
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    try:
+        data = base64.b64decode(encoded)
+    except Exception:
+        messages.error(
+            request,
+            "The stored file data is invalid.",
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    mime_type = (
+        file.get("mime_type")
+        or "application/octet-stream"
+    )
+
+    # HTML gets rendered through a sandboxed preview.
+    if mime_type in {
+        "text/html",
+        "application/xhtml+xml",
+    }:
+        return render(
+            request,
+            "collabs/file_preview.html",
+            {
+                "collab": {
+                    "id": collab_id,
+                    "name": "",
+                },
+                "file": file,
+                "content": data.decode(
+                    "utf-8",
+                    errors="replace",
+                ),
+            },
+        )
+
+    response = HttpResponse(
+        data,
+        content_type=mime_type,
+    )
+
+    response[
+        "Content-Disposition"
+    ] = f'inline; filename="{file["name"]}"'
+
+    return response
+
+
+@login_required
+def download_file(request, collab_id, file_id):
+    try:
+        file = cloudflare.get_file(
+            file_id
+        )["file"]
+
+    except Exception as e:
+        messages.error(
+            request,
+            f"Could not download file: {e}",
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    if file.get("is_directory"):
+        messages.error(
+            request,
+            "Folders cannot be downloaded directly.",
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    encoded = file.get("data")
+
+    if not encoded:
+        messages.error(
+            request,
+            "This file has no stored data.",
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    try:
+        data = base64.b64decode(encoded)
+    except Exception:
+        messages.error(
+            request,
+            "The stored file data is invalid.",
+        )
+
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    response = HttpResponse(
+        data,
+        content_type=(
+            file.get("mime_type")
+            or "application/octet-stream"
+        ),
+    )
+
+    response[
+        "Content-Disposition"
+    ] = f'attachment; filename="{file["name"]}"'
+
+    return response
+
+@login_required
+def file_action(request, collab_id):
+    if request.method != "POST":
+        return redirect(
+            "collabs:files",
+            collab_id=collab_id,
+        )
+
+    action = request.POST.get("action")
+
+    file_id = request.POST.get(
+        "file_id"
+    )
+
+    current_folder = request.POST.get(
+        "current_folder"
+    ) or None
+
+    # -------------------------
+    # RENAME
+    # -------------------------
+
+    if action == "rename":
+        name = request.POST.get(
+            "name",
+            "",
+        ).strip()
+
+        if not file_id or not name:
+            messages.error(
+                request,
+                "A file name is required.",
+            )
+
+        else:
+            try:
+                cloudflare.update_file(
+                    file_id,
+                    request.user.id,
+                    name=name,
+                )
+
+                messages.success(
+                    request,
+                    "Renamed successfully.",
+                )
+
+            except Exception as e:
+                messages.error(
+                    request,
+                    f"Could not rename: {e}",
+                )
+
+    # -------------------------
+    # DELETE
+    # -------------------------
+
+    elif action == "delete":
+        if not file_id:
+            messages.error(
+                request,
+                "No file selected.",
+            )
+
+        else:
+            try:
+                cloudflare.delete_file(
+                    file_id,
+                    request.user.id,
+                )
+
+                messages.success(
+                    request,
+                    "Deleted successfully.",
+                )
+
+            except Exception as e:
+                messages.error(
+                    request,
+                    f"Could not delete: {e}",
+                )
+
+    # -------------------------
+    # MOVE
+    # -------------------------
+
+    elif action == "move":
+        parent_id = request.POST.get(
+            "parent_id"
+        ) or None
+
+        try:
+            cloudflare.update_file(
+                file_id,
+                request.user.id,
+                parent_id=parent_id,
+            )
+
+            messages.success(
+                request,
+                "Moved successfully.",
+            )
+
+        except Exception as e:
+            messages.error(
+                request,
+                f"Could not move: {e}",
+            )
+
+    # -------------------------
+    # COPY
+    # -------------------------
+
+    elif action == "copy":
+        try:
+            source = cloudflare.get_file(
+                file_id
+            )["file"]
+
+            encoded_data = source.get(
+                "data"
+            )
+
+            cloudflare.create_file(
+                collab_id=collab_id,
+                name=source["name"],
+                mime_type=source.get(
+                    "mime_type",
+                    "application/octet-stream",
+                ),
+                size=source.get(
+                    "size",
+                    0,
+                ),
+                created_by=request.user.id,
+                data=encoded_data,
+                parent_id=current_folder,
+                is_directory=bool(
+                    source.get("is_directory")
+                ),
+            )
+
+            messages.success(
+                request,
+                "Copied successfully.",
+            )
+
+        except Exception as e:
+            messages.error(
+                request,
+                f"Could not copy: {e}",
+            )
+
+    # -------------------------
+    # COMPRESS
+    # -------------------------
+
+    elif action == "compress":
+        try:
+            source = cloudflare.get_file(
+                file_id
+            )["file"]
+
+            if source.get("is_directory"):
+                raise RuntimeError(
+                    "Folder compression requires its child files to be loaded."
+                )
+
+            encoded_data = source.get(
+                "data"
+            )
+
+            if not encoded_data:
+                raise RuntimeError(
+                    "The selected file has no data."
+                )
+
+            raw = base64.b64decode(
+                encoded_data
+            )
+
+            zip_buffer = io.BytesIO()
+
+            with zipfile.ZipFile(
+                zip_buffer,
+                "w",
+                zipfile.ZIP_DEFLATED,
+            ) as archive:
+                archive.writestr(
+                    source["name"],
+                    raw,
+                )
+
+            zip_data = zip_buffer.getvalue()
+
+            encoded_zip = base64.b64encode(
+                zip_data
+            ).decode("ascii")
+
+            cloudflare.create_file(
+                collab_id=collab_id,
+                name=f'{source["name"]}.zip',
+                mime_type="application/zip",
+                size=len(zip_data),
+                created_by=request.user.id,
+                data=encoded_zip,
+                parent_id=current_folder,
+                is_directory=False,
+            )
+
+            messages.success(
+                request,
+                "ZIP created successfully.",
+            )
+
+        except Exception as e:
+            messages.error(
+                request,
+                f"Could not compress: {e}",
+            )
+
+    # -------------------------
+    # EXTRACT
+    # -------------------------
+
+    elif action == "extract":
+        try:
+            source = cloudflare.get_file(
+                file_id
+            )["file"]
+
+            encoded_data = source.get(
+                "data"
+            )
+
+            if not encoded_data:
+                raise RuntimeError(
+                    "The ZIP has no stored data."
+                )
+
+            raw = base64.b64decode(
+                encoded_data
+            )
+
+            with zipfile.ZipFile(
+                io.BytesIO(raw)
+            ) as archive:
+
+                folder_cache = {
+                    "": current_folder
+                }
+
+                for member in archive.infolist():
+
+                    safe_name = posixpath.normpath(
+                        member.filename
+                    )
+
+                    if (
+                        safe_name.startswith("../")
+                        or safe_name.startswith("/")
+                    ):
+                        continue
+
+                    parts = [
+                        part
+                        for part in safe_name.split("/")
+                        if part
+                    ]
+
+                    if not parts:
+                        continue
+
+                    parent_id = current_folder
+
+                    for directory_name in parts[:-1]:
+
+                        cache_key = posixpath.join(
+                            *parts[
+                                :parts.index(
+                                    directory_name
+                                ) + 1
+                            ]
+                        )
+
+                        if cache_key in folder_cache:
+                            parent_id = folder_cache[
+                                cache_key
+                            ]
+                            continue
+
+                        result = cloudflare.create_file(
+                            collab_id=collab_id,
+                            name=directory_name,
+                            mime_type="inode/directory",
+                            size=0,
+                            created_by=request.user.id,
+                            parent_id=parent_id,
+                            is_directory=True,
+                        )
+
+                        folder_id = result[
+                            "file"
+                        ]["id"]
+
+                        folder_cache[
+                            cache_key
+                        ] = folder_id
+
+                        parent_id = folder_id
+
+                    filename = parts[-1]
+
+                    if member.is_dir():
+                        result = cloudflare.create_file(
+                            collab_id=collab_id,
+                            name=filename,
+                            mime_type="inode/directory",
+                            size=0,
+                            created_by=request.user.id,
+                            parent_id=parent_id,
+                            is_directory=True,
+                        )
+
+                    else:
+                        file_data = archive.read(
+                            member
+                        )
+
+                        encoded = base64.b64encode(
+                            file_data
+                        ).decode("ascii")
+
+                        mime_type = (
+                            mimetypes.guess_type(
+                                filename
+                            )[0]
+                            or "application/octet-stream"
+                        )
+
+                        cloudflare.create_file(
+                            collab_id=collab_id,
+                            name=filename,
+                            mime_type=mime_type,
+                            size=len(file_data),
+                            created_by=request.user.id,
+                            data=encoded,
+                            parent_id=parent_id,
+                            is_directory=False,
+                        )
+
+            messages.success(
+                request,
+                "ZIP extracted successfully.",
+            )
+
+        except Exception as e:
+            messages.error(
+                request,
+                f"Could not extract ZIP: {e}",
+            )
+
+    return redirect(
+        f"/collabs/{collab_id}/files/"
+        + (
+            f"?folder={current_folder}"
+            if current_folder
+            else ""
+        )
+    )
 
 @login_required
 def collab_links(request, collab_id):

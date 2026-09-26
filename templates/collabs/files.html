@@ -7,10 +7,21 @@
 
 <div class="container-fluid py-4">
 
-    <!-- Header -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+    <!-- HEADER -->
+
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
         <div>
+
             <a
                 href="{% url 'collabs:detail' collab.id %}"
                 class="text-decoration-none"
@@ -23,62 +34,154 @@
             </h1>
 
             <p class="text-muted mb-0">
-                Files and folders for this Collab.
+                Shared files and folders.
             </p>
+
         </div>
 
         <div class="d-flex gap-2">
+
             <button
-                type="button"
                 class="btn btn-outline-secondary"
-                disabled
-                title="Coming soon"
+                data-bs-toggle="modal"
+                data-bs-target="#folderModal"
             >
                 + Folder
             </button>
 
             <button
-                type="button"
                 class="btn btn-primary"
-                disabled
-                title="Coming soon"
+                onclick="document.getElementById('fileInput').click()"
             >
                 Upload
             </button>
+
         </div>
 
     </div>
 
 
-    <!-- Toolbar -->
+    <!-- BREADCRUMBS -->
+
+    <div class="mb-3">
+
+        <a
+            href="{% url 'collabs:files' collab.id %}"
+            class="text-decoration-none"
+        >
+            📁 Root
+        </a>
+
+        {% for crumb in breadcrumbs %}
+
+            <span class="text-muted mx-2">
+                /
+            </span>
+
+            {% if forloop.last %}
+
+                <span class="fw-semibold">
+                    {{ crumb.name }}
+                </span>
+
+            {% else %}
+
+                <a
+                    href="{% url 'collabs:files' collab.id %}?folder={{ crumb.id }}"
+                    class="text-decoration-none"
+                >
+                    {{ crumb.name }}
+                </a>
+
+            {% endif %}
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- HIDDEN UPLOAD -->
+
+    <form
+        method="post"
+        enctype="multipart/form-data"
+        id="uploadForm"
+        style="display:none;"
+    >
+
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="action"
+            value="upload"
+        >
+
+        {% if current_folder %}
+            <input
+                type="hidden"
+                name="parent_id"
+                value="{{ current_folder }}"
+            >
+        {% endif %}
+
+        <input
+            type="file"
+            name="file"
+            id="fileInput"
+            onchange="this.form.submit()"
+        >
+
+    </form>
+
+
+    <!-- TOOLBAR -->
+
     <div class="card mb-3">
 
         <div class="card-body">
 
-            <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="d-flex flex-wrap gap-2">
 
-                <div class="input-group" style="max-width: 400px;">
-
-                    <span class="input-group-text">
-                        🔎
-                    </span>
-
-                    <input
-                        type="search"
-                        class="form-control"
-                        placeholder="Search files..."
-                        disabled
-                    >
-
-                </div>
-
-                <select
-                    class="form-select"
-                    style="max-width: 180px;"
+                <button
+                    class="btn btn-sm btn-outline-secondary"
+                    id="cutButton"
                     disabled
                 >
-                    <option>All files</option>
-                </select>
+                    ✂️ Cut
+                </button>
+
+                <button
+                    class="btn btn-sm btn-outline-secondary"
+                    id="copyButton"
+                    disabled
+                >
+                    📋 Copy
+                </button>
+
+                <button
+                    class="btn btn-sm btn-outline-secondary"
+                    id="pasteButton"
+                    disabled
+                >
+                    📥 Paste
+                </button>
+
+                <button
+                    class="btn btn-sm btn-outline-secondary"
+                    id="renameButton"
+                    disabled
+                >
+                    ✏️ Rename
+                </button>
+
+                <button
+                    class="btn btn-sm btn-outline-danger"
+                    id="deleteButton"
+                    disabled
+                >
+                    🗑️ Delete
+                </button>
 
             </div>
 
@@ -87,129 +190,894 @@
     </div>
 
 
-    <!-- Empty state -->
+    <!-- FILE LIST -->
+
     <div class="card">
 
-        <div class="card-body text-center py-5">
+        <div class="card-body p-0">
 
-            <div
-                style="
-                    font-size: 64px;
-                    line-height: 1;
-                    margin-bottom: 20px;
-                "
-            >
-                📂
-            </div>
+            {% if files %}
 
-            <h3>
-                No files yet
-            </h3>
+                <div class="list-group list-group-flush">
 
-            <p class="text-muted mx-auto" style="max-width: 500px;">
-                Upload files or create folders to start building
-                your project's shared workspace.
-            </p>
+                    {% for file in files %}
 
-            <button
-                type="button"
-                class="btn btn-primary"
-                disabled
-            >
-                Upload a file
-            </button>
+                        <div
+                            class="list-group-item file-row py-3 px-4"
+                            data-file-id="{{ file.id }}"
+                            data-file-name="{{ file.name }}"
+                            data-is-directory="{{ file.is_directory }}"
+                            data-mime="{{ file.mime_type }}"
+                            oncontextmenu="showFileMenu(event, '{{ file.id }}')"
+                        >
 
-        </div>
+                            <div class="d-flex align-items-center gap-3">
 
-    </div>
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input file-check"
+                                    data-file-id="{{ file.id }}"
+                                    onclick="event.stopPropagation(); updateSelection()"
+                                >
+
+                                <div
+                                    class="file-icon"
+                                    style="
+                                        width:44px;
+                                        height:44px;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        border-radius:12px;
+                                        background:rgba(99,102,241,.12);
+                                        font-size:22px;
+                                    "
+                                >
+
+                                    {% if file.is_directory %}
+                                        📁
+                                    {% elif "zip" in file.mime_type %}
+                                        🗜️
+                                    {% elif "image/" in file.mime_type %}
+                                        🖼️
+                                    {% elif "pdf" in file.mime_type %}
+                                        📕
+                                    {% elif file.mime_type == "text/html" %}
+                                        🌐
+                                    {% elif "javascript" in file.mime_type %}
+                                        ⚡
+                                    {% elif file.mime_type == "text/css" %}
+                                        🎨
+                                    {% else %}
+                                        📄
+                                    {% endif %}
+
+                                </div>
 
 
-    <!-- Planned file features -->
-    <div class="mt-4">
+                                <div
+                                    class="flex-grow-1"
+                                    onclick="openFile('{{ file.id }}', {{ file.is_directory|yesno:'true,false' }})"
+                                    style="cursor:pointer;"
+                                >
 
-        <div class="row g-3">
+                                    <div class="fw-semibold">
+                                        {{ file.name }}
+                                    </div>
 
-            <div class="col-md-4">
+                                    <div class="small text-muted">
 
-                <div class="card h-100">
+                                        {% if file.is_directory %}
+                                            Folder
+                                        {% else %}
+                                            {{ file.size }} bytes
+                                            {% if file.mime_type %}
+                                                · {{ file.mime_type }}
+                                            {% endif %}
+                                        {% endif %}
 
-                    <div class="card-body">
+                                    </div>
 
-                        <div style="font-size: 30px;">
-                            📄
+                                </div>
+
+
+                                {% if not file.is_directory %}
+
+                                    <a
+                                        href="{% url 'collabs:share_file' collab.id file.id %}"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        title="Share in private chat"
+                                    >
+                                        💬
+                                    </a>
+
+                                    <a
+                                        href="{% url 'collabs:download_file' collab.id file.id %}"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        title="Download"
+                                    >
+                                        ⬇️
+                                    </a>
+
+                                {% endif %}
+
+                            </div>
+
                         </div>
 
-                        <h5 class="mt-3">
-                            Documents
-                        </h5>
-
-                        <p class="text-muted mb-0">
-                            Store project documents alongside
-                            your other files.
-                        </p>
-
-                    </div>
+                    {% endfor %}
 
                 </div>
 
-            </div>
+            {% else %}
 
+                <div class="text-center py-5 px-3">
 
-            <div class="col-md-4">
-
-                <div class="card h-100">
-
-                    <div class="card-body">
-
-                        <div style="font-size: 30px;">
-                            🗜️
-                        </div>
-
-                        <h5 class="mt-3">
-                            ZIP extraction
-                        </h5>
-
-                        <p class="text-muted mb-0">
-                            Upload a ZIP and automatically extract
-                            its contents into the workspace.
-                        </p>
-
+                    <div style="font-size:64px;">
+                        📂
                     </div>
+
+                    <h3 class="mt-3">
+                        No files here
+                    </h3>
+
+                    <p class="text-muted">
+                        Upload something or create a folder.
+                    </p>
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="document.getElementById('fileInput').click()"
+                    >
+                        Upload a file
+                    </button>
 
                 </div>
 
-            </div>
-
-
-            <div class="col-md-4">
-
-                <div class="card h-100">
-
-                    <div class="card-body">
-
-                        <div style="font-size: 30px;">
-                            🌐
-                        </div>
-
-                        <h5 class="mt-3">
-                            Web projects
-                        </h5>
-
-                        <p class="text-muted mb-0">
-                            HTML, CSS, and JavaScript files can
-                            eventually be previewed directly.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
+            {% endif %}
 
         </div>
 
     </div>
 
 </div>
+
+
+<!-- FOLDER MODAL -->
+
+<div
+    class="modal fade"
+    id="folderModal"
+    tabindex="-1"
+>
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="folder"
+                >
+
+                {% if current_folder %}
+                    <input
+                        type="hidden"
+                        name="parent_id"
+                        value="{{ current_folder }}"
+                    >
+                {% endif %}
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Create Folder
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <label class="form-label">
+                        Folder name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="name"
+                        class="form-control"
+                        placeholder="My Project"
+                        maxlength="255"
+                        required
+                        autofocus
+                    >
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Create Folder
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- CONTEXT MENU -->
+
+<div
+    id="fileContextMenu"
+    style="
+        display:none;
+        position:fixed;
+        z-index:9999;
+        min-width:190px;
+        padding:6px;
+        border-radius:12px;
+        background:var(--bs-body-bg);
+        border:1px solid var(--bs-border-color);
+        box-shadow:0 10px 30px rgba(0,0,0,.2);
+    "
+>
+
+    <button
+        class="dropdown-item rounded"
+        onclick="contextOpen()"
+    >
+        📂 Open
+    </button>
+
+    <button
+        class="dropdown-item rounded"
+        onclick="contextCut()"
+    >
+        ✂️ Cut
+    </button>
+
+    <button
+        class="dropdown-item rounded"
+        onclick="contextCopy()"
+    >
+        📋 Copy
+    </button>
+
+    <button
+        class="dropdown-item rounded"
+        onclick="contextRename()"
+    >
+        ✏️ Rename
+    </button>
+
+    <button
+        class="dropdown-item rounded text-danger"
+        onclick="contextDelete()"
+    >
+        🗑️ Delete
+    </button>
+
+    <hr class="my-1">
+
+    <button
+        class="dropdown-item rounded"
+        onclick="contextCompress()"
+    >
+        🗜️ Compress
+    </button>
+
+    <button
+        class="dropdown-item rounded"
+        onclick="contextExtract()"
+    >
+        📦 Extract ZIP
+    </button>
+
+    <hr class="my-1">
+
+    <button
+        class="dropdown-item rounded"
+        onclick="contextShare()"
+    >
+        💬 Share in Chat
+    </button>
+
+</div>
+
+
+<!-- RENAME MODAL -->
+
+<div
+    class="modal fade"
+    id="renameModal"
+    tabindex="-1"
+>
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form
+                method="post"
+                action="{% url 'collabs:file_action' collab.id %}"
+            >
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="rename"
+                >
+
+                <input
+                    type="hidden"
+                    name="file_id"
+                    id="renameFileId"
+                >
+
+                {% if current_folder %}
+                    <input
+                        type="hidden"
+                        name="current_folder"
+                        value="{{ current_folder }}"
+                    >
+                {% endif %}
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Rename
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input
+                        type="text"
+                        name="name"
+                        id="renameInput"
+                        class="form-control"
+                        required
+                    >
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        class="btn btn-primary"
+                        type="submit"
+                    >
+                        Rename
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let selectedFile = null;
+
+let clipboardFile = null;
+let clipboardMode = null;
+
+const actionUrl =
+    "{% url 'collabs:file_action' collab.id %}";
+
+
+function openFile(id, isDirectory) {
+
+    if (isDirectory) {
+
+        const url =
+            "{% url 'collabs:files' collab.id %}"
+            + "?folder="
+            + encodeURIComponent(id);
+
+        window.location.href = url;
+
+        return;
+    }
+
+    window.open(
+        "{% url 'collabs:open_file' collab.id 'FILE_ID' %}"
+            .replace("FILE_ID", id),
+        "_blank"
+    );
+}
+
+
+function updateSelection() {
+
+    const checked =
+        document.querySelectorAll(
+            ".file-check:checked"
+        );
+
+    const buttons = [
+        "cutButton",
+        "copyButton",
+        "renameButton",
+        "deleteButton",
+    ];
+
+    buttons.forEach(
+        id => {
+            document.getElementById(id).disabled =
+                checked.length !== 1;
+        }
+    );
+
+    if (checked.length === 1) {
+
+        selectedFile =
+            checked[0].dataset.fileId;
+
+    } else {
+
+        selectedFile = null;
+
+    }
+
+    document.getElementById(
+        "pasteButton"
+    ).disabled = !clipboardFile;
+}
+
+
+function postAction(
+    action,
+    fileId,
+    extra = {}
+) {
+
+    const form =
+        document.createElement("form");
+
+    form.method = "POST";
+    form.action = actionUrl;
+
+    form.style.display = "none";
+
+    const csrf =
+        document.querySelector(
+            "[name=csrfmiddlewaretoken]"
+        );
+
+    const csrfInput =
+        document.createElement("input");
+
+    csrfInput.type = "hidden";
+    csrfInput.name = "csrfmiddlewaretoken";
+    csrfInput.value = csrf.value;
+
+    form.appendChild(csrfInput);
+
+
+    const actionInput =
+        document.createElement("input");
+
+    actionInput.type = "hidden";
+    actionInput.name = "action";
+    actionInput.value = action;
+
+    form.appendChild(actionInput);
+
+
+    if (fileId) {
+
+        const fileInput =
+            document.createElement("input");
+
+        fileInput.type = "hidden";
+        fileInput.name = "file_id";
+        fileInput.value = fileId;
+
+        form.appendChild(fileInput);
+
+    }
+
+
+    {% if current_folder %}
+
+        const folderInput =
+            document.createElement("input");
+
+        folderInput.type = "hidden";
+        folderInput.name = "current_folder";
+        folderInput.value =
+            "{{ current_folder }}";
+
+        form.appendChild(folderInput);
+
+    {% endif %}
+
+
+    Object.entries(extra).forEach(
+        ([key, value]) => {
+
+            const input =
+                document.createElement("input");
+
+            input.type = "hidden";
+            input.name = key;
+            input.value = value;
+
+            form.appendChild(input);
+
+        }
+    );
+
+
+    document.body.appendChild(form);
+
+    form.submit();
+}
+
+
+document.getElementById(
+    "cutButton"
+).onclick = function () {
+
+    if (!selectedFile)
+        return;
+
+    clipboardFile = selectedFile;
+    clipboardMode = "cut";
+
+    updateSelection();
+
+};
+
+
+document.getElementById(
+    "copyButton"
+).onclick = function () {
+
+    if (!selectedFile)
+        return;
+
+    clipboardFile = selectedFile;
+    clipboardMode = "copy";
+
+    updateSelection();
+
+};
+
+
+document.getElementById(
+    "pasteButton"
+).onclick = function () {
+
+    if (!clipboardFile)
+        return;
+
+    if (clipboardMode === "cut") {
+
+        postAction(
+            "move",
+            clipboardFile,
+            {
+                parent_id:
+                    "{{ current_folder|default:'' }}"
+            }
+        );
+
+    } else {
+
+        postAction(
+            "copy",
+            clipboardFile,
+        );
+
+    }
+
+    clipboardFile = null;
+    clipboardMode = null;
+
+};
+
+
+document.getElementById(
+    "renameButton"
+).onclick = function () {
+
+    if (!selectedFile)
+        return;
+
+    contextRename();
+
+};
+
+
+document.getElementById(
+    "deleteButton"
+).onclick = function () {
+
+    if (!selectedFile)
+        return;
+
+    if (
+        confirm(
+            "Delete this item?"
+        )
+    ) {
+
+        postAction(
+            "delete",
+            selectedFile
+        );
+
+    }
+
+};
+
+
+function showFileMenu(
+    event,
+    id
+) {
+
+    event.preventDefault();
+
+    selectedFile = id;
+
+    document
+        .querySelectorAll(
+            ".file-check"
+        )
+        .forEach(
+            checkbox => {
+                checkbox.checked =
+                    checkbox.dataset.fileId === id;
+            }
+        );
+
+    updateSelection();
+
+    const menu =
+        document.getElementById(
+            "fileContextMenu"
+        );
+
+    menu.style.display = "block";
+
+    menu.style.left =
+        event.clientX + "px";
+
+    menu.style.top =
+        event.clientY + "px";
+}
+
+
+document.addEventListener(
+    "click",
+    function () {
+
+        document.getElementById(
+            "fileContextMenu"
+        ).style.display = "none";
+
+    }
+);
+
+
+function contextOpen() {
+
+    if (!selectedFile)
+        return;
+
+    const row =
+        document.querySelector(
+            `[data-file-id="${selectedFile}"]`
+        );
+
+    if (!row)
+        return;
+
+    openFile(
+        selectedFile,
+        row.dataset.isDirectory === "1"
+    );
+}
+
+
+function contextCut() {
+
+    if (!selectedFile)
+        return;
+
+    clipboardFile =
+        selectedFile;
+
+    clipboardMode =
+        "cut";
+
+    updateSelection();
+
+}
+
+
+function contextCopy() {
+
+    if (!selectedFile)
+        return;
+
+    clipboardFile =
+        selectedFile;
+
+    clipboardMode =
+        "copy";
+
+    updateSelection();
+
+}
+
+
+function contextRename() {
+
+    if (!selectedFile)
+        return;
+
+    const row =
+        document.querySelector(
+            `[data-file-id="${selectedFile}"]`
+        );
+
+    if (!row)
+        return;
+
+    document.getElementById(
+        "renameFileId"
+    ).value = selectedFile;
+
+    document.getElementById(
+        "renameInput"
+    ).value =
+        row.dataset.fileName;
+
+    new bootstrap.Modal(
+        document.getElementById(
+            "renameModal"
+        )
+    ).show();
+
+}
+
+
+function contextDelete() {
+
+    if (!selectedFile)
+        return;
+
+    if (
+        confirm(
+            "Delete this item?"
+        )
+    ) {
+
+        postAction(
+            "delete",
+            selectedFile
+        );
+
+    }
+
+}
+
+
+function contextCompress() {
+
+    if (!selectedFile)
+        return;
+
+    postAction(
+        "compress",
+        selectedFile
+    );
+
+}
+
+
+function contextExtract() {
+
+    if (!selectedFile)
+        return;
+
+    const row =
+        document.querySelector(
+            `[data-file-id="${selectedFile}"]`
+        );
+
+    if (
+        row &&
+        !row.dataset.fileName
+            .toLowerCase()
+            .endsWith(".zip")
+    ) {
+
+        alert(
+            "Select a ZIP file to extract."
+        );
+
+        return;
+
+    }
+
+    postAction(
+        "extract",
+        selectedFile
+    );
+
+}
+
+
+function contextShare() {
+
+    if (!selectedFile)
+        return;
+
+    window.location.href =
+        "{% url 'collabs:share_file' collab.id 'FILE_ID' %}"
+            .replace(
+                "FILE_ID",
+                selectedFile
+            );
+
+}
+
+</script>
 
 {% endblock %}
