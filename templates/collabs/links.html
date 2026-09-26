@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Links — {{ collab.name }}{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div
+        class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4"
+    >
+
+        <div>
+
+            <a
+                href="{% url 'collabs:detail' collab.id %}"
+                class="text-muted text-decoration-none small"
+            >
+                ← {{ collab.name }}
+            </a>
+
+            <h1 class="mt-1 mb-1">
+                Links
+            </h1>
+
+            <p class="text-muted mb-0">
+                Useful websites and resources for this Collab.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if messages %}
+        {% for message in messages %}
+
+            <div class="alert alert-{{ message.tags|default:'info' }}">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+    {% endif %}
+
+
+    <!-- Add link -->
+
+    <div class="card border shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <h5 class="mb-3">
+                Add a link
+            </h5>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="row g-3">
+
+                    <div class="col-12 col-md-4">
+
+                        <label class="form-label">
+                            Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="title"
+                            class="form-control"
+                            placeholder="e.g. Project Website"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="col-12 col-md-6">
+
+                        <label class="form-label">
+                            URL
+                        </label>
+
+                        <input
+                            type="url"
+                            name="url"
+                            class="form-control"
+                            placeholder="https://example.com"
+                            required
+                        >
+
+                    </div>
+
+                    <div
+                        class="col-12 col-md-2 d-flex align-items-end"
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Add Link
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- Links -->
+
+    {% if links %}
+
+        <div class="row g-3">
+
+            {% for link in links %}
+
+                <div class="col-12 col-md-6">
+
+                    <div
+                        class="card h-100 border shadow-sm"
+                    >
+
+                        <div class="card-body">
+
+                            <div
+                                class="d-flex align-items-start gap-3"
+                            >
+
+                                <div
+                                    class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="
+                                        width:44px;
+                                        height:44px;
+                                        background:rgba(59,130,246,.12);
+                                        font-size:21px;
+                                    "
+                                >
+                                    {% if link.pinned %}
+                                        📌
+                                    {% else %}
+                                        🔗
+                                    {% endif %}
+                                </div>
+
+
+                                <div
+                                    class="flex-grow-1"
+                                    style="min-width:0;"
+                                >
+
+                                    <div
+                                        class="d-flex align-items-center gap-2"
+                                    >
+
+                                        <h5
+                                            class="mb-0 text-truncate"
+                                        >
+                                            {{ link.title }}
+                                        </h5>
+
+                                        {% if link.pinned %}
+
+                                            <span
+                                                class="badge text-bg-warning"
+                                            >
+                                                Pinned
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <a
+                                        href="{{ link.url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="small text-primary text-break"
+                                    >
+                                        {{ link.url }}
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="card-footer bg-transparent d-flex justify-content-between align-items-center"
+                        >
+
+                            <span class="small text-muted">
+                                Added
+                                {{ link.created_at|date:"M j, Y" }}
+                            </span>
+
+                            <a
+                                href="{{ link.url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                Open →
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div
+            class="text-center py-5 border rounded-4"
+            style="
+                background:rgba(127,127,127,.04);
+            "
+        >
+
+            <div
+                style="
+                    font-size:44px;
+                    margin-bottom:12px;
+                "
+            >
+                🔗
+            </div>
+
+            <h4>No links yet</h4>
+
+            <p class="text-muted mb-0">
+                Add useful websites and resources for your team.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

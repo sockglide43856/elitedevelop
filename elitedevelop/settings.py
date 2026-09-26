@@ -54,6 +54,8 @@ RECAPTCHA_PRIVATE_KEY = os.environ["RECAPTCHA_PRIVATE_KEY"]
 AI_WORKER_URL = os.getenv("AI_WORKER_URL")
 AI_WORKER_SECRET = os.getenv("AI_WORKER_SECRET")
 
+COLLABS_API_URL = os.environ.get("COLLABS_API_URL")
+COLLABS_API_KEY = os.environ.get("COLLABS_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -80,6 +82,7 @@ INSTALLED_APPS = [
     'ai',
     'eliteos',
     'gaming',
+    'collabs',
     'forms',
     'mptt',
     'haystack',

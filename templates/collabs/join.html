@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Join a Collab{% endblock %}
+
+{% block content %}
+
+<div class="container py-5" style="max-width: 550px;">
+
+    <h1>
+        Join a Collab
+    </h1>
+
+    <p class="text-muted">
+        Enter the invite code you received.
+    </p>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <input
+            type="text"
+            name="code"
+            class="form-control form-control-lg mb-3"
+            placeholder="ABC123"
+            maxlength="6"
+            style="
+                text-transform: uppercase;
+                letter-spacing: .2em;
+                font-family: monospace;
+            "
+            required
+        >
+
+        <button
+            class="btn btn-primary btn-lg w-100"
+        >
+            Join Collab
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

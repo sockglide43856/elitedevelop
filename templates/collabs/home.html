@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Collabs{% endblock %}
+
+{% block content %}
+
+<style>
+    .collabs-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 20px 50px;
+    }
+
+    .collabs-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .collabs-header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 750;
+    }
+
+    .collabs-header p {
+        margin: 6px 0 0;
+        opacity: .65;
+    }
+
+    .collabs-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .collab-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 650;
+        border: 1px solid rgba(128, 128, 128, .25);
+        background: rgba(128, 128, 128, .08);
+        color: inherit;
+        transition: .18s ease;
+    }
+
+    .collab-button:hover {
+        transform: translateY(-1px);
+        background: rgba(128, 128, 128, .15);
+        color: inherit;
+    }
+
+    .collab-button.primary {
+        background: #635bff;
+        border-color: #635bff;
+        color: white;
+    }
+
+    .collab-button.primary:hover {
+        background: #5148e8;
+        border-color: #5148e8;
+    }
+
+    .collabs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 18px;
+    }
+
+    .collab-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 190px;
+        padding: 22px;
+        border-radius: 18px;
+        border: 1px solid rgba(128, 128, 128, .18);
+        background: rgba(128, 128, 128, .055);
+        text-decoration: none;
+        color: inherit;
+        transition: .2s ease;
+    }
+
+    .collab-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(99, 91, 255, .45);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, .12);
+        color: inherit;
+    }
+
+    .collab-card h2 {
+        margin: 0 0 9px;
+        font-size: 21px;
+    }
+
+    .collab-description {
+        margin: 0;
+        opacity: .68;
+        line-height: 1.5;
+    }
+
+    .collab-updated {
+        margin-top: auto;
+        padding-top: 20px;
+        font-size: 13px;
+        opacity: .5;
+    }
+
+    .collabs-empty {
+        text-align: center;
+        padding: 70px 25px;
+        border: 1px dashed rgba(128, 128, 128, .3);
+        border-radius: 20px;
+    }
+
+    .collabs-empty-icon {
+        font-size: 42px;
+        margin-bottom: 15px;
+    }
+
+    .collabs-empty h2 {
+        margin: 0 0 8px;
+    }
+
+    .collabs-empty p {
+        margin: 0 0 22px;
+        opacity: .65;
+    }
+
+    .empty-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 650px) {
+        .collabs-page {
+            padding: 20px 14px 40px;
+        }
+
+        .collabs-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .collabs-header h1 {
+            font-size: 28px;
+        }
+    }
+</style>
+
+<div class="collabs-page">
+
+    <div class="collabs-header">
+        <div>
+            <h1>Collabs</h1>
+            <p>Shared workspaces for projects, files, and documents.</p>
+        </div>
+
+        <div class="collabs-actions">
+            <a href="{% url 'collabs:join' %}" class="collab-button">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Join Collab
+            </a>
+
+            <a href="{% url 'collabs:create' %}" class="collab-button primary">
+                <i class="fa-solid fa-plus"></i>
+                New Collab
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if collabs %}
+
+        <div class="collabs-grid">
+            {% for collab in collabs %}
+                <a
+                    href="{% url 'collabs:detail' collab_id=collab.id %}"
+                    class="collab-card"
+                >
+                    <h2>{{ collab.name }}</h2>
+
+                    {% if collab.description %}
+                        <p class="collab-description">
+                            {{ collab.description }}
+                        </p>
+                    {% else %}
+                        <p class="collab-description">
+                            No description yet.
+                        </p>
+                    {% endif %}
+
+                    <div class="collab-updated">
+                        Updated {{ collab.updated_at }}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+    {% else %}
+
+        <div class="collabs-empty">
+            <div class="collabs-empty-icon">👥</div>
+
+            <h2>No Collabs yet</h2>
+
+            <p>
+                Create a workspace for your team or join one with an invite code.
+            </p>
+
+            <div class="empty-actions">
+                <a
+                    href="{% url 'collabs:create' %}"
+                    class="collab-button primary"
+                >
+                    <i class="fa-solid fa-plus"></i>
+                    Create a Collab
+                </a>
+
+                <a
+                    href="{% url 'collabs:join' %}"
+                    class="collab-button"
+                >
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Join with Code
+                </a>
+            </div>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

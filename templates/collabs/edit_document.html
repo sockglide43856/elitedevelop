@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} — {{ collab.name }}{% endblock %}
+
+{% block content %}
+
+<div
+    class="container-fluid p-0"
+    style="height: calc(100vh - 70px);"
+>
+
+    <div
+        style="
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        "
+    >
+
+        <!-- Toolbar -->
+
+        <div
+            class="border-bottom px-3 py-2"
+            style="
+                display:flex;
+                align-items:center;
+                gap:12px;
+            "
+        >
+
+            <a
+                href="{% url 'collabs:docs' collab.id %}"
+                class="btn btn-sm btn-outline-secondary"
+            >
+                ←
+            </a>
+
+            <input
+                id="document-title"
+                value="{{ document.title }}"
+                class="form-control"
+                style="
+                    max-width:400px;
+                    border:0;
+                    box-shadow:none;
+                    font-weight:600;
+                "
+            >
+
+            <div
+                id="save-status"
+                class="text-muted small ms-auto"
+            >
+                Saved
+            </div>
+
+        </div>
+
+
+        <!-- Editor -->
+
+        <textarea
+            id="document-editor"
+            spellcheck="true"
+            style="
+                flex:1;
+                width:100%;
+                border:0;
+                outline:0;
+                resize:none;
+                padding:40px max(20px, calc((100vw - 900px) / 2));
+                font-size:16px;
+                line-height:1.7;
+                background:transparent;
+                font-family:inherit;
+            "
+        >{{ document.content }}</textarea>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const editor =
+    document.getElementById("document-editor");
+
+const title =
+    document.getElementById("document-title");
+
+const status =
+    document.getElementById("save-status");
+
+let saveTimer = null;
+let saving = false;
+
+
+function scheduleSave() {
+
+    status.textContent = "Unsaved";
+
+    clearTimeout(saveTimer);
+
+    saveTimer = setTimeout(
+        saveDocument,
+        2000
+    );
+}
+
+
+async function saveDocument() {
+
+    if (saving) {
+        return;
+    }
+
+    saving = true;
+
+    status.textContent = "Saving...";
+
+    try {
+
+        const formData = new FormData();
+
+        formData.append(
+            "csrfmiddlewaretoken",
+            "{{ csrf_token }}"
+        );
+
+        formData.append(
+            "title",
+            title.value
+        );
+
+        formData.append(
+            "content",
+            editor.value
+        );
+
+
+        const response =
+            await fetch(
+                window.location.pathname,
+                {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest"
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Save failed"
+            );
+        }
+
+
+        status.textContent =
+            "Saved " +
+            new Date().toLocaleTimeString();
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Save failed";
+
+    } finally {
+
+        saving = false;
+    }
+}
+
+
+editor.addEventListener(
+    "input",
+    scheduleSave
+);
+
+title.addEventListener(
+    "input",
+    scheduleSave
+);
+
+</script>
+
+{% endblock %}

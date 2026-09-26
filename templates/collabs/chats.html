@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Chats — Collab{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:40px 20px;">
+
+    <a href="{% url 'collabs:detail' collab_id %}">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back to Collab
+    </a>
+
+    <h1 style="margin-top:25px;">
+        <i class="fa-solid fa-comments"></i>
+        Project Chats
+    </h1>
+
+    <p style="opacity:.6;">
+        Linked EliteDevelop private chats will appear here.
+    </p>
+
+</div>
+{% endblock %}

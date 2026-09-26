@@ -35,6 +35,7 @@ urlpatterns = [
     path("ai/", include("ai.urls")),
     path('forms/', include('forms.urls')),
     path('eliteos/', include('eliteos.urls')),
+    path("collabs/", include("collabs.urls")),
     path('api/vault/save/', views.save_vault_snippet, name='api-vault-save'),
     path('api/vault/list/', views.get_vault_snippets, name='api-vault-list'),
     path('api/user-info/', UserInfoView.as_view(), name='user-info'),

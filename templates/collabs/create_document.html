@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}New Document — {{ collab.name }}{% endblock %}
+
+{% block content %}
+
+<div class="container py-4" style="max-width: 900px;">
+
+    <a href="{% url 'collabs:docs' collab.id %}">
+        ← Documents
+    </a>
+
+    <h1 class="mt-3">
+        New Document
+    </h1>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                Title
+            </label>
+
+            <input
+                type="text"
+                name="title"
+                class="form-control"
+                placeholder="e.g. Project Plan"
+                required
+                autofocus
+            >
+
+        </div>
+
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                Content
+            </label>
+
+            <textarea
+                name="content"
+                class="form-control"
+                rows="18"
+                placeholder="Start writing..."
+            ></textarea>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn btn-primary"
+        >
+            Create Document
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
