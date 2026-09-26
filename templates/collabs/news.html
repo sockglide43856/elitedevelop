@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}News — {{ collab.name }}{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- Header -->
+
+    <div class="mb-4">
+
+        <a
+            href="{% url 'collabs:detail' collab.id %}"
+            class="text-muted text-decoration-none small"
+        >
+            ← {{ collab.name }}
+        </a>
+
+        <h1 class="mt-2 mb-1">
+            News
+        </h1>
+
+        <p class="text-muted mb-0">
+            Recent activity in this Collab.
+        </p>
+
+    </div>
+
+
+    <!-- Activity -->
+
+    <div class="card border shadow-sm">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                <div>
+                    <h4 class="mb-1">
+                        Recent Activity
+                    </h4>
+
+                    <p class="text-muted small mb-0">
+                        What's been happening in this workspace.
+                    </p>
+                </div>
+
+                <span class="badge text-bg-secondary">
+                    {{ activity|length }}
+                </span>
+
+            </div>
+
+
+            {% if activity %}
+
+                <div class="list-group list-group-flush">
+
+                    {% for event in activity %}
+
+                        <div class="list-group-item px-0 py-3">
+
+                            <div class="d-flex gap-3">
+
+                                <!-- Icon -->
+
+                                <div
+                                    class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="
+                                        width:42px;
+                                        height:42px;
+                                        background:rgba(99,102,241,.12);
+                                        font-size:18px;
+                                    "
+                                >
+                                    {% if event.event_type == "created" %}
+                                        ✨
+                                    {% elif event.event_type == "joined" %}
+                                        👋
+                                    {% elif event.event_type == "uploaded" %}
+                                        📁
+                                    {% elif event.event_type == "document_created" %}
+                                        📄
+                                    {% elif event.event_type == "document_updated" %}
+                                        ✏️
+                                    {% elif event.event_type == "link_added" %}
+                                        🔗
+                                    {% elif event.event_type == "pin_created" %}
+                                        📌
+                                    {% else %}
+                                        📝
+                                    {% endif %}
+                                </div>
+
+
+                                <!-- Activity -->
+
+                                <div class="flex-grow-1">
+
+                                    <div class="fw-semibold">
+
+                                        {% if event.username %}
+                                            {{ event.username }}
+                                        {% else %}
+                                            Unknown user
+                                        {% endif %}
+
+                                    </div>
+
+                                    <div class="text-muted">
+                                        {{ event.message }}
+                                    </div>
+
+                                    {% if event.created_at %}
+
+                                        <div class="small text-muted mt-1">
+                                            {{ event.created_at }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="text-center py-5">
+
+                    <div
+                        style="
+                            font-size:42px;
+                            margin-bottom:12px;
+                        "
+                    >
+                        📰
+                    </div>
+
+                    <h5>
+                        No activity yet
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        Activity from this Collab will appear here.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
