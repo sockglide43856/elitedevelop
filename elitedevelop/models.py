@@ -13,6 +13,60 @@ import datetime
 from django.db import models
 from django.conf import settings
 
+class Organization(models.Model):
+    name = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=150, unique=True)
+
+    description = models.TextField(blank=True)
+    website = models.URLField(blank=True)
+
+    logo = models.ImageField(
+        upload_to="organization_logos/",
+        blank=True,
+        null=True
+    )
+
+    verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class OrganizationMembership(models.Model):
+    ROLE_CHOICES = [
+        ("owner", "Owner"),
+        ("admin", "Admin"),
+        ("member", "Member"),
+    ]
+
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name="memberships"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="organization_memberships"
+    )
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="member"
+    )
+
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("organization", "user")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.organization.name}"
+
 class RequestLog(models.Model):
     path = models.CharField(max_length=255)
     method = models.CharField(max_length=10)
@@ -76,7 +130,9 @@ class UserProfile(models.Model):
     proxy_requests_per_day = models.PositiveIntegerField(default=10)
     proxy_requests_today = models.PositiveIntegerField(default=0)
     proxy_requests_reset_date = models.DateField(null=True, blank=True)
+    is_organization_account = models.BooleanField(default=False)
 
+    organization = models.OneToOneField('Organization', on_delete=models.SET_NULL, null=True, blank=True, related_name='account')
     def add_active_time(self, seconds=5):
         today = timezone.now().date()
 
