@@ -12,6 +12,25 @@ from django.utils import timezone
 import datetime
 from django.db import models
 from django.conf import settings
+import secrets
+from django.utils.text import slugify
+
+class OAuth2Key(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="oauth_keys")
+    name = models.CharField(max_length=100, default="Default API Key")
+    client_id = models.CharField(max_length=64, unique=True, editable=False)
+    client_secret = models.CharField(max_length=128, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.client_id:
+            self.client_id = f"client_{secrets.token_hex(16)}"
+        if not self.client_secret:
+            self.client_secret = f"secret_{secrets.token_hex(32)}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name}"
 
 class Organization(models.Model):
     name = models.CharField(max_length=150)
@@ -28,7 +47,6 @@ class Organization(models.Model):
 
     verified = models.BooleanField(default=False)
     verified_at = models.DateTimeField(null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

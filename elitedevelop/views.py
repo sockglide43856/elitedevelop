@@ -37,6 +37,131 @@ from .models import RequestLog
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.views import LogoutView
+
+## ORGANIZATIONAL VIEWS ##
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils.text import slugify
+from .models import Organization, OrganizationMembership, OAuth2Key
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils.text import slugify
+from .models import Organization, OrganizationMembership, OAuth2Key, UserProfile
+
+@login_required
+def organization_dashboard(request):
+    memberships = request.user.organization_memberships.select_related('organization').all()
+    user_key = request.user.oauth_keys.first()
+
+    # Calculate creation eligibility based on owned orgs
+    owned_orgs = OrganizationMembership.objects.filter(user=request.user, role="owner")
+    owned_count = owned_orgs.count()
+    is_any_verified = owned_orgs.filter(organization__verified=True).exists()
+
+    max_allowed = 5 if is_any_verified else 1
+    can_create_org = owned_count < max_allowed
+
+    context = {
+        'memberships': memberships,
+        'user_key': user_key,
+        'can_create_org': can_create_org,
+        'owned_count': owned_count,
+        'max_allowed': max_allowed,
+        'active_organization': getattr(request.user.profile, 'organization', None),
+    }
+    return render(request, 'organization_dashboard.html', context)
+
+
+@login_required
+def create_organization(request):
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        description = request.POST.get("description", "").strip()
+        website = request.POST.get("website", "").strip()
+
+        # Check limit
+        owned_orgs = OrganizationMembership.objects.filter(user=request.user, role="owner")
+        owned_count = owned_orgs.count()
+        is_any_verified = owned_orgs.filter(organization__verified=True).exists()
+        max_allowed = 5 if is_any_verified else 1
+
+        if owned_count >= max_allowed:
+            messages.error(request, f"You have reached your limit of {max_allowed} organization(s).")
+            return redirect('organization_dashboard')
+
+        if not name:
+            messages.error(request, "Organization name is required.")
+            return redirect('organization_dashboard')
+
+        # Auto-generate unique slug
+        base_slug = slugify(name)
+        slug = base_slug
+        counter = 1
+        while Organization.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
+        # Create Organization
+        org = Organization.objects.create(
+            name=name,
+            slug=slug,
+            description=description,
+            website=website,
+            logo=request.FILES.get('logo')
+        )
+
+        # Create Membership as Owner
+        OrganizationMembership.objects.create(
+            organization=org,
+            user=request.user,
+            role="owner"
+        )
+
+        # LINK TO USER PROFILE: Set as current organization
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile.organization = org
+        profile.is_organization_account = True
+        profile.save()
+
+        messages.success(request, f"Organization '{org.name}' created successfully!")
+        return redirect('organization_dashboard')
+
+    return redirect('organization_dashboard')
+
+
+@login_required
+def generate_api_key(request):
+    if request.method == "POST":
+        if request.user.oauth_keys.exists():
+            messages.error(request, "You already have an active OAuth2 API Key.")
+            return redirect('organization_dashboard')
+
+        key_name = request.POST.get("key_name", "Primary API Key")
+        key = OAuth2Key.objects.create(user=request.user, name=key_name)
+
+        messages.success(request, f"API Key '{key.name}' generated successfully.")
+        return redirect('organization_dashboard')
+
+    return redirect('organization_dashboard')
+@login_required
+def generate_api_key(request):
+    if request.method == "POST":
+        # Check if user already has an API Key
+        if request.user.oauth_keys.exists():
+            messages.error(request, "You already have an active OAuth2 API Key.")
+            return redirect('organization_dashboard')
+
+        key_name = request.POST.get("key_name", "Primary API Key")
+        key = OAuth2Key.objects.create(user=request.user, name=key_name)
+
+        messages.success(request, f"API Key '{key.name}' generated successfully.")
+        return redirect('organization_dashboard')
+
+    return redirect('organization_dashboard')
+
 class logout(LogoutView):
 
     def dispatch(self, request, *args, **kwargs):

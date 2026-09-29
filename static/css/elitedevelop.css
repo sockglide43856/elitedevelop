@@ -1,3 +1,15 @@
+.ed-identity-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+.ed-verified-badge {
+    color: #1d9bf0;
+    font-size: 0.8em;
+}
 :root{
 --ed-bg:#f6f8fc;--ed-surface:#fff;--ed-surface-2:#f1f5f9;--ed-surface-3:#e2e8f0;
 --ed-text:#0f172a;--ed-soft:#475569;--ed-muted:#64748b;--ed-border:rgba(15,23,42,.09);

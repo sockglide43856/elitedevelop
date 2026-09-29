@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Organization & API Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+    body { font-family: sans-serif; margin: 30px; line-height: 1.5; }
+    .card { border: 1px solid #ccc; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+    .badge { background: #007bff; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+    .badge-verified { background: #28a745; }
+    .badge-active { background: #17a2b8; }
+    .alert { background: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+    .alert-success { background: #d4edda; color: #155724; }
+    code { background: #f4f4f4; padding: 4px 6px; border-radius: 4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h2>Dashboard</h2>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- 1. ORGANIZATIONS SECTION -->
+<div class="card">
+    <h3>Your Organizations</h3>
+    <p>Owned: {{ owned_count }} / Limit: {{ max_allowed }}</p>
+
+    {% if memberships %}
+        <ul>
+        {% for membership in memberships %}
+            <li>
+                <strong>{{ membership.organization.name }}</strong>
+                <span class="badge">{{ membership.get_role_display }}</span>
+
+                {% if membership.organization.verified %}
+                    <span class="badge badge-verified">Verified</span>
+                {% endif %}
+
+                {% if active_organization and active_organization.id == membership.organization.id %}
+                    <span class="badge badge-active">Active Profile Org</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>You belong to no organizations yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <h4>Create New Organization</h4>
+    {% if can_create_org %}
+        <form action="{% url 'create_organization' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <label>Name:</label><br>
+                <input type="text" name="name" required>
+            </p>
+            <p>
+                <label>Description:</label><br>
+                <textarea name="description"></textarea>
+            </p>
+            <p>
+                <label>Website:</label><br>
+                <input type="url" name="website">
+            </p>
+            <p>
+                <label>Logo:</label><br>
+                <input type="file" name="logo">
+            </p>
+            <button type="submit">Create Organization</button>
+        </form>
+    {% else %}
+        <p><em>You have reached your maximum limit of organizations ({{ max_allowed }}). Account verification is required to create up to 5 organizations.</em></p>
+    {% endif %}
+</div>
+
+<!-- 2. OAUTH2 API KEY SECTION -->
+<div class="card">
+    <h3>OAuth2 API Key</h3>
+    {% if user_key %}
+        <p><strong>Key Name:</strong> {{ user_key.name }}</p>
+        <p><strong>Client ID:</strong> <code>{{ user_key.client_id }}</code></p>
+        <p><strong>Client Secret:</strong> <code>{{ user_key.client_secret }}</code></p>
+        <small>Keep your client secret secure.</small>
+    {% else %}
+        <p>You have not generated an OAuth2 API key yet (Limit: 1 per user).</p>
+        <form action="{% url 'generate_api_key' %}" method="POST">
+            {% csrf_token %}
+            <p>
+                <input type="text" name="key_name" placeholder="Key Name (e.g., Production Key)">
+                <button type="submit">Generate API Key</button>
+            </p>
+        </form>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -47,5 +47,11 @@ urlpatterns = [
     path('user/<int:pk>/block/', views.toggle_block_user, name='toggle_block_user'),
     path('user/<int:pk>/report/', views.report_user, name='report_user'),
     path("proxy/", include("proxy.urls")),
+    path('organization/dashboard/', views.organization_dashboard, name='organization_dashboard'),
+    path('organizations/', views.organization_dashboard, name='organization_dashboard'),
+    path('organization/', views.organization_dashboard, name='organization_dashboard'),
+    path('org', views.organization_dashboard, name='organization_dashboard'),
+    path('organization/create/', views.create_organization, name='create_organization'),
+    path('api-key/generate/', views.generate_api_key, name='generate_api_key'),
     path('', views.home, name='home'),
 ]

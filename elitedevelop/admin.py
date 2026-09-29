@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import inDevelopment, UserProfile, UserBlock, UserReport
+from .models import inDevelopment, UserProfile, UserBlock, UserReport, Organization, OrganizationMembership
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from .models import UserProfile
@@ -82,3 +82,5 @@ admin.site.register(inDevelopment)
 admin.site.register(UserProfile)
 admin.site.register(UserBlock)
 admin.site.register(UserReport)
+admin.site.register(OrganizationMembership)
+admin.site.register(Organization)

@@ -58,7 +58,7 @@ COLLABS_API_URL = os.environ.get("COLLABS_API_URL")
 COLLABS_API_KEY = os.environ.get("COLLABS_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['elitedevelop.pythonanywhere.com']
 
 
@@ -190,6 +190,7 @@ MIDDLEWARE = [
     "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "elitedevelop.middleware.RequestLoggerMiddleware",
+    "elitedevelop.middleware.OrganizationIdentityMiddleware",
 ]
 
 ROOT_URLCONF = "elitedevelop.urls"
