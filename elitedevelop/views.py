@@ -38,6 +38,8 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.views import LogoutView
 
+
+
 ## ORGANIZATIONAL VIEWS ##
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -299,13 +301,11 @@ def live_counts_api(request):
     uptime_seconds = max(0, time.time() - boot_time)
 
     data = {
-        # Your real database counters
-        "private_messages": PrivateMessage.objects.count() + 1000,
-        "forms": FormConfiguration.objects.count() + 50,
+        "private_messages": PrivateMessage.objects.count(),
+        "forms": FormConfiguration.objects.count(),
         "users": UserProfile.objects.count(),
         "snippets": CodeSnippet.objects.count(),
 
-        # Real runtime stats
         "cpu": round(cpu, 1),
         "memory": round(memory.percent, 1),
         "memory_used": memory.used,
