@@ -58,7 +58,7 @@ COLLABS_API_URL = os.environ.get("COLLABS_API_URL")
 COLLABS_API_KEY = os.environ.get("COLLABS_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = ['elitedevelop.pythonanywhere.com']
 
 
