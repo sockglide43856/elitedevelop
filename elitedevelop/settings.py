@@ -65,7 +65,7 @@ ALLOWED_HOSTS = ['elitedevelop.pythonanywhere.com']
 # Application definition
 
 INSTALLED_APPS = [
-    #'unfold', # or jazzmin, or just comment this line out to use the default django admin.
+    'unfold', # or jazzmin, or just comment this line out to use the default django admin.
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.sites',
