@@ -62,8 +62,8 @@ MFA_ROOT = os.path.join(BASE_DIR, 'static', 'mfa')
 # Installed Applications
 INSTALLED_APPS = [
     # Admin Interface Styling
-    'unfold',
-    'django.contrib.admin',  # Required by Unfold
+    'jazzmin',
+    'django.contrib.admin',
 
     # Standard Django Apps
     'django.contrib.auth',
