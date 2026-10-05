@@ -61,8 +61,6 @@ MFA_ROOT = os.path.join(BASE_DIR, 'static', 'mfa')
 
 # Installed Applications
 INSTALLED_APPS = [
-    # Admin Interface Styling
-    'jazzmin',
     'django.contrib.admin',
 
     # Standard Django Apps
