@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 import json
-from .models import FormConfiguration, FormField, FormSubmission, FieldResponse
+from .models import FormConfiguration, FormField, FormSubmission, FieldResponse, CalenderAvailability
 
 def formHome(request):
     return render(request, 'formCode.html')
@@ -15,11 +15,15 @@ def create_form_view(request):
         custom_code = request.POST.get('custom_code', '').strip()
         fields_json = request.POST.get('fields_data', '[]')
 
+        # Capture the custom availability rules passed from our FullCalendar interface
+        availability_json = request.POST.get('availability_data', '[]')
+
         if custom_code and FormConfiguration.objects.filter(code=custom_code.upper()).exists():
             return HttpResponse("That custom code is already taken!", status=400)
 
         try:
             fields_data = json.loads(fields_json)
+            availability_data = json.loads(availability_json)
         except json.JSONDecodeError:
             return HttpResponse("Bad data payload.", status=400)
 
@@ -30,18 +34,55 @@ def create_form_view(request):
             code=custom_code
         )
 
+        # Fixed target database names to match your precise model properties
         for index, field in enumerate(fields_data):
             FormField.objects.create(
                 form=new_form,
                 label=field['label'],
-                field_type=field['type'],
-                is_required=field.get('required', True),
+                calender_field_type=field['type'],
+                calender_is_required=field.get('required', True),
                 order=index
+            )
+
+        # Save calendar availability configuration
+        for rule in availability_data:
+            CalenderAvailability.objects.create(
+                form=new_form,
+                day_of_week=int(rule['day_of_week']),
+                start_time=rule['start_time'],
+                end_time=rule['end_time'],
+                slot_type=rule['slot_type'],
+                interval_minutes=int(rule.get('interval_minutes', 30))
             )
 
         return render(request, 'form_created.html', {'form': new_form})
 
     return render(request, 'builder.html')
+
+def serve_dynamic_form(request, code):
+    form_config = get_object_or_404(FormConfiguration, code=code.strip().upper())
+    fields = form_config.fields.all()
+
+    if request.method == 'POST':
+        submission = FormSubmission.objects.create(form=form_config)
+
+        for field in fields:
+            input_name = f"field_{field.id}"
+
+            # Checked fixed internal parameter references
+            if field.calender_field_type == 'checkbox':
+                answer = 'Yes' if request.POST.get(input_name) else 'No'
+            else:
+                answer = request.POST.get(input_name, '').strip()
+
+            FieldResponse.objects.create(
+                submission=submission,
+                field=field,
+                answer=answer
+            )
+        return render(request, 'success.html')
+
+    return render(request, 'dynamic_form.html', {'config': form_config, 'fields': fields})
 
 @login_required
 def user_dashboard(request):
@@ -50,7 +91,6 @@ def user_dashboard(request):
 
 @login_required
 def view_responses(request, code, secret_token):
-    # Fixed query matching structure safely
     form_config = get_object_or_404(
         FormConfiguration,
         code=code.strip().upper(),
@@ -61,7 +101,6 @@ def view_responses(request, code, secret_token):
     fields = form_config.fields.all()
     submissions_data = []
 
-    # Corrected clean query formatting structure
     for sub in form_config.submissions.all().order_by('-submitted_at'):
         answers = {resp.field_id: resp.answer for resp in sub.responses.all()}
         row = {
@@ -76,29 +115,3 @@ def view_responses(request, code, secret_token):
         'submissions': submissions_data
     }
     return render(request, 'responses.html', context)
-
-def serve_dynamic_form(request, code):
-    form_config = get_object_or_404(FormConfiguration, code=code.strip().upper())
-    fields = form_config.fields.all()
-
-    if request.method == 'POST':
-        # Safely capture the submission event instance
-        submission = FormSubmission.objects.create(form=form_config)
-
-        for field in fields:
-            input_name = f"field_{field.id}"
-
-            # Match browser check box conditions perfectly
-            if field.field_type == 'checkbox':
-                answer = 'Yes' if request.POST.get(input_name) else 'No'
-            else:
-                answer = request.POST.get(input_name, '').strip()
-
-            FieldResponse.objects.create(
-                submission=submission,
-                field=field,
-                answer=answer
-            )
-        return render(request, 'success.html')
-
-    return render(request, 'dynamic_form.html', {'config': form_config, 'fields': fields})

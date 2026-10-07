@@ -11,16 +11,12 @@ def generate_form_code():
             return code
 
 def generate_secret_token():
-    # secrets.token_hex(3) generates a 6-character hex string; we slice it to exactly 5 digits uppercase
     return secrets.token_hex(3)[:5].upper()
 
 class FormConfiguration(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_forms', null=True, blank=True)
     code = models.CharField(max_length=20, unique=True, blank=True)
-
-    # Secure, unguessable key strictly for the creator's dashboard access routing
     secret_token = models.CharField(max_length=5, default=generate_secret_token, unique=True)
-
     title = models.CharField(max_length=200, default="My Custom Form")
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,16 +37,31 @@ class FormField(models.Model):
         ('textarea', 'Long Paragraph'),
         ('number', 'Number'),
         ('email', 'Email Address'),
-        ('checkbox', 'Checkbox (True/False)')
+        ('checkbox', 'Checkbox (True/False)'),
+        ('calender', 'Calendar Booking Slot') # Added this option!
     ]
     form = models.ForeignKey(FormConfiguration, on_delete=models.CASCADE, related_name='fields')
     label = models.CharField(max_length=255)
-    field_type = models.CharField(max_length=20, choices=FIELD_TYPES, default='text')
-    is_required = models.BooleanField(default=True)
+    calender_field_type = models.CharField(max_length=20, choices=FIELD_TYPES, default='text')
+    calender_is_required = models.BooleanField(default=True)
     order = models.IntegerField(default=0)
 
     class Meta:
         ordering = ['order']
+
+
+class CalenderAvailability(models.Model):
+    SLOT_TYPE_CHOICES = [
+        ('BLOCK', 'Fixed Block (Single Session)'),
+        ('INTERVAL', 'Interval Spans (Split into smaller slots)'),
+    ]
+
+    form = models.ForeignKey(FormConfiguration, on_delete=models.CASCADE, related_name='availability_rules')
+    day_of_week = models.IntegerField() # 0 = Monday, 6 = Sunday
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    slot_type = models.CharField(max_length=10, choices=SLOT_TYPE_CHOICES, default='INTERVAL')
+    interval_minutes = models.PositiveIntegerField(default=30)
 
 class FormSubmission(models.Model):
     form = models.ForeignKey(FormConfiguration, on_delete=models.CASCADE, related_name='submissions')

@@ -5,12 +5,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Create Custom Layout - EliteDevelop Forms</title>
+    <!-- Include FullCalendar styles and dependencies -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f4f7f6; padding: 40px 20px; margin: 0; }
         .card { background: white; padding: 35px; border-radius: 8px; max-width: 650px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         h1 { margin-top: 0; color: #2c3e50; font-size: 1.8rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         label { display: block; font-weight: bold; margin-bottom: 6px; color: #34495e; margin-top: 15px;}
-        input[type="text"], textarea, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        input[type="text"], textarea, select, input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
         .field-box { border-left: 4px solid #3498db; background: #fdfdfd; padding: 20px; margin: 20px 0; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; }
         .btn { background: #3498db; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 0.95rem; }
         .btn:hover { background: #2980b9; }
@@ -18,6 +20,10 @@
         .btn-remove:hover { background: #c0392b; }
         .btn-success { background: #2ecc71; width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 25px; }
         .btn-success:hover { background: #27ae60; }
+
+        /* Modal Window Styles */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; }
+        .modal-content { background: white; max-width: 400px; margin: 15% auto; padding: 25px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -37,15 +43,46 @@
 
         <button type="button" class="btn" onclick="addField()">+ Add Dynamic Field Input</button>
 
+        <!-- Hidden Payload Controls -->
         <input type="hidden" name="fields_data" id="fieldsDataPayload">
+        <input type="hidden" name="availability_data" id="availabilityDataPayload" value="[]">
+
         <label>Custom Access Code (Optional, leave blank for random)</label>
-<input type="text" name="custom_code" placeholder="e.g., ExampleCode193 or MY-FORM)" maxlength="20" style="text-transform: uppercase;">
+        <input type="text" name="custom_code" placeholder="e.g., ExampleCode193 or MY-FORM" maxlength="20" style="text-transform: uppercase;">
+
         <button type="submit" class="btn btn-success">Publish Custom Form</button>
     </form>
 </div>
 
+<!-- Config Modal PopUp window -->
+<div class="modal-overlay" id="slotModal">
+    <div class="modal-content">
+        <h3 style="margin-top:0;">Slot Configuration</h3>
+        <label>Time Block Allocation Style</label>
+        <select id="modalSlotType" onchange="toggleIntervalInput()">
+            <option value="INTERVAL">Interval Spans (Split into smaller slots)</option>
+            <option value="BLOCK">Fixed Block (Single Session)</option>
+        </select>
+
+        <div id="intervalMinutesWrapper">
+            <label>Interval Step Limit (Minutes)</label>
+            <input type="number" id="modalInterval" value="30" min="5" step="5">
+        </div>
+        <br>
+        <button type="button" class="btn" onclick="saveSlotRule()" style="width:100%;">Apply Schedule Block</button>
+    </div>
+</div>
+
 <script>
     let fieldCounter = 0;
+    let savedAvailabilityRules = [];
+    let currentSelectionInfo = null;
+    let fcInstance = null;
+
+    function toggleIntervalInput() {
+        const type = document.getElementById('modalSlotType').value;
+        document.getElementById('intervalMinutesWrapper').style.display = (type === 'BLOCK') ? 'none' : 'block';
+    }
 
     function addField() {
         const container = document.getElementById('fieldsContainer');
@@ -57,16 +94,22 @@
                 <div style="clear: both;"></div>
 
                 <label>Question Label</label>
-                <input type="text" class="field-label" placeholder="e.g., What is your email address?" required>
+                <input type="text" class="field-label" placeholder="e.g., Select an Appointment Time" required>
 
                 <label>Input Entry Type</label>
-                <select class="field-type">
+                <select class="field-type" onchange="handleTypeChange(this, ${currentId})">
                     <option value="text">Short Answer Text Box</option>
                     <option value="textarea">Long Paragraph Box</option>
                     <option value="email">Validated Email Field</option>
                     <option value="number">Numeric Input</option>
                     <option value="checkbox">Checkbox Selector (True/False)</option>
+                    <option value="calender">Calendar Booking Slot</option>
                 </select>
+
+                <div id="calendar_zone_${currentId}" style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:15px;">
+                    <span style="font-size:0.9rem; color:#7f8c8d;">Drag or select ranges on the grid to create availability rules:</span>
+                    <div class="fc-calendar-instance" style="margin-top:10px; background:#fff;"></div>
+                </div>
 
                 <label style="margin-top:10px; font-weight: normal;">
                     <input type="checkbox" class="field-required" checked> Mark input parameter as mandatory
@@ -79,6 +122,63 @@
     function removeField(id) {
         const targetBox = document.getElementById(`box_${id}`);
         if(targetBox) targetBox.remove();
+        // Reset rules mapped to this calendar container if removed
+        savedAvailabilityRules = [];
+    }
+
+    function handleTypeChange(selectElement, id) {
+        const targetZone = document.getElementById(`calendar_zone_${id}`);
+        if(selectElement.value === 'calender') {
+            targetZone.style.display = 'block';
+            const calEl = targetZone.querySelector('.fc-calendar-instance');
+
+            // Spawn unique FullCalendar interface
+            fcInstance = new FullCalendar.Calendar(calEl, {
+                initialView: 'timeGridWeek',
+                selectable: true,
+                allDaySlot: false,
+                headerToolbar: false,
+                dayHeaderFormat: { weekday: 'short' },
+                select: function(info) {
+                    currentSelectionInfo = info;
+                    document.getElementById('slotModal').style.display = 'block';
+                }
+            });
+            fcInstance.render();
+        } else {
+            targetZone.style.display = 'none';
+        }
+    }
+
+    function saveSlotRule() {
+        if(currentSelectionInfo) {
+            // Normalize JS Day indices (0=Sun) to match ISO structure (0=Mon, 6=Sun)
+            let rawDay = currentSelectionInfo.start.getDay();
+            let djangoDay = (rawDay === 0) ? 6 : rawDay - 1;
+
+            let startTimeStr = currentSelectionInfo.start.toTimeString().split(' ')[0];
+            let endTimeStr = currentSelectionInfo.end.toTimeString().split(' ')[0];
+            let chosenType = document.getElementById('modalSlotType').value;
+            let chosenInterval = document.getElementById('modalInterval').value;
+
+            savedAvailabilityRules.push({
+                day_of_week: djangoDay,
+                start_time: startTimeStr,
+                end_time: endTimeStr,
+                slot_type: chosenType,
+                interval_minutes: chosenInterval
+            });
+
+            // Visually reflect confirmation rule color on layout framework
+            fcInstance.addEvent({
+                title: chosenType === 'BLOCK' ? 'Block Slot' : `Split (${chosenInterval}m)`,
+                start: currentSelectionInfo.start,
+                end: currentSelectionInfo.end,
+                backgroundColor: chosenType === 'BLOCK' ? '#e67e22' : '#2ecc71'
+            });
+        }
+        document.getElementById('slotModal').style.display = 'none';
+        currentSelectionInfo = null;
     }
 
     function prepareSubmit(event) {
@@ -98,6 +198,7 @@
         });
 
         document.getElementById('fieldsDataPayload').value = JSON.stringify(finalData);
+        document.getElementById('availabilityDataPayload').value = JSON.stringify(savedAvailabilityRules);
     }
 
     // Initialize with 1 base structural column block
