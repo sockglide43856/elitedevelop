@@ -5,6 +5,38 @@ from bs4 import BeautifulSoup, NavigableString
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.html import escape
+
+from django.http import HttpResponsePermanentRedirect
+
+
+class OldDomainRedirectMiddleware:
+
+    """
+
+    Permanently redirect the old PythonAnywhere domain
+
+    to the new canonical EliteDevelop domain.
+
+    """
+
+    OLD_DOMAIN = "elitedevelop.pythonanywhere.com"
+
+    NEW_DOMAIN = "elitedevelop.org"
+
+    def __init__(self, get_response):
+
+        self.get_response = get_response
+
+    def __call__(self, request):
+
+        if request.get_host().split(":")[0].lower() == self.OLD_DOMAIN:
+
+            new_url = f"https://{self.NEW_DOMAIN}{request.get_full_path()}"
+
+            return HttpResponsePermanentRedirect(new_url)
+
+        return self.get_response(request)
+
 class RequestLoggerMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
