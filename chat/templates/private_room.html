@@ -4,6 +4,33 @@
 
 {% block head %}
 <style>
+    /* Sending state */
+    #id_message_send_button.sending {
+        opacity: 0.7;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    #id_message_send_button .sending-spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(255,255,255,0.45);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: messageSendSpin 0.7s linear infinite;
+        vertical-align: -2px;
+        margin-right: 5px;
+    }
+
+    @keyframes messageSendSpin {
+        to { transform: rotate(360deg); }
+    }
+
+    #id_message_send_input:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
     /* CSS Variables for Dynamic Color Theming */
     :root {
         --chat-bg: #ffffff;
@@ -579,22 +606,77 @@
             });
         }
 
-        function executeSendMessage() {
-            const txt = $('#id_message_send_input').val().trim();
-            if (!txt) return;
+    let messageCurrentlySending = false;
 
-            $.ajax({
-                url: `/chat/private/${membershipId}/send/`,
-                type: 'POST',
-                contentType: 'application/json',
-                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                data: JSON.stringify({ message: txt }),
-                success: function() {
-                    $('#id_message_send_input').val('');
-                    getMessages();
-                }
-            });
+    function setMessageSendingState(sending) {
+        messageCurrentlySending = sending;
+
+        const input = $('#id_message_send_input');
+        const button = $('#id_message_send_button');
+
+        if (sending) {
+           input.prop('disabled', true);
+
+            button
+                .prop('disabled', true)
+                .addClass('sending')
+                .html('<span class="sending-spinner"></span> Sending...');
+        } else {
+            input.prop('disabled', false);
+
+            button
+                .prop('disabled', false)
+                .removeClass('sending')
+                .html('<i class="fa-solid fa-paper-plane"></i> <span class="hide-mobile">Send</span>');
+
+            input.focus();
         }
+    }
+
+    function executeSendMessage() {
+        // Absolute duplicate protection
+        if (messageCurrentlySending) return;
+
+        const input = $('#id_message_send_input');
+        const txt = input.val().trim();
+
+        if (!txt) return;
+
+        setMessageSendingState(true);
+
+        $.ajax({
+            url: `/chat/private/${membershipId}/send/`,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            data: JSON.stringify({
+                message: txt
+            }),
+
+            success: function(data) {
+                input.val('');
+                getMessages();
+            },
+
+            error: function(xhr) {
+                const err =
+                    (xhr.responseJSON && xhr.responseJSON.error)
+                        ? xhr.responseJSON.error
+                        : "The message could not be sent.";
+
+                alert(err);
+
+                // Put the message back so the user doesn't lose it.
+                input.val(txt);
+            },
+
+            complete: function() {
+                setMessageSendingState(false);
+            }
+        });
+    }
 
         $('#id_message_send_input').on('keyup', function(e) {
             if (e.which === 13) return;
@@ -616,7 +698,7 @@
         $(document).on('click', '.btn-edit-trigger', function() {
             const msgId = $(this).data('id');
             const oldText = $(this).data('current');
-            const revisedText = prompt("Edit your message (1-minute limit):", oldText);
+            const revisedText = prompt("Change Message:", oldText);
 
             if (revisedText === null || revisedText.trim() === "" || revisedText === oldText) return;
 

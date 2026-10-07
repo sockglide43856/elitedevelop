@@ -1,0 +1,1191 @@
+/* ============================================================
+   ELITEOS V3
+   LIQUID GLASS DESKTOP STYLESHEET
+   ============================================================ */
+
+:root {
+    --elite-accent: #4f8cff;
+    --elite-accent-soft: rgba(79, 140, 255, 0.18);
+
+    --elite-bg: #0b1020;
+    --elite-bg-deep: #050814;
+
+    --elite-glass: rgba(20, 28, 48, 0.55);
+    --elite-glass-light: rgba(255, 255, 255, 0.08);
+    --elite-glass-strong: rgba(15, 21, 38, 0.78);
+
+    --elite-border: rgba(255, 255, 255, 0.13);
+    --elite-border-light: rgba(255, 255, 255, 0.08);
+
+    --elite-text: #f7f9ff;
+    --elite-muted: #aab4ca;
+
+    --elite-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.35);
+
+    --elite-radius: 18px;
+    --elite-taskbar-height: 58px;
+}
+
+
+* {
+    box-sizing: border-box;
+}
+
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+
+body {
+    color: var(--elite-text);
+
+    font-family:
+        Inter,
+        "Segoe UI",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+
+    background:
+        radial-gradient(
+            circle at 15% 15%,
+            rgba(77, 132, 255, 0.28),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 85% 80%,
+            rgba(102, 80, 255, 0.2),
+            transparent 32%
+        ),
+        linear-gradient(
+            135deg,
+            #080d1c,
+            #101a35,
+            #09101f
+        );
+}
+
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+
+/* ============================================================
+   DESKTOP
+   ============================================================ */
+
+.elite-desktop {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    background:
+        radial-gradient(
+            circle at 20% 15%,
+            rgba(74, 144, 226, 0.25),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 80% 75%,
+            rgba(119, 91, 255, 0.2),
+            transparent 35%
+        ),
+        linear-gradient(
+            145deg,
+            #0b1326,
+            #111d38,
+            #07101e
+        );
+}
+
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+
+.elite-topbar {
+    position: relative;
+
+    z-index: 500;
+
+    min-height: 46px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 6px 14px;
+
+    background:
+        rgba(8, 13, 27, 0.62);
+
+    backdrop-filter:
+        blur(24px)
+        saturate(150%);
+
+    -webkit-backdrop-filter:
+        blur(24px)
+        saturate(150%);
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.elite-brand {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
+    padding-right: 12px;
+}
+
+
+.elite-brand-mark {
+    display: inline-flex;
+
+    width: 26px;
+    height: 26px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--elite-accent),
+            #8b5cff
+        );
+
+    box-shadow:
+        0 6px 20px
+        rgba(79, 140, 255, 0.3);
+}
+
+
+.elite-topbar-spacer {
+    flex: 1;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.elite-button {
+    border: 1px solid var(--elite-border-light);
+
+    border-radius: 10px;
+
+    padding: 8px 13px;
+
+    color: var(--elite-text);
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+.elite-button:hover {
+    transform:
+        translateY(-1px);
+
+    background:
+        rgba(255, 255, 255, 0.11);
+
+    border-color:
+        rgba(255, 255, 255, 0.18);
+
+    box-shadow:
+        0 8px 20px
+        rgba(0, 0, 0, 0.18);
+}
+
+
+.elite-button:active {
+    transform:
+        translateY(0)
+        scale(0.97);
+}
+
+
+/* ============================================================
+   DESKTOP CONTENT
+   ============================================================ */
+
+.elite-content {
+    flex: 1;
+
+    position: relative;
+
+    min-height: 0;
+
+    overflow: auto;
+
+    padding:
+        clamp(20px, 4vw, 50px);
+
+    padding-bottom:
+        calc(
+            var(--elite-taskbar-height)
+            + 45px
+        );
+}
+
+
+/* ============================================================
+   WELCOME PANEL
+   ============================================================ */
+
+.elite-welcome {
+    width: min(1050px, 100%);
+
+    margin:
+        0 auto 30px;
+
+    padding:
+        clamp(25px, 5vw, 50px);
+
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.04)
+        );
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+    backdrop-filter:
+        blur(28px);
+
+    -webkit-backdrop-filter:
+        blur(28px);
+
+    box-shadow:
+        var(--elite-shadow);
+}
+
+
+.elite-small {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color:
+        rgba(255, 255, 255, 0.55);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.18em;
+}
+
+
+.elite-title {
+    display: block;
+
+    margin-bottom: 12px;
+
+    font-size:
+        clamp(32px, 6vw, 60px);
+
+    font-weight: 850;
+
+    line-height: 1.05;
+}
+
+
+.elite-heading {
+    display: block;
+
+    margin-bottom: 16px;
+
+    font-size: 21px;
+
+    font-weight: 750;
+}
+
+
+.elite-text {
+    display: block;
+
+    max-width: 720px;
+
+    color:
+        rgba(255, 255, 255, 0.7);
+
+    line-height: 1.65;
+}
+
+
+.elite-section {
+    width: min(1100px, 100%);
+
+    margin:
+        0 auto 32px;
+}
+
+
+.elite-row {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+
+/* ============================================================
+   APP GRID
+   ============================================================ */
+
+.elite-app-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(180px, 1fr)
+        );
+
+    gap: 15px;
+}
+
+
+.elite-app-card {
+    position: relative;
+
+    min-height: 175px;
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    text-align: left;
+
+    padding: 20px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 20px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.035)
+        );
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.elite-app-card::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.1),
+            transparent 40%
+        );
+
+    pointer-events: none;
+}
+
+
+.elite-app-card:hover {
+    transform:
+        translateY(-5px);
+
+    border-color:
+        rgba(135, 170, 255, 0.45);
+
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    box-shadow:
+        0 18px 40px
+        rgba(0, 0, 0, 0.22);
+}
+
+
+.app-card-icon {
+    position: relative;
+
+    z-index: 1;
+
+    display: flex;
+
+    width: 54px;
+    height: 54px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 16px;
+
+    font-size: 28px;
+
+    background:
+        rgba(255, 255, 255, 0.09);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+}
+
+
+.app-card-title {
+    position: relative;
+
+    z-index: 1;
+
+    margin-top: auto;
+
+    padding-top: 22px;
+
+    font-size: 17px;
+
+    font-weight: 750;
+}
+
+
+.app-card-description {
+    position: relative;
+
+    z-index: 1;
+
+    margin-top: 5px;
+
+    color:
+        rgba(255, 255, 255, 0.55);
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+
+/* ============================================================
+   LIQUID GLASS WINDOWS
+   ============================================================ */
+
+.elite-window {
+    position: absolute;
+
+    min-width: 300px;
+    min-height: 200px;
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.16);
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(28, 37, 63, 0.86),
+            rgba(11, 16, 33, 0.78)
+        );
+
+    backdrop-filter:
+        blur(35px)
+        saturate(150%);
+
+    -webkit-backdrop-filter:
+        blur(35px)
+        saturate(150%);
+
+    box-shadow:
+        0 30px 80px
+        rgba(0, 0, 0, 0.42);
+}
+
+
+.elite-window-header {
+    min-height: 48px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding:
+        0 15px;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    cursor: grab;
+
+    user-select: none;
+}
+
+
+.elite-window-header:active {
+    cursor: grabbing;
+}
+
+
+.elite-window-header .elite-title {
+    margin: 0;
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+
+.elite-window-body {
+    flex: 1;
+
+    min-height: 0;
+
+    overflow: auto;
+}
+
+
+/* ============================================================
+   BOTTOM TASKBAR
+   ============================================================ */
+
+.elite-taskbar {
+    position: absolute;
+
+    z-index: 1000;
+
+    left: 50%;
+    bottom: 14px;
+
+    transform:
+        translateX(-50%);
+
+    width:
+        min(850px, calc(100% - 30px));
+
+    min-height:
+        var(--elite-taskbar-height);
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding:
+        8px 12px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.15);
+
+    border-radius: 19px;
+
+    background:
+        rgba(12, 18, 35, 0.68);
+
+    backdrop-filter:
+        blur(30px)
+        saturate(160%);
+
+    -webkit-backdrop-filter:
+        blur(30px)
+        saturate(160%);
+
+    box-shadow:
+        0 15px 45px
+        rgba(0, 0, 0, 0.35);
+}
+
+
+.elite-taskbar .elite-button {
+    padding:
+        9px 12px;
+
+    border: 0;
+
+    background:
+        transparent;
+}
+
+
+.elite-taskbar .elite-button:hover {
+    background:
+        rgba(255, 255, 255, 0.1);
+}
+
+
+/* ============================================================
+   FILE BROWSER
+   ============================================================ */
+
+.elite-file-browser {
+    height: 100%;
+
+    padding: 18px;
+
+    overflow: auto;
+}
+
+
+.file-browser-path {
+    padding:
+        12px 15px;
+
+    margin-bottom: 15px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.06);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Consolas,
+        monospace;
+}
+
+
+.file-browser-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(180px, 1fr)
+        );
+
+    gap: 10px;
+}
+
+
+.file-item {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 14px;
+
+    border:
+        1px solid transparent;
+
+    border-radius: 12px;
+
+    color: white;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+
+.file-item:hover {
+    background:
+        rgba(255, 255, 255, 0.09);
+
+    border-color:
+        rgba(255, 255, 255, 0.1);
+}
+
+
+/* ============================================================
+   TERMINAL
+   ============================================================ */
+
+.elite-terminal {
+    height: 100%;
+
+    padding: 18px;
+
+    color: #c7ffd8;
+
+    background:
+        #07100c;
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Consolas,
+        monospace;
+}
+
+
+.terminal-output {
+    min-height: 300px;
+
+    white-space: pre-wrap;
+
+    line-height: 1.55;
+
+    overflow: auto;
+}
+
+
+.terminal-input-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 12px;
+}
+
+
+.terminal-prompt {
+    color: #69e58c;
+}
+
+
+.terminal-input {
+    flex: 1;
+
+    border: 0;
+
+    outline: 0;
+
+    color: #e7fff0;
+
+    background: transparent;
+
+    font-family: inherit;
+}
+
+
+/* ============================================================
+   CODE EDITOR
+   ============================================================ */
+
+.elite-code-editor {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    background:
+        #0b1020;
+}
+
+
+.code-editor-toolbar {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding:
+        10px 14px;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+
+.code-editor-area {
+    flex: 1;
+
+    width: 100%;
+
+    min-height: 400px;
+
+    resize: none;
+
+    padding: 18px;
+
+    border: 0;
+
+    outline: none;
+
+    color:
+        #dce7ff;
+
+    background:
+        #080d19;
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Consolas,
+        monospace;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+
+    tab-size: 4;
+}
+
+
+/* ============================================================
+   DOCUMENT EDITOR
+   ============================================================ */
+
+.elite-document-editor {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+.document-toolbar {
+    display: flex;
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        12px 16px;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+
+.document-textarea {
+    flex: 1;
+
+    min-height: 400px;
+
+    resize: none;
+
+    padding: 25px;
+
+    border: 0;
+
+    outline: none;
+
+    color: white;
+
+    background:
+        transparent;
+
+    font-size: 16px;
+
+    line-height: 1.7;
+}
+
+
+/* ============================================================
+   CALCULATOR
+   ============================================================ */
+
+.elite-calculator {
+    padding: 20px;
+}
+
+
+.calculator-display {
+    width: 100%;
+
+    margin-bottom: 12px;
+
+    padding: 20px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 16px;
+
+    color: white;
+
+    background:
+        rgba(0, 0, 0, 0.22);
+
+    font-size: 30px;
+
+    text-align: right;
+
+    outline: none;
+}
+
+
+.calculator-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 8px;
+}
+
+
+.calculator-grid button {
+    min-height: 55px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.06);
+
+    border-radius: 13px;
+
+    color: white;
+
+    background:
+        rgba(255, 255, 255, 0.06);
+
+    font-size: 17px;
+
+    cursor: pointer;
+}
+
+
+.calculator-grid button:hover {
+    background:
+        rgba(255, 255, 255, 0.12);
+}
+
+
+.calculator-clear {
+    grid-column:
+        1 / -1;
+}
+
+
+/* ============================================================
+   SCROLLBARS
+   ============================================================ */
+
+* {
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        rgba(255, 255, 255, 0.18)
+        transparent;
+}
+
+
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+::-webkit-scrollbar-thumb {
+    background:
+        rgba(255, 255, 255, 0.16);
+
+    border-radius: 20px;
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+    background:
+        rgba(255, 255, 255, 0.28);
+}
+
+
+/* ============================================================
+   LIGHT THEME
+   ============================================================ */
+
+body.light-theme {
+    --elite-text: #15203a;
+    --elite-muted: #60708b;
+
+    background:
+        linear-gradient(
+            135deg,
+            #dbeafe,
+            #e9f0ff,
+            #cfdcff
+        );
+}
+
+
+body.light-theme .elite-desktop {
+    background:
+        radial-gradient(
+            circle at 15% 15%,
+            rgba(255, 255, 255, 0.9),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #b9d1ff,
+            #e8f0ff,
+            #b8c9ee
+        );
+}
+
+
+body.light-theme .elite-window,
+body.light-theme .elite-welcome,
+body.light-theme .elite-taskbar {
+    color: #17213a;
+
+    background:
+        rgba(245, 249, 255, 0.7);
+
+    border-color:
+        rgba(255, 255, 255, 0.75);
+}
+
+
+body.light-theme .elite-button,
+body.light-theme .elite-app-card,
+body.light-theme .file-item {
+    color: #17213a;
+
+    background:
+        rgba(255, 255, 255, 0.42);
+}
+
+
+body.light-theme .elite-text,
+body.light-theme .app-card-description {
+    color:
+        rgba(23, 33, 58, 0.65);
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    .elite-content {
+        padding: 16px;
+
+        padding-bottom: 90px;
+    }
+
+
+    .elite-app-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+
+    .elite-app-card {
+        min-height: 150px;
+    }
+
+
+    .elite-taskbar {
+        bottom: 8px;
+
+        width:
+            calc(100% - 16px);
+
+        overflow-x: auto;
+
+        border-radius: 16px;
+    }
+
+
+    .elite-window {
+        left: 8px !important;
+        top: 8px !important;
+
+        width:
+            calc(100% - 16px) !important;
+
+        height:
+            calc(100% - 85px) !important;
+
+        border-radius: 16px;
+    }
+}
+
+
+@media (max-width: 430px) {
+
+    .elite-app-grid {
+        grid-template-columns:
+            1fr;
+    }
+}

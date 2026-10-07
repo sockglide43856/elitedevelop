@@ -4,113 +4,483 @@
 
 {% block head %}
 <style>
-    .public-chat-wrapper { max-width: 800px; margin: 20px auto; background: #ffffff; border: 1px solid #e4e6eb; border-radius: 8px; display: flex; flex-direction: column; height: calc(100vh - 140px); overflow: hidden; padding: 0; width: 100%; transition: background 0.2s, border-color 0.2s; }
-    .public-chat-header { padding: 15px 20px; border-bottom: 1px solid #e4e6eb; background: #f0f2f5; display: flex; align-items: center; gap: 10px; }
-    .public-chat-header h2 { color: #1c1e21; margin: 0; }
-    #id_public_chat_container { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #fdfdfd; }
+    .public-chat-wrapper {
+        max-width: 800px;
+        margin: 20px auto;
+        background: #ffffff;
+        border: 1px solid #e4e6eb;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 140px);
+        overflow: hidden;
+        padding: 0;
+        width: 100%;
+        transition: background 0.2s, border-color 0.2s;
+    }
 
-    .pub-msg-row { display: flex; flex-direction: column; max-width: 70%; }
-    .pub-msg-row.incoming { align-self: flex-start; }
-    .pub-msg-row.outgoing { align-self: flex-end; align-items: flex-end; }
+    .public-chat-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e4e6eb;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-    .pub-sender { font-size: 11px; font-weight: bold; color: #65676b; margin-bottom: 2px; margin-left: 4px; }
-    .pub-bubble { padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
+    .public-chat-header h2 {
+        color: #1c1e21;
+        margin: 0;
+    }
 
-    .incoming .pub-bubble { background-color: #e4e6eb; color: #1c1e21; border-top-left-radius: 4px; }
+    #id_public_chat_container {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #fdfdfd;
+    }
 
-    /* CONNECTED TO SETTINGS CORE COLOR PICKER */
-    .outgoing .pub-bubble { background-color: var(--bubble-color-custom, #0084ff); color: #ffffff; border-top-right-radius: 4px; }
+    .pub-msg-row {
+        display: flex;
+        flex-direction: column;
+        max-width: 70%;
+    }
 
-    .public-chat-footer { padding: 15px 20px; border-top: 1px solid #e4e6eb; display: flex; gap: 10px; background: #ffffff; }
-    #id_public_input { flex-grow: 1; padding: 12px 16px; border: 1px solid #e4e6eb; border-radius: 24px; outline: none; font-size: 14px; background: #f0f2f5; color: #1c1e21; }
-    #id_public_send_btn { padding: 0 22px; background: #24ac53; color: white; border: none; border-radius: 24px; font-weight: bold; cursor: pointer; }
-    #id_public_send_btn:hover { background: #1e8e43; }
+    .pub-msg-row.incoming {
+        align-self: flex-start;
+    }
+
+    .pub-msg-row.outgoing {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .pub-sender {
+        font-size: 11px;
+        font-weight: bold;
+        color: #65676b;
+        margin-bottom: 2px;
+        margin-left: 4px;
+    }
+
+    .pub-bubble {
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 15px;
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+
+    .incoming .pub-bubble {
+        background-color: #e4e6eb;
+        color: #1c1e21;
+        border-top-left-radius: 4px;
+    }
+
+    /* Connected to settings core color picker */
+    .outgoing .pub-bubble {
+        background-color: var(--bubble-color-custom, #0084ff);
+        color: #ffffff;
+        border-top-right-radius: 4px;
+    }
+
+    .public-chat-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #e4e6eb;
+        display: flex;
+        gap: 10px;
+        background: #ffffff;
+    }
+
+    #id_public_input {
+        flex-grow: 1;
+        padding: 12px 16px;
+        border: 1px solid #e4e6eb;
+        border-radius: 24px;
+        outline: none;
+        font-size: 14px;
+        background: #f0f2f5;
+        color: #1c1e21;
+        transition: opacity 0.2s, background 0.2s;
+    }
+
+    #id_public_input:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    #id_public_send_btn {
+        padding: 0 22px;
+        background: #24ac53;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s, opacity 0.2s;
+        min-width: 85px;
+    }
+
+    #id_public_send_btn:hover {
+        background: #1e8e43;
+    }
+
+    /* Sending state */
+    #id_public_send_btn.sending {
+        opacity: 0.7;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    #id_public_send_btn .sending-spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.45);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: publicSendSpin 0.7s linear infinite;
+        vertical-align: -2px;
+        margin-right: 5px;
+    }
+
+    @keyframes publicSendSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 
     /* --- PUBLIC CHAT DARK THEME MODULATORS --- */
-    body.dark-theme .public-chat-wrapper { background: #000000; border-color: #222222; }
-    body.dark-theme .public-chat-header { background: #000000; border-bottom-color: #222222; }
-    body.dark-theme .public-chat-header h2 { color: #ffffff !important; }
-    body.dark-theme #id_public_chat_container { background: #0a0a0a; }
-    body.dark-theme .pub-sender { color: #a0a0a0; }
-    body.dark-theme .incoming .pub-bubble { background-color: #222222; color: #ffffff; }
-    body.dark-theme .public-chat-footer { background: #000000; border-top-color: #222222; }
-    body.dark-theme #id_public_input { background: #181818; border-color: #333333; color: #ffffff; }
-    body.dark-theme #id_public_input::placeholder { color: #888888; }
+    body.dark-theme .public-chat-wrapper {
+        background: #000000;
+        border-color: #222222;
+    }
+
+    body.dark-theme .public-chat-header {
+        background: #000000;
+        border-bottom-color: #222222;
+    }
+
+    body.dark-theme .public-chat-header h2 {
+        color: #ffffff !important;
+    }
+
+    body.dark-theme #id_public_chat_container {
+        background: #0a0a0a;
+    }
+
+    body.dark-theme .pub-sender {
+        color: #a0a0a0;
+    }
+
+    body.dark-theme .incoming .pub-bubble {
+        background-color: #222222;
+        color: #ffffff;
+    }
+
+    body.dark-theme .public-chat-footer {
+        background: #000000;
+        border-top-color: #222222;
+    }
+
+    body.dark-theme #id_public_input {
+        background: #181818;
+        border-color: #333333;
+        color: #ffffff;
+    }
+
+    body.dark-theme #id_public_input::placeholder {
+        color: #888888;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="public-chat-wrapper">
+
     <div class="public-chat-header">
-        <h2><i class="fa-solid fa-earth-americas" style="color: #24ac53;"></i> Global Public Chat</h2>
+        <h2>
+            <i class="fa-solid fa-earth-americas" style="color: #24ac53;"></i>
+            Global Public Chat
+        </h2>
     </div>
 
     <div id="id_public_chat_container"></div>
 
     <div class="public-chat-footer">
-        <input type="text" id="id_public_input" placeholder="Broadcast a message to everyone..." autocomplete="off">
-        <button type="button" id="id_public_send_btn"><i class="fa-solid fa-paper-plane"></i> Send</button>
+        <input
+            type="text"
+            id="id_public_input"
+            placeholder="Broadcast a message to everyone..."
+            autocomplete="off"
+        >
+
+        <button type="button" id="id_public_send_btn">
+            <i class="fa-solid fa-paper-plane"></i>
+            Send
+        </button>
     </div>
+
 </div>
 {% endblock %}
 
 {% block script %}
 <script>
     $(document).ready(function() {
+
         const currentUser = "{{ request.user.username }}";
+
         let localMessageCount = 0;
 
+        // Prevent duplicate sends while a request is in progress.
+        let publicMessageCurrentlySending = false;
+
+
+        /*
+         * ---------------------------------------------------------
+         * Sending state
+         * ---------------------------------------------------------
+         */
+
+        function setPublicSendingState(sending) {
+
+            publicMessageCurrentlySending = sending;
+
+            const input = $('#id_public_input');
+            const button = $('#id_public_send_btn');
+
+            if (sending) {
+
+                input.prop('disabled', true);
+
+                button
+                    .prop('disabled', true)
+                    .addClass('sending')
+                    .html(
+                        '<span class="sending-spinner"></span> Sending...'
+                    );
+
+            } else {
+
+                input.prop('disabled', false);
+
+                button
+                    .prop('disabled', false)
+                    .removeClass('sending')
+                    .html(
+                        '<i class="fa-solid fa-paper-plane"></i> Send'
+                    );
+
+                input.focus();
+            }
+        }
+
+
+        /*
+         * ---------------------------------------------------------
+         * Fetch public messages
+         * ---------------------------------------------------------
+         */
+
         function fetchPublicMessages() {
+
             $.getJSON('/chat/get_messages/', function(data) {
+
                 if (!data.messages) return;
 
                 if (data.messages.length !== localMessageCount) {
-                    $('#id_public_chat_container').empty();
+
+                    const chatContainer = $('#id_public_chat_container');
+
+                    chatContainer.empty();
 
                     data.messages.forEach(function(msg) {
-                        const isSelf = (msg.username === currentUser);
-                        const rowClass = isSelf ? 'outgoing' : 'incoming';
-                        const senderHeader = isSelf ? '' : `<span class="pub-sender">@${msg.username}</span>`;
 
-                        $('#id_public_chat_container').append(`
-                            <div class="pub-msg-row ${rowClass}">
-                                ${senderHeader}
-                                <div class="pub-bubble">${msg.message}</div>
-                            </div>
-                        `);
+                        const isSelf =
+                            (msg.username === currentUser);
+
+                        const rowClass =
+                            isSelf ? 'outgoing' : 'incoming';
+
+                        const senderHeader =
+                            isSelf
+                                ? ''
+                                : $('<span></span>')
+                                    .addClass('pub-sender')
+                                    .text('@' + msg.username);
+
+                        const messageRow =
+                            $('<div></div>')
+                                .addClass(
+                                    `pub-msg-row ${rowClass}`
+                                );
+
+                        const bubble =
+                            $('<div></div>')
+                                .addClass('pub-bubble')
+                                .text(msg.message);
+
+                        if (!isSelf) {
+                            messageRow.append(senderHeader);
+                        }
+
+                        messageRow.append(bubble);
+
+                        chatContainer.append(messageRow);
                     });
 
-                    localMessageCount = data.messages.length;
-                    $('#id_public_chat_container').scrollTop($('#id_public_chat_container')[0].scrollHeight);
+                    localMessageCount =
+                        data.messages.length;
+
+                    chatContainer.scrollTop(
+                        chatContainer[0].scrollHeight
+                    );
                 }
+
+            }).fail(function(xhr, status, error) {
+
+                console.error(
+                    'Failed to fetch public messages:',
+                    status,
+                    error
+                );
+
             });
         }
 
+
+        /*
+         * ---------------------------------------------------------
+         * Send public message
+         * ---------------------------------------------------------
+         */
+
         function sendPublicMessage() {
-            const text = $('#id_public_input').val().trim();
-            if (!text) return;
+
+            // Absolute duplicate protection.
+            if (publicMessageCurrentlySending) {
+                return;
+            }
+
+            const input = $('#id_public_input');
+
+            const text = input.val().trim();
+
+            if (!text) {
+                return;
+            }
+
+            // Lock the input immediately.
+            setPublicSendingState(true);
 
             $.ajax({
                 url: '/chat/send/',
                 type: 'POST',
+
                 contentType: 'application/json',
-                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                data: JSON.stringify({ message: text }),
-                success: function() {
-                    $('#id_public_input').val('');
+
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+
+                data: JSON.stringify({
+                    message: text
+                }),
+
+                success: function(data) {
+
+                    // Clear the successfully sent message.
+                    input.val('');
+
+                    // Force the next fetch to refresh.
                     localMessageCount = 0;
+
                     fetchPublicMessages();
+                },
+
+                error: function(xhr) {
+
+                    const err =
+                        (
+                            xhr.responseJSON &&
+                            xhr.responseJSON.error
+                        )
+                            ? xhr.responseJSON.error
+                            : 'The message could not be sent.';
+
+                    alert(err);
+
+                    /*
+                     * Keep the message in the input if sending
+                     * failed so the user doesn't have to retype it.
+                     */
+                    input.val(text);
+                },
+
+                complete: function() {
+
+                    /*
+                     * Whether successful or failed, unlock
+                     * the controls after the request finishes.
+                     */
+                    setPublicSendingState(false);
                 }
             });
         }
 
-        $('#id_public_send_btn').click(sendPublicMessage);
-        $('#id_public_input').keypress(function(e) {
-            if (e.which == 13) sendPublicMessage();
+
+        /*
+         * ---------------------------------------------------------
+         * Button
+         * ---------------------------------------------------------
+         */
+
+        $('#id_public_send_btn').on(
+            'click',
+            sendPublicMessage
+        );
+
+
+        /*
+         * ---------------------------------------------------------
+         * Enter key
+         * ---------------------------------------------------------
+         */
+
+        $('#id_public_input').on('keypress', function(e) {
+
+            if (e.which === 13) {
+
+                e.preventDefault();
+
+                sendPublicMessage();
+            }
         });
 
+
+        /*
+         * ---------------------------------------------------------
+         * Initial load
+         * ---------------------------------------------------------
+         */
+
         fetchPublicMessages();
-        setInterval(fetchPublicMessages, 2000);
+
+
+        /*
+         * ---------------------------------------------------------
+         * Poll every 2 seconds
+         * ---------------------------------------------------------
+         */
+
+        setInterval(
+            fetchPublicMessages,
+            2000
+        );
+
     });
 </script>
 {% endblock %}
