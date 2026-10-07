@@ -1049,16 +1049,30 @@ def collab_news(request, collab_id):
             collab_id
         ).get("activity", [])
 
+        # Resolve activity user IDs to actual usernames.
+        user_ids = {
+            event.get("user_id")
+            for event in activity
+            if event.get("user_id") is not None
+        }
+
+        users = User.objects.in_bulk(user_ids)
+
+        for event in activity:
+            user = users.get(event.get("user_id"))
+
+            if user:
+                event["username"] = user.username
+            else:
+                event["username"] = "Unknown user"
+
     except Exception as e:
         messages.error(
             request,
-            f"Could not load Collab news: {e}",
+            f"Could not load Collab: {e}",
         )
 
-        return redirect(
-            "collabs:detail",
-            collab_id=collab_id,
-        )
+        return redirect("collabs:detail")
 
     return render(
         request,
