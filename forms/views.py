@@ -14,8 +14,6 @@ def create_form_view(request):
         description = request.POST.get('description', '')
         custom_code = request.POST.get('custom_code', '').strip()
         fields_json = request.POST.get('fields_data', '[]')
-
-        # Capture the custom availability rules passed from our FullCalendar interface
         availability_json = request.POST.get('availability_data', '[]')
 
         if custom_code and FormConfiguration.objects.filter(code=custom_code.upper()).exists():
@@ -34,7 +32,6 @@ def create_form_view(request):
             code=custom_code
         )
 
-        # Fixed target database names to match your precise model properties
         for index, field in enumerate(fields_data):
             FormField.objects.create(
                 form=new_form,
@@ -44,13 +41,11 @@ def create_form_view(request):
                 order=index
             )
 
-        # Save calendar availability configuration
         for rule in availability_data:
             CalenderAvailability.objects.create(
                 form=new_form,
-                day_of_week=int(rule['day_of_week']),
-                start_time=rule['start_time'],
-                end_time=rule['end_time'],
+                start_datetime=rule['start_datetime'],
+                end_datetime=rule['end_datetime'],
                 slot_type=rule['slot_type'],
                 interval_minutes=int(rule.get('interval_minutes', 30))
             )

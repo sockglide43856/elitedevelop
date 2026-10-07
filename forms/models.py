@@ -38,7 +38,7 @@ class FormField(models.Model):
         ('number', 'Number'),
         ('email', 'Email Address'),
         ('checkbox', 'Checkbox (True/False)'),
-        ('calender', 'Calendar Booking Slot') # Added this option!
+        ('calender', 'Calendar Booking Slot')
     ]
     form = models.ForeignKey(FormConfiguration, on_delete=models.CASCADE, related_name='fields')
     label = models.CharField(max_length=255)
@@ -49,7 +49,6 @@ class FormField(models.Model):
     class Meta:
         ordering = ['order']
 
-
 class CalenderAvailability(models.Model):
     SLOT_TYPE_CHOICES = [
         ('BLOCK', 'Fixed Block (Single Session)'),
@@ -57,9 +56,9 @@ class CalenderAvailability(models.Model):
     ]
 
     form = models.ForeignKey(FormConfiguration, on_delete=models.CASCADE, related_name='availability_rules')
-    day_of_week = models.IntegerField() # 0 = Monday, 6 = Sunday
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    # Store explicit datetimes so events can span multiple days or weeks
+    start_datetime = models.DateTimeField(null=True)
+    end_datetime = models.DateTimeField(null=True)
     slot_type = models.CharField(max_length=10, choices=SLOT_TYPE_CHOICES, default='INTERVAL')
     interval_minutes = models.PositiveIntegerField(default=30)
 

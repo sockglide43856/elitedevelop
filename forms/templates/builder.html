@@ -1,71 +1,60 @@
 {% extends 'base.html' %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create Custom Layout - EliteDevelop Forms</title>
-    <!-- Include FullCalendar styles and dependencies -->
-    <script src="https://jsdelivr.net"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f4f7f6; padding: 40px 20px; margin: 0; }
-        .card { background: white; padding: 35px; border-radius: 8px; max-width: 650px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { margin-top: 0; color: #2c3e50; font-size: 1.8rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        label { display: block; font-weight: bold; margin-bottom: 6px; color: #34495e; margin-top: 15px;}
-        input[type="text"], textarea, select, input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
-        .field-box { border-left: 4px solid #3498db; background: #fdfdfd; padding: 20px; margin: 20px 0; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; }
-        .btn { background: #3498db; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 0.95rem; }
-        .btn:hover { background: #2980b9; }
-        .btn-remove { background: #e74c3c; padding: 6px 12px; font-size: 0.85rem; float: right; margin-top: -10px; }
-        .btn-remove:hover { background: #c0392b; }
-        .btn-success { background: #2ecc71; width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 25px; }
-        .btn-success:hover { background: #27ae60; }
+<style>
+    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f4f7f6; padding: 40px 20px; margin: 0; }
+    .card { background: white; padding: 35px; border-radius: 8px; max-width: 750px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    h1 { margin-top: 0; color: #2c3e50; font-size: 1.8rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    label { display: block; font-weight: bold; margin-bottom: 6px; color: #34495e; margin-top: 15px;}
+    input[type="text"], textarea, select, input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+    .field-box { border-left: 4px solid #3498db; background: #fdfdfd; padding: 20px; margin: 20px 0; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; }
+    .btn { background: #3498db; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 0.95rem; }
+    .btn:hover { background: #2980b9; }
+    .btn-remove { background: #e74c3c; padding: 6px 12px; font-size: 0.85rem; float: right; margin-top: -10px; }
+    .btn-remove:hover { background: #c0392b; }
+    .btn-success { background: #2ecc71; width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 25px; }
+    .btn-success:hover { background: #27ae60; }
 
-        /* Modal Window Styles */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; }
-        .modal-content { background: white; max-width: 400px; margin: 15% auto; padding: 25px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-    </style>
-</head>
-<body>
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; }
+    .modal-content { background: white; max-width: 400px; margin: 15% auto; padding: 25px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
 <div class="card">
     <h1>Custom Form Canvas Configuration</h1>
     <form id="formBuilder" method="POST" onsubmit="prepareSubmit(event)">
         {% csrf_token %}
-        <label>Form Title</label>
-        <input type="text" name="title" required placeholder="e.g., Example Form">
+        <label for="id_title">Form Title</label>
+        <input type="text" id="id_title" name="title" required placeholder="e.g., Example Form">
 
-        <label>Form Description or Instructions</label>
-        <textarea name="description" rows="3" placeholder="Explain what this form is for..."></textarea>
+        <label for="id_description">Form Description or Instructions</label>
+        <textarea id="id_description" name="description" rows="3" placeholder="Explain what this form is for..."></textarea>
 
         <h3 style="margin-top: 30px; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 5px;">Configure Questions</h3>
         <div id="fieldsContainer"></div>
 
         <button type="button" class="btn" onclick="addField()">+ Add Dynamic Field Input</button>
 
-        <!-- Hidden Payload Controls -->
         <input type="hidden" name="fields_data" id="fieldsDataPayload">
         <input type="hidden" name="availability_data" id="availabilityDataPayload" value="[]">
 
-        <label>Custom Access Code (Optional, leave blank for random)</label>
-        <input type="text" name="custom_code" placeholder="e.g., ExampleCode193 or MY-FORM" maxlength="20" style="text-transform: uppercase;">
-
+        <label for="id_custom_code">Custom Access Code (Optional, leave blank for random)</label>
+        <input type="text" id="id_custom_code" name="custom_code" placeholder="e.g., EXAMPLE-CODE" maxlength="20" style="text-transform: uppercase;">
         <button type="submit" class="btn btn-success">Publish Custom Form</button>
     </form>
 </div>
 
-<!-- Config Modal PopUp window -->
 <div class="modal-overlay" id="slotModal">
     <div class="modal-content">
         <h3 style="margin-top:0;">Slot Configuration</h3>
-        <label>Time Block Allocation Style</label>
+        <label for="modalSlotType">Time Block Allocation Style</label>
         <select id="modalSlotType" onchange="toggleIntervalInput()">
             <option value="INTERVAL">Interval Spans (Split into smaller slots)</option>
-            <option value="BLOCK">Fixed Block (Single Session)</option>
+            <option value="BLOCK">Fixed Block (Single Session / Event)</option>
         </select>
 
         <div id="intervalMinutesWrapper">
-            <label>Interval Step Limit (Minutes)</label>
+            <label for="modalInterval">Interval Step Limit (Minutes)</label>
             <input type="number" id="modalInterval" value="30" min="5" step="5">
         </div>
         <br>
@@ -77,7 +66,7 @@
     let fieldCounter = 0;
     let savedAvailabilityRules = [];
     let currentSelectionInfo = null;
-    let fcInstance = null;
+    let fcInstances = {};
 
     function toggleIntervalInput() {
         const type = document.getElementById('modalSlotType').value;
@@ -93,11 +82,11 @@
                 <button type="button" class="btn btn-remove" onclick="removeField(${currentId})">Remove Field</button>
                 <div style="clear: both;"></div>
 
-                <label>Question Label</label>
-                <input type="text" class="field-label" placeholder="e.g., Select an Appointment Time" required>
+                <label for="label_${currentId}">Question Label</label>
+                <input type="text" id="label_${currentId}" class="field-label" placeholder="e.g., Select a booking slot" required>
 
-                <label>Input Entry Type</label>
-                <select class="field-type" onchange="handleTypeChange(this, ${currentId})">
+                <label for="type_${currentId}">Input Entry Type</label>
+                <select id="type_${currentId}" class="field-type" onchange="handleTypeChange(this, ${currentId})">
                     <option value="text">Short Answer Text Box</option>
                     <option value="textarea">Long Paragraph Box</option>
                     <option value="email">Validated Email Field</option>
@@ -107,8 +96,8 @@
                 </select>
 
                 <div id="calendar_zone_${currentId}" style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:15px;">
-                    <span style="font-size:0.9rem; color:#7f8c8d;">Drag or select ranges on the grid to create availability rules:</span>
-                    <div class="fc-calendar-instance" style="margin-top:10px; background:#fff;"></div>
+                    <span style="font-size:0.9rem; color:#7f8c8d;">Select single or multi-week spans on the calendar to open booking slots:</span>
+                    <div class="fc-calendar-instance" style="margin-top:10px; background:#fff; min-height: 500px;"></div>
                 </div>
 
                 <label style="margin-top:10px; font-weight: normal;">
@@ -121,61 +110,63 @@
 
     function removeField(id) {
         const targetBox = document.getElementById(`box_${id}`);
-        if(targetBox) targetBox.remove();
-        // Reset rules mapped to this calendar container if removed
-        savedAvailabilityRules = [];
+        if (fcInstances[id]) delete fcInstances[id];
+        if (targetBox) targetBox.remove();
     }
 
     function handleTypeChange(selectElement, id) {
         const targetZone = document.getElementById(`calendar_zone_${id}`);
-        if(selectElement.value === 'calender') {
+        if (selectElement.value === 'calender') {
             targetZone.style.display = 'block';
             const calEl = targetZone.querySelector('.fc-calendar-instance');
+            calEl.innerHTML = '';
 
-            // Spawn unique FullCalendar interface
-            fcInstance = new FullCalendar.Calendar(calEl, {
-                initialView: 'timeGridWeek',
+            const fcInstance = new FullCalendar.Calendar(calEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
                 selectable: true,
-                allDaySlot: false,
-                headerToolbar: false,
-                dayHeaderFormat: { weekday: 'short' },
+                selectMirror: true,
+                allDaySlot: true,
                 select: function(info) {
-                    currentSelectionInfo = info;
+                    currentSelectionInfo = { ...info, fieldId: id };
                     document.getElementById('slotModal').style.display = 'block';
                 }
             });
-            fcInstance.render();
+
+            fcInstances[id] = fcInstance;
+            setTimeout(() => fcInstance.render(), 50);
         } else {
             targetZone.style.display = 'none';
+            if (fcInstances[id]) delete fcInstances[id];
         }
     }
 
     function saveSlotRule() {
-        if(currentSelectionInfo) {
-            // Normalize JS Day indices (0=Sun) to match ISO structure (0=Mon, 6=Sun)
-            let rawDay = currentSelectionInfo.start.getDay();
-            let djangoDay = (rawDay === 0) ? 6 : rawDay - 1;
-
-            let startTimeStr = currentSelectionInfo.start.toTimeString().split(' ')[0];
-            let endTimeStr = currentSelectionInfo.end.toTimeString().split(' ')[0];
+        if (currentSelectionInfo) {
             let chosenType = document.getElementById('modalSlotType').value;
             let chosenInterval = document.getElementById('modalInterval').value;
 
             savedAvailabilityRules.push({
-                day_of_week: djangoDay,
-                start_time: startTimeStr,
-                end_time: endTimeStr,
+                start_datetime: currentSelectionInfo.startStr,
+                end_datetime: currentSelectionInfo.endStr,
                 slot_type: chosenType,
-                interval_minutes: chosenInterval
+                interval_minutes: chosenType === 'BLOCK' ? 0 : parseInt(chosenInterval)
             });
 
-            // Visually reflect confirmation rule color on layout framework
-            fcInstance.addEvent({
-                title: chosenType === 'BLOCK' ? 'Block Slot' : `Split (${chosenInterval}m)`,
-                start: currentSelectionInfo.start,
-                end: currentSelectionInfo.end,
-                backgroundColor: chosenType === 'BLOCK' ? '#e67e22' : '#2ecc71'
-            });
+            const activeCal = fcInstances[currentSelectionInfo.fieldId];
+            if (activeCal) {
+                activeCal.addEvent({
+                    title: chosenType === 'BLOCK' ? 'Event Span' : `${chosenInterval}m Slots`,
+                    start: currentSelectionInfo.start,
+                    end: currentSelectionInfo.end,
+                    backgroundColor: chosenType === 'BLOCK' ? '#e67e22' : '#2ecc71',
+                    borderColor: 'transparent'
+                });
+            }
         }
         document.getElementById('slotModal').style.display = 'none';
         currentSelectionInfo = null;
@@ -184,11 +175,14 @@
     function prepareSubmit(event) {
         const boxes = document.querySelectorAll('.field-box');
         let finalData = [];
+        let isValid = true;
 
         boxes.forEach(box => {
-            const labelInput = box.querySelector('.field-label').value;
+            const labelInput = box.querySelector('.field-label').value.trim();
             const typeSelect = box.querySelector('.field-type').value;
             const isReqChecked = box.querySelector('.field-required').checked;
+
+            if (!labelInput) isValid = false;
 
             finalData.push({
                 label: labelInput,
@@ -197,13 +191,16 @@
             });
         });
 
+        if (!isValid) {
+            event.preventDefault();
+            alert("Please provide a question label for all dynamic fields.");
+            return false;
+        }
+
         document.getElementById('fieldsDataPayload').value = JSON.stringify(finalData);
         document.getElementById('availabilityDataPayload').value = JSON.stringify(savedAvailabilityRules);
     }
 
-    // Initialize with 1 base structural column block
-    addField();
+    document.addEventListener('DOMContentLoaded', () => addField());
 </script>
-</body>
-</html>
 {% endblock %}
