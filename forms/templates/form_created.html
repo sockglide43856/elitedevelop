@@ -10,14 +10,14 @@
     <h1 style="color: #2c3e50;">Form Published!</h1>
     <p>Public Form Code (Share this with users):</p>
     <div class="code-box">{{ form.code }}</div>
-    <a href="elitedevelop.pythonanywhere.com/forms/{{ form.code }}">elitedevelop.pythonanywhere.com/forms/{{ form.code }}</a>
+    <a href="www.elitedevelop.org/forms/{{ form.code }}">www.elitedevelop.org/forms/{{ form.code }}</a>
 
     <p style="color:#e74c3c; font-weight:bold; margin-top:20px;">⚠️ Secret Dashboard Token (Keep Private!):</p>
     <div class="token-box">{{ form.secret_token }}</div>
 
     <p>Secure Responses Link:<br>
         <a href="/forms/{{ form.code }}/responses/{{ form.secret_token }}/" style="color:#3498db; font-weight:bold; font-size:0.9rem;">
-            elitedevelop.pythonanywhere.com/forms/{{ form.code }}/responses/{{ form.secret_token }}/
+            www.elitedevelop.org/forms/{{ form.code }}/responses/{{ form.secret_token }}/
         </a>
     </p>
     <br>

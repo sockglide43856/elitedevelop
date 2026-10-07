@@ -8,7 +8,7 @@ def generate_qr_view(request):
 
     if request.method == "POST":
         # Capture customization inputs from the front-end form
-        qr_data = request.POST.get("qr_data", "https://elitedevelop.pythonanywhere.com")
+        qr_data = request.POST.get("qr_data", "https://www.elitedevelop.org")
         fill_color = request.POST.get("fill_color", "#000000")
         back_color = request.POST.get("back_color", "#ffffff")
         box_size = int(request.POST.get("box_size", 10))

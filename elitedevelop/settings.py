@@ -59,8 +59,8 @@ AI_WORKER_SECRET = os.environ["AI_WORKER_SECRET"]
 COLLABS_API_URL = os.environ["COLLABS_API_URL"]
 COLLABS_API_KEY = os.environ["COLLABS_API_KEY"]
 
-# Security
-DEBUG = os.environ["DEBUG"]
+
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "elitedevelop.org",
