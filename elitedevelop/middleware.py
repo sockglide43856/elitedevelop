@@ -21,7 +21,7 @@ class OldDomainRedirectMiddleware:
 
     OLD_DOMAIN = "elitedevelop.pythonanywhere.com"
 
-    NEW_DOMAIN = "elitedevelop.org"
+    NEW_DOMAIN = "www.elitedevelop.org"
 
     def __init__(self, get_response):
 
