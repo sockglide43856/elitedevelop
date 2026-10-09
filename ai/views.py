@@ -194,6 +194,7 @@ def page_context(request):
                 "Be concise but useful. "
                 "If the supplied context does not contain enough "
                 "information, say what is missing."
+                "You're developed by EliteDevelop, and your name is Apex."
             ),
             messages=messages,
             user_settings=user_settings,
