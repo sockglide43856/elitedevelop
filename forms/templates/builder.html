@@ -2,20 +2,42 @@
 {% block content %}
 <style>
     body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f4f7f6; padding: 40px 20px; margin: 0; }
-    .card { background: white; padding: 35px; border-radius: 8px; max-width: 750px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .card { background: white; padding: 35px; border-radius: 8px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     h1 { margin-top: 0; color: #2c3e50; font-size: 1.8rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-    label { display: block; font-weight: bold; margin-bottom: 6px; color: #34495e; margin-top: 15px;}
-    input[type="text"], textarea, select, input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
-    .field-box { border-left: 4px solid #3498db; background: #fdfdfd; padding: 20px; margin: 20px 0; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; }
-    .btn { background: #3498db; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 0.95rem; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #34495e; margin-top: 15px; }
+    input[type="text"], textarea, select, input[type="number"] { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; }
+
+    .field-box { border-left: 4px solid #3498db; background: #fdfdfd; padding: 20px; margin: 20px 0; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); position: relative; }
+    .btn { background: #3498db; color: white; padding: 10px 18px; border: none; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 0.95rem; transition: background 0.2s; }
     .btn:hover { background: #2980b9; }
-    .btn-remove { background: #e74c3c; padding: 6px 12px; font-size: 0.85rem; float: right; margin-top: -10px; }
+    .btn-secondary { background: #95a5a6; }
+    .btn-secondary:hover { background: #7f8c8d; }
+    .btn-remove { background: #e74c3c; padding: 6px 12px; font-size: 0.85rem; float: right; margin-top: -5px; }
     .btn-remove:hover { background: #c0392b; }
-    .btn-success { background: #2ecc71; width: 100%; font-size: 1.1rem; padding: 15px; margin-top: 25px; }
+    .btn-success { background: #2ecc71; width: 100%; font-size: 1.1rem; padding: 14px; margin-top: 25px; }
     .btn-success:hover { background: #27ae60; }
 
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; }
-    .modal-content { background: white; max-width: 400px; margin: 15% auto; padding: 25px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    /* Modal Styling */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center; }
+    .modal-content { background: white; width: 100%; max-width: 420px; padding: 25px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); animation: fadeIn 0.2s ease-out; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .modal-header h3 { margin: 0; color: #2c3e50; font-size: 1.25rem; }
+    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #7f8c8d; line-height: 1; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; }
+
+    /* Calendar Container Styling */
+    .calendar-container { margin-top: 15px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; background: #fff; }
+    .calendar-hint { font-size: 0.85rem; color: #7f8c8d; margin-bottom: 12px; display: block; background: #f8fafc; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3498db; }
+
+    /* FullCalendar custom touches */
+    .fc-theme-standard .fc-scrollgrid { border-radius: 6px; overflow: hidden; }
+    .fc-event { cursor: pointer; border-radius: 4px; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
@@ -44,21 +66,36 @@
     </form>
 </div>
 
-<div class="modal-overlay" id="slotModal">
+<!-- Config Modal -->
+<div class="modal-overlay" id="slotModal" onclick="handleOverlayClick(event)">
     <div class="modal-content">
-        <h3 style="margin-top:0;">Slot Configuration</h3>
-        <label for="modalSlotType">Time Block Allocation Style</label>
+        <div class="modal-header">
+            <h3>Configure Slot Availability</h3>
+            <button type="button" class="modal-close" onclick="closeSlotModal()">&times;</button>
+        </div>
+
+        <label for="modalSlotType">Slot Allocation Style</label>
         <select id="modalSlotType" onchange="toggleIntervalInput()">
             <option value="INTERVAL">Interval Spans (Split into smaller slots)</option>
             <option value="BLOCK">Fixed Block (Single Session / Event)</option>
         </select>
 
         <div id="intervalMinutesWrapper">
-            <label for="modalInterval">Interval Step Limit (Minutes)</label>
-            <input type="number" id="modalInterval" value="30" min="5" step="5">
+            <label for="modalInterval">Slot Duration (Minutes)</label>
+            <select id="modalInterval">
+                <option value="15">15 Minutes</option>
+                <option value="30" selected>30 Minutes</option>
+                <option value="45">45 Minutes</option>
+                <option value="60">1 Hour (60m)</option>
+                <option value="90">1.5 Hours (90m)</option>
+                <option value="120">2 Hours (120m)</option>
+            </select>
         </div>
-        <br>
-        <button type="button" class="btn" onclick="saveSlotRule()" style="width:100%;">Apply Schedule Block</button>
+
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeSlotModal()">Cancel</button>
+            <button type="button" class="btn" onclick="saveSlotRule()">Apply Rule</button>
+        </div>
     </div>
 </div>
 
@@ -73,6 +110,20 @@
         document.getElementById('intervalMinutesWrapper').style.display = (type === 'BLOCK') ? 'none' : 'block';
     }
 
+    function closeSlotModal() {
+        document.getElementById('slotModal').style.display = 'none';
+        if (currentSelectionInfo && fcInstances[currentSelectionInfo.fieldId]) {
+            fcInstances[currentSelectionInfo.fieldId].unselect();
+        }
+        currentSelectionInfo = null;
+    }
+
+    function handleOverlayClick(event) {
+        if (event.target.id === 'slotModal') {
+            closeSlotModal();
+        }
+    }
+
     function addField() {
         const container = document.getElementById('fieldsContainer');
         const currentId = fieldCounter++;
@@ -80,7 +131,6 @@
         const html = `
             <div class="field-box" id="box_${currentId}">
                 <button type="button" class="btn btn-remove" onclick="removeField(${currentId})">Remove Field</button>
-                <div style="clear: both;"></div>
 
                 <label for="label_${currentId}">Question Label</label>
                 <input type="text" id="label_${currentId}" class="field-label" placeholder="e.g., Select a booking slot" required>
@@ -95,12 +145,12 @@
                     <option value="calender">Calendar Booking Slot</option>
                 </select>
 
-                <div id="calendar_zone_${currentId}" style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:15px;">
-                    <span style="font-size:0.9rem; color:#7f8c8d;">Select single or multi-week spans on the calendar to open booking slots:</span>
-                    <div class="fc-calendar-instance" style="margin-top:10px; background:#fff; min-height: 500px;"></div>
+                <div id="calendar_zone_${currentId}" style="display:none;" class="calendar-container">
+                    <span class="calendar-hint">💡 <strong>Tip:</strong> Click & drag across days or time ranges to add availability. Click an existing slot to remove it.</span>
+                    <div class="fc-calendar-instance" style="min-height: 520px;"></div>
                 </div>
 
-                <label style="margin-top:10px; font-weight: normal;">
+                <label style="margin-top:12px; font-weight: normal; cursor: pointer;">
                     <input type="checkbox" class="field-required" checked> Mark input parameter as mandatory
                 </label>
             </div>
@@ -110,7 +160,11 @@
 
     function removeField(id) {
         const targetBox = document.getElementById(`box_${id}`);
-        if (fcInstances[id]) delete fcInstances[id];
+        if (fcInstances[id]) {
+            fcInstances[id].destroy();
+            delete fcInstances[id];
+        }
+        savedAvailabilityRules = savedAvailabilityRules.filter(rule => rule.fieldId !== id);
         if (targetBox) targetBox.remove();
     }
 
@@ -122,18 +176,29 @@
             calEl.innerHTML = '';
 
             const fcInstance = new FullCalendar.Calendar(calEl, {
-                initialView: 'dayGridMonth',
+                initialView: 'timeGridWeek',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'timeGridWeek,dayGridMonth,timeGridDay'
                 },
+                slotMinTime: '07:00:00',
+                slotMaxTime: '21:00:00',
                 selectable: true,
                 selectMirror: true,
-                allDaySlot: true,
+                unselectAuto: false,
+                allDaySlot: false,
+                slotDuration: '00:30:00',
                 select: function(info) {
                     currentSelectionInfo = { ...info, fieldId: id };
-                    document.getElementById('slotModal').style.display = 'block';
+                    document.getElementById('slotModal').style.display = 'flex';
+                },
+                eventClick: function(info) {
+                    if (confirm(`Remove block "${info.event.title}"?`)) {
+                        const ruleId = info.event.extendedProps.ruleId;
+                        savedAvailabilityRules = savedAvailabilityRules.filter(r => r.ruleId !== ruleId);
+                        info.event.remove();
+                    }
                 }
             });
 
@@ -141,16 +206,22 @@
             setTimeout(() => fcInstance.render(), 50);
         } else {
             targetZone.style.display = 'none';
-            if (fcInstances[id]) delete fcInstances[id];
+            if (fcInstances[id]) {
+                fcInstances[id].destroy();
+                delete fcInstances[id];
+            }
         }
     }
 
     function saveSlotRule() {
         if (currentSelectionInfo) {
-            let chosenType = document.getElementById('modalSlotType').value;
-            let chosenInterval = document.getElementById('modalInterval').value;
+            const chosenType = document.getElementById('modalSlotType').value;
+            const chosenInterval = document.getElementById('modalInterval').value;
+            const ruleId = 'rule_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
 
             savedAvailabilityRules.push({
+                ruleId: ruleId,
+                fieldId: currentSelectionInfo.fieldId,
                 start_datetime: currentSelectionInfo.startStr,
                 end_datetime: currentSelectionInfo.endStr,
                 slot_type: chosenType,
@@ -160,12 +231,14 @@
             const activeCal = fcInstances[currentSelectionInfo.fieldId];
             if (activeCal) {
                 activeCal.addEvent({
-                    title: chosenType === 'BLOCK' ? 'Event Span' : `${chosenInterval}m Slots`,
+                    title: chosenType === 'BLOCK' ? 'Fixed Block' : `${chosenInterval}m Slots`,
                     start: currentSelectionInfo.start,
                     end: currentSelectionInfo.end,
                     backgroundColor: chosenType === 'BLOCK' ? '#e67e22' : '#2ecc71',
-                    borderColor: 'transparent'
+                    borderColor: 'transparent',
+                    extendedProps: { ruleId: ruleId }
                 });
+                activeCal.unselect();
             }
         }
         document.getElementById('slotModal').style.display = 'none';

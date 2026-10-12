@@ -38,3 +38,7 @@ Thumbs.db
 *.zip
 *.tar
 *.tar.gz
+
+# JSON files
+*.json
+data.json

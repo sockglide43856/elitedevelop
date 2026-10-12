@@ -6,6 +6,8 @@ from django.conf.global_settings import PASSWORD_HASHERS as DEFAULT_PASSWORD_HAS
 from machina import MACHINA_MAIN_TEMPLATE_DIR
 
 
+
+
 MACHINA_BASE_TEMPLATE_NAME = "board_base.html"
 
 PASSWORD_HASHERS = DEFAULT_PASSWORD_HASHERS + [
@@ -59,6 +61,21 @@ AI_WORKER_SECRET = os.environ["AI_WORKER_SECRET"]
 COLLABS_API_URL = os.environ["COLLABS_API_URL"]
 COLLABS_API_KEY = os.environ["COLLABS_API_KEY"]
 
+DB_PWD = os.environ["SQL_DATABASE_PASSWORD"]
+DB_URL = os.environ["SQL_DATABASE_URL"]
+DB_USER = os.environ["SQL_DATABASE_USER"]
+DB_NAME = os.environ["SQL_DATABASE_NAME"]
+# Database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PWD,
+        'HOST': DB_URL,
+        'PORT': '3306',
+    }
+}
 
 DEBUG = False
 
@@ -300,13 +317,6 @@ LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
 
-# Database
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
 
 
 # Password validation
