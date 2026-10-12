@@ -22,7 +22,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 EMAIL_FROM = "EliteDevelop"
-DEFAULT_FROM_EMAIL = "EliteDevelop <elitedevelop.official@gmail.com>"
+DEFAULT_FROM_EMAIL = "EliteDevelop <mail@elitedevelop.org>"
 
 
 # Paths
