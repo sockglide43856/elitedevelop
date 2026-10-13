@@ -53,5 +53,6 @@ urlpatterns = [
     path('org', views.organization_dashboard, name='organization_dashboard'),
     path('organization/create/', views.create_organization, name='create_organization'),
     path('api-key/generate/', views.generate_api_key, name='generate_api_key'),
+    path('500/', lambda r: 1/0),
     path('', views.home, name='home'),
 ]
