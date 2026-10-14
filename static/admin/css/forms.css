@@ -30,8 +30,7 @@ form .form-row p {
     flex-wrap: wrap;
 }
 
-.form-multiline > div,
-.form-multiline > fieldset {
+.form-multiline > div {
     padding-bottom: 10px;
 }
 
@@ -94,7 +93,7 @@ fieldset .inline-heading,
 /* ALIGNED FIELDSETS */
 
 .aligned fieldset {
-    flex-grow: 1;
+    width: 100%;
     border-top: none;
 }
 
@@ -103,7 +102,7 @@ fieldset .inline-heading,
 }
 
 .aligned legend {
-    float: inline-start;
+    float: left;
 }
 
 .aligned legend,
@@ -149,9 +148,13 @@ form .aligned ul {
 }
 
 form .aligned div.radiolist {
-    display: block;
+    display: inline-block;
     margin: 0;
     padding: 0;
+}
+
+form .aligned fieldset div.help {
+    margin-left: 0;
 }
 
 form .aligned p.help,
@@ -217,8 +220,7 @@ fieldset .fieldBox {
 
 /* WIDE FIELDSETS */
 
-.wide label,
-.wide legend {
+.wide label {
     width: 200px;
 }
 

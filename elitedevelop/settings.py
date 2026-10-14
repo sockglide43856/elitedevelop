@@ -6,7 +6,7 @@ from django.conf.global_settings import PASSWORD_HASHERS as DEFAULT_PASSWORD_HAS
 from machina import MACHINA_MAIN_TEMPLATE_DIR
 
 
-
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 MACHINA_BASE_TEMPLATE_NAME = "board_base.html"
 
@@ -83,6 +83,10 @@ ALLOWED_HOSTS = [
     "elitedevelop.org",
     "www.elitedevelop.org",
     "elitedevelop.pythonanywhere.com",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://www.elitedevelop.org",
+    "https://elitedevelop.org",
 ]
 
 
