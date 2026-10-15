@@ -37,28 +37,6 @@ class OldDomainRedirectMiddleware:
 
         return self.get_response(request)
 
-class RequestLoggerMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        start_time = time.time()
-
-        response = self.get_response(request)
-
-        duration = (time.time() - start_time) * 1000
-
-        # Avoid logging the status dashboard itself to prevent endless loops!
-        if not request.path.startswith('/admindash/'):
-            RequestLog.objects.create(
-                path=request.path,
-                method=request.method,
-                status_code=response.status_code,
-                duration_ms=round(duration, 2)
-            )
-
-        return response
-
 class OrganizationIdentityMiddleware:
     """
     Automatically replaces standalone organization usernames in HTML
@@ -120,6 +98,11 @@ class OrganizationIdentityMiddleware:
             if not organization:
                 continue
             identity_map[user.username] = {
+                "name": user.username,
+                "logo": organization.logo.url if organization.logo else None,
+                "verified": organization.verified,
+            }
+            identity_map[user.get_username] = {
                 "name": user.username,
                 "logo": organization.logo.url if organization.logo else None,
                 "verified": organization.verified,

@@ -247,7 +247,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    "elitedevelop.middleware.RequestLoggerMiddleware",
 ]
 
 
