@@ -1,133 +1,314 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>500 - Server Error | EliteDevelop</title>
-    <!-- Native CSS Fallbacks: Ensures page works even if local static files fail during a 500 crash -->
-    <link href="https://jsdelivr.net" rel="stylesheet">
-    <link href="https://cloudflare.com" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8fafc;
-            transition: background-color 0.2s ease;
+{% extends 'base.html' %}
+
+{% block title %}500 - Server Error | EliteDevelop{% endblock %}
+
+{% block head %}
+<style>
+    .error-wrapper {
+        min-height: 75vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+    }
+
+    .error-card {
+        --card-bg: #ffffff;
+        --card-border: #e2e8f0;
+        --card-text: #0f172a;
+        --card-muted: #64748b;
+        --card-accent: #2563eb;
+
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        width: 100%;
+        max-width: 560px;
+        padding: clamp(2rem, 6vw, 3.5rem) 2rem;
+        color: var(--card-text);
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 1.5rem;
+        box-shadow:
+            0 24px 60px -24px rgba(15, 23, 42, 0.18),
+            0 4px 12px rgba(15, 23, 42, 0.04);
+        text-align: center;
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            color 0.2s ease;
+    }
+
+    .error-card::before {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(
+            90deg,
+            #2563eb,
+            #6366f1,
+            #06b6d4
+        );
+    }
+
+    .error-illustration {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 112px;
+        height: 112px;
+        margin-bottom: 1.75rem;
+        color: var(--card-accent);
+        background: rgba(37, 99, 235, 0.08);
+        border: 1px solid rgba(37, 99, 235, 0.12);
+        border-radius: 2rem;
+        animation: serverFloat 4s ease-in-out infinite;
+    }
+
+    .error-illustration i {
+        font-size: 3.5rem;
+    }
+
+    .error-code {
+        position: absolute;
+        right: -13px;
+        bottom: -10px;
+        padding: 0.3rem 0.65rem;
+        color: #ffffff;
+        background: #dc2626;
+        border: 4px solid var(--card-bg);
+        border-radius: 999px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+    }
+
+    .error-eyebrow {
+        margin-bottom: 0.65rem;
+        color: var(--card-accent);
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    .error-title {
+        margin-bottom: 0.9rem;
+        color: var(--card-text);
+        font-size: clamp(1.75rem, 5vw, 2.25rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+    }
+
+    .error-description {
+        max-width: 410px;
+        margin: 0 auto 1.5rem;
+        color: var(--card-muted);
+        font-size: 1rem;
+        line-height: 1.75;
+    }
+
+    .error-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin: 0 auto 1.75rem;
+        padding: 1rem;
+        color: var(--card-muted);
+        background: rgba(100, 116, 139, 0.07);
+        border: 1px solid var(--card-border);
+        border-radius: 1rem;
+        text-align: left;
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+
+    .error-note i {
+        margin-top: 0.2rem;
+        color: var(--card-accent);
+    }
+
+    .error-note a {
+        color: var(--card-accent);
+        font-weight: 700;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+    }
+
+    .error-note a:hover {
+        text-decoration: underline;
+    }
+
+    .error-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .error-actions .btn {
+        min-height: 46px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.25rem;
+        border-radius: 999px;
+        font-weight: 700;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .error-actions .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .error-footer {
+        margin-top: 1.75rem;
+        color: var(--card-muted);
+        font-size: 0.75rem;
+    }
+
+    /* Dark mode */
+    html.dark-theme .error-card,
+    body.dark-theme .error-card {
+        --card-bg: #111827;
+        --card-border: #293548;
+        --card-text: #f8fafc;
+        --card-muted: #a3afc2;
+        --card-accent: #60a5fa;
+
+        box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+    }
+
+    html.dark-theme .error-illustration,
+    body.dark-theme .error-illustration {
+        background: rgba(96, 165, 250, 0.1);
+        border-color: rgba(96, 165, 250, 0.2);
+    }
+
+    html.dark-theme .error-note,
+    body.dark-theme .error-note {
+        background: rgba(148, 163, 184, 0.06);
+    }
+
+    @keyframes serverFloat {
+        0%, 100% {
+            transform: translateY(0);
         }
-        body.dark-theme {
-            background-color: #0f172a;
+
+        50% {
+            transform: translateY(-6px);
         }
+    }
+
+    @media (max-width: 480px) {
         .error-wrapper {
-            min-height: calc(100vh - 40px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            min-height: 65vh;
+            padding: 2rem 0.75rem;
         }
 
         .error-card {
-            background-color: #ffffff;
-            color: #0f172a;
-            border: 1px solid #e2e8f0;
+            padding: 2.5rem 1.25rem;
             border-radius: 1.25rem;
-            padding: 3rem 2rem;
-            max-width: 520px;
+        }
+
+        .error-actions {
+            flex-direction: column;
+        }
+
+        .error-actions .btn {
             width: 100%;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .error-illustration {
+            animation: none;
         }
 
-        .icon-container {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 1.25rem;
+        .error-actions .btn {
+            transition: none;
         }
 
-        .icon-main {
-            font-size: 4.25rem;
-            animation: floatPulse 3s ease-in-out infinite;
+        .error-actions .btn:hover {
+            transform: none;
         }
+    }
+</style>
+{% endblock %}
 
-        .badge-code {
-            position: absolute;
-            bottom: -4px;
-            right: -12px;
-            background-color: #ef4444;
-            color: #ffffff;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: 800;
-            font-size: 0.85rem;
-            padding: 0.2rem 0.55rem;
-            border-radius: 20px;
-            border: 3px solid #ffffff;
-            transition: border-color 0.2s ease;
-        }
+{% block content %}
+<main class="container error-wrapper">
+    <section class="error-card" aria-labelledby="error-title">
 
-        @keyframes floatPulse {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-8px) scale(1.03); }
-        }
-
-        /* --- DARK THEME OVERRIDES --- */
-        body.dark-theme .error-card,
-        html.dark-theme .error-card {
-            background-color: #1e293b !important;
-            border-color: #334155 !important;
-            color: #f8fafc !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-        }
-
-        body.dark-theme .badge-code,
-        html.dark-theme .badge-code {
-            border-color: #1e293b !important;
-        }
-
-        body.dark-theme .error-title,
-        html.dark-theme .error-title {
-            color: #f8fafc !important;
-        }
-
-        body.dark-theme .error-subtitle,
-        html.dark-theme .error-subtitle {
-            color: #94a3b8 !important;
-        }
-    </style>
-    <script>
-        // Inline Theme sync: Prevents white flashbang if user has system dark mode enabled
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-                document.documentElement.classList.add('dark-theme');
-                document.addEventListener("DOMContentLoaded", () => document.body.classList.add('dark-theme'));
-            }
-        })();
-    </script>
-</head>
-<body>
-
-<div class="container error-wrapper">
-    <div class="error-card text-center">
-
-        <div class="icon-container">
-            <i class="fa-solid fa-bug icon-main text-danger"></i>
-            <span class="badge-code">500</span>
+        <div class="error-illustration" aria-hidden="true">
+            <i class="fa-solid fa-server"></i>
+            <span class="error-code">500</span>
         </div>
 
-        <h1 class="h2 fw-bold mb-2 error-title">Internal Server Error</h1>
-        <p class="text-secondary mb-4 error-subtitle">
-            Oops! Something went wrong on our end. Try again later.
-            <br><span style="font-size: 0.85rem; opacity: 0.8;">(500 Internal Server Error)</span>
+        <p class="error-eyebrow">EliteDevelop · Server Error</p>
+
+        <h1 id="error-title" class="error-title">
+            Something went wrong.
+        </h1>
+
+        <p class="error-description">
+            We hit an unexpected problem while processing your request.
+            Your destination hasn't disappeared — our server just
+            couldn't complete the operation right now.
         </p>
 
-        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
-            <a href="/" class="btn btn-primary px-4 py-2 fw-semibold rounded-pill">
-                <i class="fa-solid fa-house me-2"></i>Go Home
+        <div class="error-note">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+            <div>
+                <strong>What can you do?</strong>
+                <div>
+                    Try again in a moment. If the problem keeps happening,
+                    let our team know at
+                    <a href="mailto:mail@elitedevelop.org">
+                        mail@elitedevelop.org
+                    </a>.
+                </div>
+            </div>
+        </div>
+
+        <div class="error-actions">
+            <button
+                type="button"
+                class="btn btn-primary"
+                onclick="window.location.reload()"
+            >
+                <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                Try Again
+            </button>
+
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-house" aria-hidden="true"></i>
+                Go Home
             </a>
-            <button onclick="history.back()" class="btn btn-outline-secondary px-4 py-2 fw-semibold rounded-pill">
-                <i class="fa-solid fa-arrow-left me-2"></i>Go Back
+
+            <button
+                type="button"
+                class="btn btn-outline-secondary"
+                onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.assign('/'); }"
+            >
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                Go Back
             </button>
         </div>
 
-    </div>
-</div>
+        <p class="error-footer">
+            We appreciate your patience while you use EliteDevelop.
+        </p>
 
-</body>
-</html>
+    </section>
+</main>
+{% endblock %}
