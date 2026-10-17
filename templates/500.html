@@ -33,10 +33,6 @@
             0 24px 60px -24px rgba(15, 23, 42, 0.18),
             0 4px 12px rgba(15, 23, 42, 0.04);
         text-align: center;
-        transition:
-            background-color 0.2s ease,
-            border-color 0.2s ease,
-            color 0.2s ease;
     }
 
     .error-card::before {
@@ -134,15 +130,33 @@
         color: var(--card-accent);
     }
 
-    .error-note a {
-        color: var(--card-accent);
-        font-weight: 700;
-        text-decoration: none;
-        overflow-wrap: anywhere;
+    .error-code-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 0 auto 1.75rem;
+        padding: 0.85rem 1rem;
+        background: rgba(37, 99, 235, 0.06);
+        border: 1px solid rgba(37, 99, 235, 0.14);
+        border-radius: 0.9rem;
+        text-align: left;
     }
 
-    .error-note a:hover {
-        text-decoration: underline;
+    .error-code-label {
+        color: var(--card-muted);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .error-code-value {
+        color: var(--card-text);
+        font-family: monospace;
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
     }
 
     .error-actions {
@@ -176,7 +190,6 @@
         font-size: 0.75rem;
     }
 
-    /* Dark mode */
     html.dark-theme .error-card,
     body.dark-theme .error-card {
         --card-bg: #111827;
@@ -197,6 +210,12 @@
     html.dark-theme .error-note,
     body.dark-theme .error-note {
         background: rgba(148, 163, 184, 0.06);
+    }
+
+    html.dark-theme .error-code-box,
+    body.dark-theme .error-code-box {
+        background: rgba(96, 165, 250, 0.08);
+        border-color: rgba(96, 165, 250, 0.2);
     }
 
     @keyframes serverFloat {
@@ -227,6 +246,12 @@
         .error-actions .btn {
             width: 100%;
         }
+
+        .error-code-box {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -254,7 +279,9 @@
             <span class="error-code">500</span>
         </div>
 
-        <p class="error-eyebrow">EliteDevelop · Server Error</p>
+        <p class="error-eyebrow">
+            EliteDevelop · Server Error
+        </p>
 
         <h1 id="error-title" class="error-title">
             Something went wrong.
@@ -266,16 +293,38 @@
             couldn't complete the operation right now.
         </p>
 
+        {% if error_code %}
+        <div class="error-code-box">
+            <span class="error-code-label">
+                Error reference
+            </span>
+
+            <span
+                class="error-code-value"
+                title="Give this code to the EliteDevelop team if you need help."
+            >
+                {{ error_code }}
+            </span>
+        </div>
+        {% endif %}
+
         <div class="error-note">
             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+
             <div>
                 <strong>What can you do?</strong>
+
                 <div>
                     Try again in a moment. If the problem keeps happening,
                     let our team know at
                     <a href="mailto:mail@elitedevelop.org">
                         mail@elitedevelop.org
                     </a>.
+
+                    {% if error_code %}
+                        Please include your error reference
+                        <strong>{{ error_code }}</strong>.
+                    {% endif %}
                 </div>
             </div>
         </div>

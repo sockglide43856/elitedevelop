@@ -7,6 +7,8 @@ from django.views.generic import RedirectView, TemplateView
 from django.templatetags.static import static
 from django.contrib.auth import views as auth_views
 
+handler500 = "elitedevelop.views.server_error"
+
 # UNUSED URLS #
 #path('g/', include('gaming.urls')),
 #path('gaming/', include('gaming.urls')),

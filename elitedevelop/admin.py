@@ -10,7 +10,112 @@ from django.core.mail import send_mail
 from django.shortcuts import render
 from django.contrib import messages
 from .forms import SendEmailForm
+from django.contrib import admin
 
+from .models import ServerError
+
+
+@admin.register(ServerError)
+class ServerErrorAdmin(admin.ModelAdmin):
+    list_display = (
+        "error_code",
+        "created_at",
+        "exception_type",
+        "method",
+        "path",
+        "user",
+        "ip_address",
+    )
+
+    list_filter = (
+        "created_at",
+        "exception_type",
+        "method",
+    )
+
+    search_fields = (
+        "error_code",
+        "exception_type",
+        "exception_message",
+        "traceback",
+        "path",
+        "query_string",
+        "user__username",
+        "user__email",
+        "request_id",
+    )
+
+    readonly_fields = (
+        "error_code",
+        "created_at",
+        "method",
+        "path",
+        "query_string",
+        "user",
+        "ip_address",
+        "user_agent",
+        "exception_type",
+        "exception_message",
+        "traceback",
+        "metadata",
+    )
+
+    date_hierarchy = "created_at"
+
+    ordering = ("-created_at",)
+
+    fieldsets = (
+        (
+            "Error",
+            {
+                "fields": (
+                    "error_code",
+                    "created_at",
+                    "exception_type",
+                    "exception_message",
+                )
+            },
+        ),
+        (
+            "Request",
+            {
+                "fields": (
+                    "method",
+                    "path",
+                    "query_string",
+                    "user",
+                    "ip_address",
+                    "user_agent",
+                )
+            },
+        ),
+        (
+            "Traceback",
+            {
+                "fields": (
+                    "traceback",
+                ),
+            },
+        ),
+        (
+            "Additional Metadata",
+            {
+                "fields": (
+                    "metadata",
+                ),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+    def has_add_permission(self, request):
+        # Errors should be created by the application,
+        # not manually through the admin.
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        # These are diagnostic records; don't let staff accidentally modify them.
+        return False
 User = get_user_model()
 
 @admin.action(description="Send custom email to selected users")

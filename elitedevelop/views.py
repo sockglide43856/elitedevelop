@@ -5,12 +5,9 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as django_login, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
-from django.db.models import Count
-from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -19,40 +16,113 @@ from django.views.generic import TemplateView
 from django.contrib.admin.views.decorators import staff_member_required
 from oauth2_provider.views.generic import ProtectedResourceView
 from chat.models import ChatMessage, PrivateMessage
-from chat import *
 from .forms import SignUpForm, EmailLoginForm, ProfileForm
 from mfa.helpers import has_mfa
-import json
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
 from .models import CodeSnippet, UserProfile
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user_model
 from forms.models import FormConfiguration
-import datetime
-from .models import UserBlock, UserReport  # Make sure these models exist in models.py
+from .models import UserBlock, UserReport
 import shutil
 import psutil
 from .models import RequestLog
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.views import LogoutView
-
-
-
-## ORGANIZATIONAL VIEWS ##
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from django.utils.text import slugify
 from .models import Organization, OrganizationMembership, OAuth2Key
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.utils.text import slugify
-from .models import Organization, OrganizationMembership, OAuth2Key, UserProfile
+import traceback
+from django.shortcuts import render
+from .models import ServerError
 
+def server_error(request, *args, **kwargs):
+    """
+    Custom Django 500 handler.
+
+    Creates a staff-visible ServerError record and displays
+    only the generated error code to the user.
+    """
+
+    error = None
+
+    try:
+        # Django's normal exception handling has already happened by
+        # the time this handler is called, so capture the current
+        # exception information.
+        error_type, error_value, error_tb = __import__("sys").exc_info()
+
+        if error_value is not None:
+            error = ServerError.objects.create(
+                request_id=request.META.get(
+                    "HTTP_X_REQUEST_ID",
+                    "",
+                ),
+
+                method=request.method,
+
+                path=request.path,
+
+                query_string=request.META.get(
+                    "QUERY_STRING",
+                    "",
+                ),
+
+                user=(
+                    request.user
+                    if getattr(request, "user", None)
+                    and request.user.is_authenticated
+                    else None
+                ),
+
+                ip_address=(
+                    request.META.get("REMOTE_ADDR")
+                ),
+
+                user_agent=request.META.get(
+                    "HTTP_USER_AGENT",
+                    "",
+                ),
+
+                exception_type=(
+                    f"{error_type.__module__}.{error_type.__name__}"
+                    if error_type
+                    else ""
+                ),
+
+                exception_message=str(error_value),
+
+                traceback="".join(
+                    traceback.format_exception(
+                        error_type,
+                        error_value,
+                        error_tb,
+                    )
+                ),
+
+                metadata={
+                    "host": request.get_host(),
+                    "referer": request.META.get(
+                        "HTTP_REFERER",
+                        "",
+                    ),
+                },
+            )
+
+    except Exception:
+        # Do NOT allow error logging itself to cause another 500.
+        error = None
+
+    return render(
+        request,
+        "500.html",
+        {
+            "error_code": (
+                error.error_code
+                if error
+                else None
+            ),
+        },
+        status=500,
+    )
 @login_required
 def organization_dashboard(request):
     memberships = request.user.organization_memberships.select_related('organization').all()
@@ -137,20 +207,6 @@ def create_organization(request):
 @login_required
 def generate_api_key(request):
     if request.method == "POST":
-        if request.user.oauth_keys.exists():
-            messages.error(request, "You already have an active OAuth2 API Key.")
-            return redirect('organization_dashboard')
-
-        key_name = request.POST.get("key_name", "Primary API Key")
-        key = OAuth2Key.objects.create(user=request.user, name=key_name)
-
-        messages.success(request, f"API Key '{key.name}' generated successfully.")
-        return redirect('organization_dashboard')
-
-    return redirect('organization_dashboard')
-@login_required
-def generate_api_key(request):
-    if request.method == "POST":
         # Check if user already has an API Key
         if request.user.oauth_keys.exists():
             messages.error(request, "You already have an active OAuth2 API Key.")
@@ -199,8 +255,6 @@ def system_dashboard(request):
     }
 
     return render(request, 'admin/status.html', context)
-User = get_user_model()
-
 @login_required
 def toggle_block_user(request, pk):
     if request.method == "POST":

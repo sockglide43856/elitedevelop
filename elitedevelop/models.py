@@ -1,15 +1,119 @@
-import datetime
-import secrets
-import uuid
 from cryptography.fernet import Fernet
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
+import string
+import datetime
+import secrets
+import uuid
 
+
+def generate_error_code():
+    alphabet = string.ascii_uppercase + string.digits
+
+    while True:
+        code = "ERR-" + "".join(
+            secrets.choice(alphabet)
+            for _ in range(8)
+        )
+
+        if not ServerError.objects.filter(error_code=code).exists():
+            return code
+
+
+class ServerError(models.Model):
+    """
+    Stores information about an unexpected server-side error.
+
+    The error_code is safe to give to users/staff for support purposes.
+    The traceback and request metadata should only be visible to staff.
+    """
+
+    error_code = models.CharField(
+        max_length=20,
+        unique=True,
+        editable=False,
+        db_index=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    # Request information
+    method = models.CharField(
+        max_length=10,
+        blank=True,
+    )
+
+    path = models.TextField(
+        blank=True,
+    )
+
+    query_string = models.TextField(
+        blank=True,
+    )
+
+    # Useful when debugging production issues
+    user = models.ForeignKey(
+        "auth.User",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="server_errors",
+    )
+
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+    )
+
+    user_agent = models.TextField(
+        blank=True,
+    )
+
+    # Exception information
+    exception_type = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    exception_message = models.TextField(
+        blank=True,
+    )
+
+    traceback = models.TextField(
+        blank=True,
+    )
+
+    request_id = models.CharField(
+        max_length=255,
+        blank=True,
+        db_index=True,
+    )
+    # Optional request/application metadata
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Server Error"
+        verbose_name_plural = "Server Errors"
+
+    def save(self, *args, **kwargs):
+        if not self.error_code:
+            self.error_code = generate_error_code()
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.error_code} — {self.exception_type or 'Server Error'}"
 
 class OAuth2Key(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="oauth_keys")
