@@ -24,7 +24,6 @@ from forms.models import FormConfiguration
 from .models import UserBlock, UserReport
 import shutil
 import psutil
-from .models import RequestLog
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.views import LogoutView
@@ -238,23 +237,6 @@ class logout(LogoutView):
                 pass
 
         return super().dispatch(request, *args, **kwargs)
-
-
-@staff_member_required  # Keep this view restricted to admins/staff!
-def system_dashboard(request):
-    # Disk stats
-    total, used, free = shutil.disk_usage("/")
-
-    # Recent 20 requests
-    recent_requests = RequestLog.objects.order_by('-timestamp')[:20]
-
-    context = {
-        'disk_used_percent': round((used / total) * 100, 1),
-        'ram_used_percent': psutil.virtual_memory().percent,
-        'recent_requests': recent_requests,
-    }
-
-    return render(request, 'admin/status.html', context)
 @login_required
 def toggle_block_user(request, pk):
     if request.method == "POST":

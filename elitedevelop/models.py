@@ -182,13 +182,6 @@ class OrganizationMembership(models.Model):
         return f"{self.user.username} - {self.organization.name}"
 
 
-class RequestLog(models.Model):
-    path = models.CharField(max_length=255)
-    method = models.CharField(max_length=10)
-    status_code = models.IntegerField()
-    duration_ms = models.FloatField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-
 
 class UserBlock(models.Model):
     blocker = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='blocking', on_delete=models.CASCADE)

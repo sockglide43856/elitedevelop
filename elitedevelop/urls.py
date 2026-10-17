@@ -22,7 +22,6 @@ urlpatterns = [
     path('forums/', include(machina_urls)),
     path('mfa/', include('mfa.urls')),
     path('admin/', admin.site.urls),
-    path('admindash/', views.system_dashboard, name='dashboard'),
     path('settings/', views.settings_hub, name='settings-hub'),
     path('settings/revoke/<str:session_key>/', views.revoke_session, name='revoke-session'),
     path('accounts/password_reset/',auth_views.PasswordResetView.as_view(html_email_template_name='registration/password_reset_email.html',subject_template_name='registration/password_reset_subject.txt'),name='password_reset'),

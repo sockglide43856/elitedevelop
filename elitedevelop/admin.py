@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import inDevelopment, UserProfile, UserBlock, UserReport, Organization, OrganizationMembership, OAuth2Key, RequestLog
+from .models import inDevelopment, UserProfile, UserBlock, UserReport, Organization, OrganizationMembership, OAuth2Key
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from .models import UserProfile
@@ -190,4 +190,3 @@ admin.site.register(UserReport)
 admin.site.register(OrganizationMembership)
 admin.site.register(Organization)
 admin.site.register(OAuth2Key)
-admin.site.register(RequestLog)
