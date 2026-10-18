@@ -1,6 +1,5 @@
 # middleware.py
 import time
-from .models import RequestLog
 from bs4 import BeautifulSoup, NavigableString
 from django.conf import settings
 from django.contrib.auth.models import User

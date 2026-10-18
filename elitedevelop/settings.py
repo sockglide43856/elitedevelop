@@ -74,6 +74,8 @@ DATABASES = {
         'PASSWORD': DB_PWD,
         'HOST': DB_URL,
         'PORT': '3306',
+        'CONN_MAX_AGE': 60,
+        'CONN_HEATH_CHECKS': True,
     }
 }
 
