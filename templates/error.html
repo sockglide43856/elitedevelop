@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}500 - Server Error | EliteDevelop{% endblock %}
+{% block title %}{{ error_status }} - {{ error_title }} | EliteDevelop{% endblock %}
 
 {% block head %}
+
 <style>
     .error-wrapper {
         min-height: 75vh;
@@ -11,14 +12,12 @@
         justify-content: center;
         padding: 3rem 1rem;
     }
-
     .error-card {
         --card-bg: #ffffff;
         --card-border: #e2e8f0;
         --card-text: #0f172a;
         --card-muted: #64748b;
         --card-accent: #2563eb;
-
         position: relative;
         isolation: isolate;
         overflow: hidden;
@@ -34,7 +33,6 @@
             0 4px 12px rgba(15, 23, 42, 0.04);
         text-align: center;
     }
-
     .error-card::before {
         content: "";
         position: absolute;
@@ -50,7 +48,6 @@
             #06b6d4
         );
     }
-
     .error-illustration {
         position: relative;
         display: inline-flex;
@@ -65,11 +62,9 @@
         border-radius: 2rem;
         animation: serverFloat 4s ease-in-out infinite;
     }
-
     .error-illustration i {
         font-size: 3.5rem;
     }
-
     .error-code {
         position: absolute;
         right: -13px;
@@ -84,7 +79,6 @@
         font-weight: 800;
         letter-spacing: 0.04em;
     }
-
     .error-eyebrow {
         margin-bottom: 0.65rem;
         color: var(--card-accent);
@@ -93,7 +87,6 @@
         letter-spacing: 0.14em;
         text-transform: uppercase;
     }
-
     .error-title {
         margin-bottom: 0.9rem;
         color: var(--card-text);
@@ -101,7 +94,6 @@
         font-weight: 800;
         letter-spacing: -0.04em;
     }
-
     .error-description {
         max-width: 410px;
         margin: 0 auto 1.5rem;
@@ -109,7 +101,6 @@
         font-size: 1rem;
         line-height: 1.75;
     }
-
     .error-note {
         display: flex;
         align-items: flex-start;
@@ -124,12 +115,10 @@
         font-size: 0.875rem;
         line-height: 1.6;
     }
-
     .error-note i {
         margin-top: 0.2rem;
         color: var(--card-accent);
     }
-
     .error-code-box {
         display: flex;
         align-items: center;
@@ -142,7 +131,6 @@
         border-radius: 0.9rem;
         text-align: left;
     }
-
     .error-code-label {
         color: var(--card-muted);
         font-size: 0.75rem;
@@ -150,7 +138,6 @@
         text-transform: uppercase;
         letter-spacing: 0.08em;
     }
-
     .error-code-value {
         color: var(--card-text);
         font-family: monospace;
@@ -158,14 +145,12 @@
         font-weight: 800;
         letter-spacing: 0.05em;
     }
-
     .error-actions {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 0.75rem;
     }
-
     .error-actions .btn {
         min-height: 46px;
         display: inline-flex;
@@ -179,17 +164,14 @@
             transform 0.2s ease,
             box-shadow 0.2s ease;
     }
-
     .error-actions .btn:hover {
         transform: translateY(-2px);
     }
-
     .error-footer {
         margin-top: 1.75rem;
         color: var(--card-muted);
         font-size: 0.75rem;
     }
-
     html.dark-theme .error-card,
     body.dark-theme .error-card {
         --card-bg: #111827;
@@ -197,167 +179,136 @@
         --card-text: #f8fafc;
         --card-muted: #a3afc2;
         --card-accent: #60a5fa;
-
         box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
     }
-
     html.dark-theme .error-illustration,
     body.dark-theme .error-illustration {
         background: rgba(96, 165, 250, 0.1);
         border-color: rgba(96, 165, 250, 0.2);
     }
-
     html.dark-theme .error-note,
     body.dark-theme .error-note {
         background: rgba(148, 163, 184, 0.06);
     }
-
     html.dark-theme .error-code-box,
     body.dark-theme .error-code-box {
         background: rgba(96, 165, 250, 0.08);
         border-color: rgba(96, 165, 250, 0.2);
     }
-
     @keyframes serverFloat {
         0%, 100% {
             transform: translateY(0);
         }
-
         50% {
             transform: translateY(-6px);
         }
     }
-
     @media (max-width: 480px) {
         .error-wrapper {
             min-height: 65vh;
             padding: 2rem 0.75rem;
         }
-
         .error-card {
             padding: 2.5rem 1.25rem;
             border-radius: 1.25rem;
         }
-
         .error-actions {
             flex-direction: column;
         }
-
         .error-actions .btn {
             width: 100%;
         }
-
         .error-code-box {
             flex-direction: column;
             align-items: flex-start;
             gap: 0.25rem;
         }
     }
-
     @media (prefers-reduced-motion: reduce) {
         .error-illustration {
             animation: none;
         }
-
         .error-actions .btn {
             transition: none;
         }
-
         .error-actions .btn:hover {
             transform: none;
         }
     }
 </style>
+
 {% endblock %}
 
 {% block content %}
+
 <main class="container error-wrapper">
     <section class="error-card" aria-labelledby="error-title">
-
-        <div class="error-illustration" aria-hidden="true">
-            <i class="fa-solid fa-server"></i>
-            <span class="error-code">500</span>
-        </div>
-
-        <p class="error-eyebrow">
-            EliteDevelop · Server Error
-        </p>
-
-        <h1 id="error-title" class="error-title">
-            Something went wrong.
-        </h1>
-
-        <p class="error-description">
-            We hit an unexpected problem while processing your request.
-            Your destination hasn't disappeared — our server just
-            couldn't complete the operation right now.
-        </p>
-
-        {% if error_code %}
-        <div class="error-code-box">
-            <span class="error-code-label">
-                Error reference
-            </span>
-
-            <span
-                class="error-code-value"
-                title="Give this code to the EliteDevelop team if you need help."
-            >
-                {{ error_code }}
-            </span>
-        </div>
-        {% endif %}
-
-        <div class="error-note">
-            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-
+    <div class="error-illustration" aria-hidden="true">
+        <i class="{{ error_icon }}"></i>
+        <span class="error-code">{{ error_status }}</span>
+    </div>
+    <p class="error-eyebrow">
+        EliteDevelop · {{ error_status }} {{ error_label }}
+    </p>
+    <h1 id="error-title" class="error-title">
+        {{ error_title }}
+    </h1>
+    <p class="error-description">
+        {{ error_description }}
+    </p>
+    {% if error_code %}
+    <div class="error-code-box">
+        <span class="error-code-label">
+            Error reference
+        </span>
+        <span
+            class="error-code-value"
+            title="Give this code to the EliteDevelop team if you need help."
+        >
+            {{ error_code }}
+        </span>
+    </div>
+    {% endif %}
+    <div class="error-note">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <div>
+            <strong>{{ error_note_title }}</strong>
             <div>
-                <strong>What can you do?</strong>
-
-                <div>
-                    Try again in a moment. If the problem keeps happening,
-                    let our team know at
-                    <a href="mailto:mail@elitedevelop.org">
-                        mail@elitedevelop.org
-                    </a>.
-
-                    {% if error_code %}
-                        Please include your error reference
-                        <strong>{{ error_code }}</strong>.
-                    {% endif %}
-                </div>
+                {{ error_note }}
+                {% if error_code %}
+                    Please include your error reference
+                    <strong>{{ error_code }}</strong>.
+                {% endif %}
             </div>
         </div>
-
-        <div class="error-actions">
-            <button
-                type="button"
-                class="btn btn-primary"
-                onclick="window.location.reload()"
-            >
-                <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
-                Try Again
-            </button>
-
-            <a href="/" class="btn btn-outline-secondary">
-                <i class="fa-solid fa-house" aria-hidden="true"></i>
-                Go Home
-            </a>
-
-            <button
-                type="button"
-                class="btn btn-outline-secondary"
-                onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.assign('/'); }"
-            >
-                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-                Go Back
-            </button>
-        </div>
-
-        <p class="error-footer">
-            We appreciate your patience while you use EliteDevelop.
-        </p>
-
-    </section>
+    </div>
+    <div class="error-actions">
+        {% if error_status == 500 %}
+        <button
+            type="button"
+            class="btn btn-primary"
+            onclick="window.location.reload()"
+        >
+            <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+            Try Again
+        </button>
+        {% endif %}
+        <a href="/" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-house" aria-hidden="true"></i>
+            Go Home
+        </a>
+        <button
+            type="button"
+            class="btn btn-outline-secondary"
+            onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.assign('/'); }"
+        >
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            Go Back
+        </button>
+    </div>
+    <p class="error-footer">
+        We appreciate your patience while you use EliteDevelop.
+    </p>
+</section>
 </main>
 {% endblock %}

@@ -33,6 +33,14 @@ import traceback
 from django.shortcuts import render
 from .models import ServerError
 
+import sys
+import traceback
+
+from django.shortcuts import render
+
+from .models import ServerError
+
+
 def server_error(request, *args, **kwargs):
     """
     Custom Django 500 handler.
@@ -44,10 +52,7 @@ def server_error(request, *args, **kwargs):
     error = None
 
     try:
-        # Django's normal exception handling has already happened by
-        # the time this handler is called, so capture the current
-        # exception information.
-        error_type, error_value, error_tb = __import__("sys").exc_info()
+        error_type, error_value, error_tb = sys.exc_info()
 
         if error_value is not None:
             error = ServerError.objects.create(
@@ -72,8 +77,8 @@ def server_error(request, *args, **kwargs):
                     else None
                 ),
 
-                ip_address=(
-                    request.META.get("REMOTE_ADDR")
+                ip_address=request.META.get(
+                    "REMOTE_ADDR",
                 ),
 
                 user_agent=request.META.get(
@@ -107,13 +112,29 @@ def server_error(request, *args, **kwargs):
             )
 
     except Exception:
-        # Do NOT allow error logging itself to cause another 500.
+        # Error logging must NEVER break the error page.
         error = None
 
     return render(
         request,
-        "500.html",
+        "error.html",
         {
+            "error_status": 500,
+            "error_label": "Server Error",
+            "error_title": "Something went wrong.",
+            "error_description": (
+                "We hit an unexpected problem while processing "
+                "your request. Your destination hasn't disappeared "
+                "— our server just couldn't complete the operation "
+                "right now."
+            ),
+            "error_icon": "fa-solid fa-server",
+            "error_note_title": "What can you do?",
+            "error_note": (
+                "Try again in a moment. If the problem keeps "
+                "happening, let the EliteDevelop team know at "
+                "mail@elitedevelop.org."
+            ),
             "error_code": (
                 error.error_code
                 if error
@@ -122,6 +143,64 @@ def server_error(request, *args, **kwargs):
         },
         status=500,
     )
+
+
+def page_not_found(request, exception):
+    """
+    Custom Django 404 handler.
+    """
+
+    return render(
+        request,
+        "error.html",
+        {
+            "error_status": 404,
+            "error_label": "Not Found",
+            "error_title": "Page not found.",
+            "error_description": (
+                "The page you're looking for doesn't exist, "
+                "may have moved, or the address may be incorrect."
+            ),
+            "error_icon": "fa-solid fa-compass",
+            "error_note_title": "What can you do?",
+            "error_note": (
+                "Check the address, go back to the previous page, "
+                "or return to the EliteDevelop home page."
+            ),
+            "error_code": None,
+        },
+        status=404,
+    )
+
+
+def permission_denied(request, exception):
+    """
+    Custom Django 403 handler.
+    """
+
+    return render(
+        request,
+        "error.html",
+        {
+            "error_status": 403,
+            "error_label": "Forbidden",
+            "error_title": "Access denied.",
+            "error_description": (
+                "You don't have permission to access this page "
+                "or perform this action."
+            ),
+            "error_icon": "fa-solid fa-lock",
+            "error_note_title": "Why did this happen?",
+            "error_note": (
+                "You may need to sign in with a different account, "
+                "or your account may not have permission to access "
+                "this resource."
+            ),
+            "error_code": None,
+        },
+        status=403,
+    )
+
 @login_required
 def organization_dashboard(request):
     memberships = request.user.organization_memberships.select_related('organization').all()

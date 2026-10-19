@@ -6,35 +6,27 @@ from django.conf.global_settings import PASSWORD_HASHERS as DEFAULT_PASSWORD_HAS
 from machina import MACHINA_MAIN_TEMPLATE_DIR
 
 
+# =============================================================================
+# Security / Proxy
+# =============================================================================
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-MACHINA_BASE_TEMPLATE_NAME = "board_base.html"
 
-PASSWORD_HASHERS = DEFAULT_PASSWORD_HASHERS + [
-    "mfa.recovery.Hash",
-]
+# =============================================================================
+# Paths / Environment
+# =============================================================================
 
-PUSH_SUBSCRIPTION_MODEL = "chats.WebPushSubscription"
-
-
-# Email
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-EMAIL_FROM = "EliteDevelop"
-DEFAULT_FROM_EMAIL = "EliteDevelop <mail@elitedevelop.org>"
-
-
-# Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR.parent / ".env")
 
 MFA_ROOT = os.path.join(BASE_DIR, "static", "mfa")
 
 
+# =============================================================================
 # Environment variables
+# =============================================================================
+
 PROXY_WORKER_SECRET = os.environ["PROXY_WORKER_SECRET"]
 
 GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
@@ -65,19 +57,46 @@ DB_PWD = os.environ["SQL_DATABASE_PASSWORD"]
 DB_URL = os.environ["SQL_DATABASE_URL"]
 DB_USER = os.environ["SQL_DATABASE_USER"]
 DB_NAME = os.environ["SQL_DATABASE_NAME"]
+
+
+# =============================================================================
+# Email
+# =============================================================================
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_FROM = "EliteDevelop"
+DEFAULT_FROM_EMAIL = "EliteDevelop <mail@elitedevelop.org>"
+
+
+# =============================================================================
 # Database
+# =============================================================================
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PWD,
-        'HOST': DB_URL,
-        'PORT': '3306',
-        'CONN_MAX_AGE': 60,
-        'CONN_HEATH_CHECKS': True,
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PWD,
+        "HOST": DB_URL,
+        "PORT": "3306",
+
+        # Reuse connections briefly instead of keeping them indefinitely.
+        "CONN_MAX_AGE": 60,
+
+        # Check persistent connections before reusing them.
+        "CONN_HEALTH_CHECKS": True,
     }
 }
+
+
+# =============================================================================
+# Django
+# =============================================================================
 
 DEBUG = False
 
@@ -86,16 +105,20 @@ ALLOWED_HOSTS = [
     "www.elitedevelop.org",
     "elitedevelop.pythonanywhere.com",
 ]
+
 CSRF_TRUSTED_ORIGINS = [
     "https://www.elitedevelop.org",
     "https://elitedevelop.org",
 ]
 
+APPEND_SLASH = True
 
+
+# =============================================================================
 # Application definition
-INSTALLED_APPS = [
-    # "unfold",
+# =============================================================================
 
+INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.sites",
@@ -143,14 +166,29 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 
+# =============================================================================
 # Authentication
+# =============================================================================
+
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 
+# =============================================================================
+# Password hashing
+# =============================================================================
+
+PASSWORD_HASHERS = DEFAULT_PASSWORD_HASHERS + [
+    "mfa.recovery.Hash",
+]
+
+
+# =============================================================================
 # Google OAuth
+# =============================================================================
+
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": [
@@ -167,7 +205,10 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 
+# =============================================================================
 # MFA / WebAuthn
+# =============================================================================
+
 MFA_DOMAIN = "www.elitedevelop.org"
 
 MFA_FORCE_REGISTRATION = False
@@ -200,7 +241,37 @@ MFA_LOGIN_CALLBACK = "elitedevelop.views.login_view"
 RECOVERY_COUNTERS = 5
 
 
-# Django admin / Unfold
+# =============================================================================
+# Push notifications
+# =============================================================================
+
+PUSH_SUBSCRIPTION_MODEL = "chat.WebPushSubscription"
+
+
+# =============================================================================
+# Machina
+# =============================================================================
+
+MACHINA_BASE_TEMPLATE_NAME = "board_base.html"
+
+MACHINA_SETTINGS = {
+    "FORUM_NAME": "EliteDevelop Forum",
+    "FORUM_AVATAR_MAX_SIZE": 102400,
+    "FORUM_THEME_CSS": "machina/build/css/machina.board_theme.min.css",
+    "FORUM_THEME_VENDOR_CSS": [
+        "machina/build/css/machina.board_theme.vendor.min.css",
+        "machina/build/css/vendor/easymde.min.css",
+    ],
+}
+
+MACHINA_FORUM_POLLS_ENABLED = True
+MACHINA_FORUM_ATTACHMENTS_ENABLED = True
+
+
+# =============================================================================
+# Django Admin / Unfold
+# =============================================================================
+
 UNFOLD = {
     "SITE_TITLE": "EliteDevelop Administration",
     "SITE_HEADER": "EliteDevelop",
@@ -209,7 +280,10 @@ UNFOLD = {
 }
 
 
+# =============================================================================
 # OAuth2 Provider
+# =============================================================================
+
 OAUTH2_PROVIDER = {
     "PKCE_REQUIRED": False,
     "ERROR_RESPONSE_WITH_SCOPES": True,
@@ -219,7 +293,10 @@ OAUTH2_PROVIDER = {
 }
 
 
-# OAuth2 logging
+# =============================================================================
+# OAuth2 Logging
+# =============================================================================
+
 LOGGING = {
     "version": 1,
     "handlers": {
@@ -236,26 +313,39 @@ LOGGING = {
 }
 
 
+# =============================================================================
 # Middleware
+# =============================================================================
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    "elitedevelop.middleware.OldDomainRedirectMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
+    "elitedevelop.middleware.OldDomainRedirectMiddleware",
+
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
     "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
 
 
+# =============================================================================
+# URLs
+# =============================================================================
+
 ROOT_URLCONF = "elitedevelop.urls"
 
 
+# =============================================================================
 # Templates
+# =============================================================================
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -271,6 +361,9 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "machina.core.context_processors.metadata",
+
+                # Be careful with this processor:
+                # it currently performs a database query.
                 "elitedevelop.cp.indev",
             ],
         },
@@ -278,7 +371,10 @@ TEMPLATES = [
 ]
 
 
+# =============================================================================
 # Haystack
+# =============================================================================
+
 HAYSTACK_CONNECTIONS = {
     "default": {
         "ENGINE": "haystack.backends.simple_backend.SimpleEngine",
@@ -286,7 +382,10 @@ HAYSTACK_CONNECTIONS = {
 }
 
 
+# =============================================================================
 # Cache
+# =============================================================================
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -298,33 +397,25 @@ CACHES = {
 }
 
 
-# Machina
-MACHINA_SETTINGS = {
-    "FORUM_NAME": "EliteDevelop Forum",
-    "FORUM_AVATAR_MAX_SIZE": 102400,
-    "FORUM_THEME_CSS": "machina/build/css/machina.board_theme.min.css",
-    "FORUM_THEME_VENDOR_CSS": [
-        "machina/build/css/machina.board_theme.vendor.min.css",
-        "machina/build/css/vendor/easymde.min.css",
-    ],
-}
-
-MACHINA_FORUM_POLLS_ENABLED = True
-MACHINA_FORUM_ATTACHMENTS_ENABLED = True
-
-
+# =============================================================================
 # WSGI
+# =============================================================================
+
 WSGI_APPLICATION = "elitedevelop.wsgi.application"
 
 
-# Login / logout
+# =============================================================================
+# Login / Logout
+# =============================================================================
+
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
 
-
-
+# =============================================================================
 # Password validation
+# =============================================================================
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME":
@@ -345,7 +436,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# =============================================================================
 # Internationalization
+# =============================================================================
+
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
@@ -354,7 +448,10 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files
+# =============================================================================
+# Static / Media
+# =============================================================================
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
 
@@ -366,5 +463,8 @@ STATICFILES_STORAGE = (
 )
 
 
+# =============================================================================
 # Default primary key
+# =============================================================================
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

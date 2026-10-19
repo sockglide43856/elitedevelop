@@ -7,6 +7,9 @@ from django.views.generic import RedirectView, TemplateView
 from django.templatetags.static import static
 from django.contrib.auth import views as auth_views
 
+
+handler404 = "elitedevelop.views.page_not_found"
+handler403 = "elitedevelop.views.permission_denied"
 handler500 = "elitedevelop.views.server_error"
 
 # UNUSED URLS #
