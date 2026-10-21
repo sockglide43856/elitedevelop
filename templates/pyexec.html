@@ -6,11 +6,10 @@
 <div class="container-fluid px-4 py-3">
     <div class="card shadow-sm border-0 p-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="fw-bold m-0"><i class="fa-brands fa-python text-primary me-2"></i>Live Python Studio</h3>
+            <h3 class="fw-bold m-0"><i class="fa-brands fa-python text-primary me-2"></i>Python Studio</h3>
             <span class="badge bg-success shadow-sm" id="engine-status"><i class="fa-solid fa-microchip fa-spin me-1"></i> Booting Pyodide Runtime...</span>
         </div>
-        <p class="text-muted small mt-0 mb-4">Execute real, sandboxed Python code directly in your browser viewport. Zero server overhead, zero security execution risk, full execution fidelity.</p>
-
+        <p class="text-muted small mt-0 mb-4">Run Python code in your browser. 100% free, recommended to have an account (but not requried)
         <div class="row g-3">
             <div class="col-md-6">
                 <div class="d-flex justify-content-between align-items-center bg-dark text-light px-3 py-2 rounded-top border-bottom border-secondary">
@@ -26,15 +25,15 @@ def greet(name):
 for i in range(1, 4):
     print(f"Loop index iteration: {i}")
 
-print(greet("Developer"))
+print(greet("Programmer"))
 </textarea>
             </div>
 
             <div class="col-md-6">
                 <div class="bg-dark text-light px-3 py-2 rounded-top border-bottom border-secondary">
-                    <span class="small fw-bold text-secondary">Console Terminal Output</span>
+                    <span class="small fw-bold text-secondary">Output</span>
                 </div>
-                <div id="console-output" class="form-control font-monospace text-success bg-dark p-3 rounded-bottom border-0 overflow-auto" style="height: 400px; white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: #38bdf8 !important;">Loading WebAssembly engine profiles...
+                <div id="console-output" class="form-control font-monospace text-success bg-dark p-3 rounded-bottom border-0 overflow-auto" style="height: 400px; white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: #38bdf8 !important;">Loading engine profiles...
 </div>
             </div>
         </div>

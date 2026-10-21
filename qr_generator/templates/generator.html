@@ -8,15 +8,16 @@
 
         <div class="col-md-5">
             <div class="card p-4 shadow-sm border-0">
-                <h3 class="mb-3 fw-bold"><i class="fa-solid fa-qrcode text-primary me-2"></i>QR Studio Engine</h3>
+                <h3 class="mb-3 fw-bold"><i class="fa-solid fa-qrcode text-primary me-2"></i>QR Studio</h3>
+                <p>A 100% Free QR code generator. Never stops working, and you don't need to pay or make an account</p>
                 <hr class="text-muted mt-0 mb-4">
 
                 <form method="post" action="">
                     {% csrf_token %}
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Target URL or Data payload</label>
-                        <textarea class="form-control" name="qr_data" rows="3" required placeholder="Paste link or text data string here...">{{ qr_data|default:'' }}</textarea>
+                        <label class="form-label fw-semibold">URL/text</label>
+                        <textarea class="form-control" name="qr_data" rows="3" required placeholder="Paste link or text here...">{{ qr_data|default:'' }}</textarea>
                     </div>
 
                     <div class="row mb-3">
@@ -31,7 +32,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Box Resolution Scale (Size)</label>
+                        <label class="form-label fw-semibold">QR code size/resolution</label>
                         <select class="form-select" name="box_size">
                             <option value="5" {% if box_size == 5 %}selected{% endif %}>Compact (Tiny)</option>
                             <option value="10" {% if box_size == 10 %}selected{% endif %}>Standard (Balanced)</option>
@@ -41,7 +42,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-semibold">Outer Border Spacing Safety Margin</label>
+                        <label class="form-label fw-semibold">Outer Border Size</label>
                         <select class="form-select" name="border_size">
                             <option value="1" {% if border_size == 1 %}selected{% endif %}>Minimalist (1 Box)</option>
                             <option value="4" {% if border_size == 4 %}selected{% endif %}>Default Safety Buffer (4 Boxes)</option>
@@ -50,7 +51,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
-                        <i class="fa-solid fa-gear fa-spin me-2"></i> Compile Custom Matrix
+                        <i class="fa-solid fa-gear fa-spin me-2"></i> Create!
                     </button>
                 </form>
             </div>
@@ -62,20 +63,19 @@
                     <h4 class="fw-bold mb-3 text-success"><i class="fa-solid fa-circle-check"></i> Generation Complete!</h4>
 
                     <div class="p-3 rounded bg-white border mb-4 d-inline-block shadow-sm">
-                        <img src="{{ qr_code }}" class="img-fluid d-block mx-auto" alt="Custom Matrix Profile Output" style="max-height: 320px;">
+                        <img src="{{ qr_code }}" class="img-fluid d-block mx-auto" alt="Custom QR code" style="max-height: 320px;">
                     </div>
 
                     <div class="w-100 px-4">
                         <a href="{{ qr_code }}" download="elitedevelop_qr_matrix.png" class="btn btn-success w-100 fw-bold py-2 mb-2">
-                            <i class="fa-solid fa-cloud-arrow-down me-2"></i> Download PNG Matrix
+                            <i class="fa-solid fa-cloud-arrow-down me-2"></i> Download PNG
                         </a>
-                        <small class="text-muted d-block mt-2">Render properties execution scale context metrics: <strong>{{ box_size }}px</strong> box engine modules.</small>
                     </div>
                 {% else %}
                     <div class="text-muted p-5">
                         <i class="fa-solid fa-qrcode fa-5x mb-3 text-secondary opacity-50"></i>
-                        <h5>Awaiting Form Matrix Submission Parameters</h5>
-                        <p class="small text-muted">Input your configuration parameters on the left controls panel and click compile to instantly generate a custom-tailored zero-footprint vector matrix artifact stream.</p>
+                        <h5>Waiting for QR code...</h5>
+                        <p class="small text-muted">Enter your customization settings and then press Create!</p>
                     </div>
                 {% endif %}
 
