@@ -143,14 +143,21 @@
     min-height: 300px;
     overflow-y: auto;
     padding: 26px 4px 30px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148,163,184,.25) transparent;
 }
 
 .apex-message {
-    display: flex;
+    display: grid;
+    grid-template-columns: 34px minmax(0,760px);
     gap: 12px;
-    max-width: 900px;
+    width: min(900px,100%);
     margin: 0 auto 22px;
     animation: apexIn .2s ease both;
+}
+
+.apex-message.user {
+    grid-template-columns: minmax(0,760px) 34px;
 }
 
 @keyframes apexIn {
@@ -158,14 +165,11 @@
         opacity: 0;
         transform: translateY(6px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.apex-message.user {
-    justify-content: flex-end;
 }
 
 .apex-avatar,
@@ -182,14 +186,14 @@
 }
 
 .apex-message.user .apex-avatar {
-    order: 2;
     background: var(--apex-user);
     color: white;
     border-color: transparent;
+    order: 2;
 }
 
 .apex-bubble {
-    max-width: min(760px,82%);
+    width: 100%;
     min-width: 0;
 }
 
@@ -216,6 +220,9 @@
 }
 
 .apex-message.user .apex-text {
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
     padding: 11px 15px;
     border-radius: 16px 16px 4px 16px;
     background: var(--apex-user);
@@ -223,20 +230,30 @@
     white-space: pre-wrap;
 }
 
-.apex-markdown p {
-    margin: 0 0 10px;
+.apex-message.assistant .apex-text {
+    max-width: 760px;
+    min-height: 34px;
 }
 
-.apex-markdown p:last-child {
+.apex-markdown > *:first-child {
+    margin-top: 0;
+}
+
+.apex-markdown > *:last-child {
     margin-bottom: 0;
+}
+
+.apex-markdown p {
+    margin: 0 0 12px;
 }
 
 .apex-markdown h1,
 .apex-markdown h2,
 .apex-markdown h3,
 .apex-markdown h4 {
-    margin: 18px 0 8px;
+    margin: 20px 0 8px;
     color: var(--apex-text);
+    line-height: 1.3;
 }
 
 .apex-markdown h1 {
@@ -253,6 +270,7 @@
 
 .apex-markdown ul,
 .apex-markdown ol {
+    margin: 8px 0 12px;
     padding-left: 24px;
 }
 
@@ -262,6 +280,11 @@
 
 .apex-markdown a {
     color: #60a5fa;
+    text-decoration: none;
+}
+
+.apex-markdown a:hover {
+    text-decoration: underline;
 }
 
 .apex-markdown code {
@@ -276,6 +299,7 @@
 .apex-code {
     position: relative;
     margin: 13px 0;
+    max-width: 100%;
 }
 
 .apex-code pre {
@@ -323,12 +347,15 @@
     width: 100%;
     margin: 12px 0;
     border-collapse: collapse;
+    display: block;
+    overflow-x: auto;
 }
 
 .apex-markdown th,
 .apex-markdown td {
     padding: 8px 10px;
     border: 1px solid var(--apex-border);
+    text-align: left;
 }
 
 .apex-markdown th {
@@ -403,6 +430,10 @@
     padding: 7px 4px;
 }
 
+.apex-input::placeholder {
+    color: #64748b;
+}
+
 .apex-send {
     width: 40px;
     height: 40px;
@@ -412,6 +443,11 @@
     background: #2563eb;
     color: white;
     cursor: pointer;
+    transition: transform .15s ease, opacity .15s ease;
+}
+
+.apex-send:hover:not(:disabled) {
+    transform: translateY(-1px);
 }
 
 .apex-send:disabled {
@@ -443,9 +479,10 @@
 }
 
 .apex-thinking {
-    display: flex;
+    display: grid;
+    grid-template-columns: 34px minmax(0,760px);
     gap: 12px;
-    max-width: 900px;
+    width: min(900px,100%);
     margin: 0 auto 22px;
 }
 
@@ -484,6 +521,7 @@
         opacity: .3;
         transform: translateY(0);
     }
+
     30% {
         opacity: 1;
         transform: translateY(-3px);
@@ -495,14 +533,36 @@
         padding: 14px 10px 15px;
     }
 
-    .apex-bubble {
-        max-width: 86%;
+    .apex-message {
+        grid-template-columns: 30px minmax(0,1fr);
+        gap: 9px;
+    }
+
+    .apex-message.user {
+        grid-template-columns: minmax(0,1fr) 30px;
+    }
+
+    .apex-avatar,
+    .apex-thinking-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+    }
+
+    .apex-bubble,
+    .apex-message.assistant .apex-text {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .apex-thinking {
+        grid-template-columns: 30px minmax(0,1fr);
+        gap: 9px;
     }
 }
 </style>
 
 {% endblock %}
-
 
 {% block content %}
 
@@ -588,7 +648,6 @@
 
         </header>
 
-
         <main
             class="apex-chat"
             id="apex-chat"
@@ -598,7 +657,7 @@
 
                 {% for aiMessage in aimessages %}
 
-                    <div class="apex-message {{ aiMessage.role }}">
+                    <div class="apex-message {% if aiMessage.role == 'user' %}user{% else %}assistant{% endif %}">
 
                         {% if aiMessage.role == "user" %}
 
@@ -671,7 +730,6 @@
 
         </main>
 
-
         <div class="apex-composer-wrap">
 
             <div
@@ -724,7 +782,6 @@
 
 {% endblock %}
 
-
 {% block scripts %}
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -735,82 +792,55 @@
 
     "use strict";
 
-
     marked.setOptions({
         breaks: true,
-        gfm: true,
+        gfm: true
     });
 
-
     const form =
-        document.getElementById(
-            "apex-form"
-        );
+        document.getElementById("apex-form");
 
     const input =
-        document.getElementById(
-            "apex-input"
-        );
+        document.getElementById("apex-input");
 
     const sendButton =
-        document.getElementById(
-            "apex-send"
-        );
+        document.getElementById("apex-send");
 
     const chat =
-        document.getElementById(
-            "apex-chat"
-        );
+        document.getElementById("apex-chat");
 
     const errorBox =
-        document.getElementById(
-            "apex-error"
-        );
+        document.getElementById("apex-error");
 
     const menuButton =
-        document.getElementById(
-            "apex-menu-button"
-        );
+        document.getElementById("apex-menu-button");
 
     const menuDropdown =
-        document.getElementById(
-            "apex-menu-dropdown"
-        );
+        document.getElementById("apex-menu-dropdown");
 
     const renameButton =
-        document.getElementById(
-            "apex-rename"
-        );
+        document.getElementById("apex-rename");
 
     const deleteButton =
-        document.getElementById(
-            "apex-delete"
-        );
+        document.getElementById("apex-delete");
 
     let busy = false;
-
-
-    /* ========================================================
-       CSRF
-       ======================================================== */
+    let renderScheduled = false;
+    let pendingMarkdownElement = null;
+    let pendingMarkdown = "";
 
     function getCookie(name) {
 
         const cookies =
             document.cookie.split(";");
 
-
-        for (
-            const cookie
-            of cookies
-        ) {
+        for (const cookie of cookies) {
 
             const parts =
                 cookie.trim().split("=");
 
             const key =
                 parts.shift();
-
 
             if (key === name) {
 
@@ -820,78 +850,130 @@
             }
         }
 
-
         return null;
     }
 
+    function normalizeMarkdown(markdown) {
 
-    /* ========================================================
-       MARKDOWN
-       ======================================================== */
+        let text =
+            String(markdown || "");
+
+        const boldMarkers =
+            (text.match(/\*\*/g) || []).length;
+
+        if (boldMarkers > 2) {
+
+            const suspiciousBoldRuns =
+                (
+                    text.match(
+                        /\*\*[^*\n]{1,80}\s\*\*/g
+                    ) || []
+                ).length;
+
+            if (suspiciousBoldRuns >= 2) {
+
+                text =
+                    text.replace(
+                        /\*\*([^*\n]+?)\s\*\*/g,
+                        "$1"
+                    );
+            }
+        }
+
+        text =
+            text.replace(
+                /(^|[\s([{])\*{2,}(?=\S)/g,
+                "$1"
+            );
+
+        text =
+            text.replace(
+                /(?<=\S)\*{2,}(?=\s|[.,!?;:)\]}]|$)/g,
+                ""
+            );
+
+        return text;
+    }
 
     function renderMarkdown(
         element,
         markdown
     ) {
 
+        const normalized =
+            normalizeMarkdown(markdown);
+
         element.innerHTML =
             DOMPurify.sanitize(
-                marked.parse(
-                    markdown || ""
-                )
+                marked.parse(normalized)
             );
 
-
-        addCopyButtons(
-            element
-        );
+        addCopyButtons(element);
     }
 
-
-    function addCopyButtons(
-        container
+    function scheduleMarkdownRender(
+        element,
+        markdown
     ) {
 
+        pendingMarkdownElement =
+            element;
+
+        pendingMarkdown =
+            markdown;
+
+        if (renderScheduled) {
+            return;
+        }
+
+        renderScheduled = true;
+
+        requestAnimationFrame(function () {
+
+            renderScheduled = false;
+
+            if (
+                pendingMarkdownElement
+            ) {
+
+                renderMarkdown(
+                    pendingMarkdownElement,
+                    pendingMarkdown
+                );
+            }
+        });
+    }
+
+    function addCopyButtons(container) {
+
         container
-            .querySelectorAll(
-                "pre"
-            )
+            .querySelectorAll("pre")
             .forEach(function (pre) {
 
                 if (
-                    pre.parentElement
-                        ?.classList
-                        .contains(
-                            "apex-code"
-                        )
+                    pre.parentElement &&
+                    pre.parentElement.classList.contains(
+                        "apex-code"
+                    )
                 ) {
                     return;
                 }
 
-
                 const wrapper =
-                    document.createElement(
-                        "div"
-                    );
+                    document.createElement("div");
 
                 wrapper.className =
                     "apex-code";
-
 
                 pre.parentNode.insertBefore(
                     wrapper,
                     pre
                 );
 
-                wrapper.appendChild(
-                    pre
-                );
-
+                wrapper.appendChild(pre);
 
                 const button =
-                    document.createElement(
-                        "button"
-                    );
+                    document.createElement("button");
 
                 button.className =
                     "apex-copy";
@@ -902,29 +984,23 @@
                 button.textContent =
                     "Copy";
 
-
                 button.addEventListener(
                     "click",
                     async function () {
 
                         const code =
-                            pre.querySelector(
-                                "code"
-                            );
+                            pre.querySelector("code");
 
                         const text =
                             code
                                 ? code.textContent
                                 : pre.textContent;
 
-
                         try {
 
                             await navigator
                                 .clipboard
-                                .writeText(
-                                    text
-                                );
+                                .writeText(text);
 
                             button.textContent =
                                 "✓ Copied";
@@ -953,18 +1029,12 @@
                     }
                 );
 
-
-                wrapper.appendChild(
-                    button
-                );
+                wrapper.appendChild(button);
             });
     }
 
-
     document
-        .querySelectorAll(
-            ".apex-markdown"
-        )
+        .querySelectorAll(".apex-markdown")
         .forEach(function (element) {
 
             renderMarkdown(
@@ -973,45 +1043,30 @@
             );
         });
 
-
-    /* ========================================================
-       UI
-       ======================================================== */
-
     function scrollBottom() {
 
-        requestAnimationFrame(
-            function () {
-                chat.scrollTop =
-                    chat.scrollHeight;
-            }
-        );
+        requestAnimationFrame(function () {
+
+            chat.scrollTop =
+                chat.scrollHeight;
+        });
     }
 
-
-    function showError(
-        message
-    ) {
+    function showError(message) {
 
         errorBox.textContent =
             message;
 
-        errorBox.classList.add(
-            "show"
-        );
+        errorBox.classList.add("show");
     }
-
 
     function clearError() {
 
         errorBox.textContent =
             "";
 
-        errorBox.classList.remove(
-            "show"
-        );
+        errorBox.classList.remove("show");
     }
-
 
     function resizeInput() {
 
@@ -1025,20 +1080,17 @@
             ) + "px";
     }
 
-
     input.addEventListener(
         "input",
         resizeInput
     );
-
 
     input.addEventListener(
         "keydown",
         function (event) {
 
             if (
-                event.key ===
-                    "Enter" &&
+                event.key === "Enter" &&
                 !event.shiftKey
             ) {
 
@@ -1048,11 +1100,6 @@
             }
         }
     );
-
-
-    /* ========================================================
-       ADD MESSAGE
-       ======================================================== */
 
     function addMessage(
         role,
@@ -1064,59 +1111,40 @@
                 "apex-empty"
             );
 
-
         if (empty) {
             empty.remove();
         }
 
-
         const wrapper =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
         wrapper.className =
             `apex-message ${role}`;
 
-
         const avatar =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
         avatar.className =
             "apex-avatar";
 
-
         const icon =
-            document.createElement(
-                "i"
-            );
+            document.createElement("i");
 
         icon.className =
             role === "user"
                 ? "fa-solid fa-user"
                 : "fa-solid fa-robot";
 
-
-        avatar.appendChild(
-            icon
-        );
-
+        avatar.appendChild(icon);
 
         const bubble =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
         bubble.className =
             "apex-bubble";
 
-
         const roleLabel =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
         roleLabel.className =
             "apex-role";
@@ -1126,20 +1154,13 @@
                 ? "You"
                 : "Apex";
 
-
         const text =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
         text.className =
             "apex-text";
 
-
-        if (
-            role ===
-            "assistant"
-        ) {
+        if (role === "assistant") {
 
             text.classList.add(
                 "apex-markdown"
@@ -1156,40 +1177,18 @@
                 content;
         }
 
+        bubble.appendChild(roleLabel);
+        bubble.appendChild(text);
 
-        bubble.appendChild(
-            roleLabel
-        );
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(bubble);
 
-        bubble.appendChild(
-            text
-        );
-
-
-        wrapper.appendChild(
-            avatar
-        );
-
-        wrapper.appendChild(
-            bubble
-        );
-
-
-        chat.appendChild(
-            wrapper
-        );
-
+        chat.appendChild(wrapper);
 
         scrollBottom();
 
-
         return text;
     }
-
-
-    /* ========================================================
-       STREAM
-       ======================================================== */
 
     async function streamResponse(
         streamUrl,
@@ -1200,19 +1199,14 @@
             await fetch(
                 streamUrl,
                 {
-                    method:
-                        "GET",
-
-                    credentials:
-                        "omit",
-
+                    method: "GET",
+                    credentials: "same-origin",
                     headers: {
                         "Accept":
-                            "text/event-stream",
-                    },
+                            "text/event-stream"
+                    }
                 }
             );
-
 
         if (!response.ok) {
 
@@ -1225,7 +1219,6 @@
             );
         }
 
-
         if (!response.body) {
 
             throw new Error(
@@ -1233,52 +1226,40 @@
             );
         }
 
-
         const reader =
             response.body.getReader();
 
         const decoder =
             new TextDecoder();
 
-
         let buffer = "";
-
         let fullResponse = "";
-
 
         while (true) {
 
             const {
                 value,
-                done,
+                done
             } =
                 await reader.read();
-
 
             if (done) {
                 break;
             }
 
-
             buffer +=
                 decoder.decode(
                     value,
                     {
-                        stream:
-                            true,
+                        stream: true
                     }
                 );
 
-
             const events =
-                buffer.split(
-                    "\n\n"
-                );
-
+                buffer.split("\n\n");
 
             buffer =
                 events.pop() || "";
-
 
             for (
                 const event
@@ -1286,10 +1267,7 @@
             ) {
 
                 const lines =
-                    event.split(
-                        "\n"
-                    );
-
+                    event.split("\n");
 
                 for (
                     const line
@@ -1297,76 +1275,59 @@
                 ) {
 
                     if (
-                        !line.startsWith(
-                            "data:"
-                        )
+                        !line.startsWith("data:")
                     ) {
                         continue;
                     }
-
 
                     const payload =
-                        line.slice(
-                            5
-                        ).trim();
-
+                        line.slice(5).trim();
 
                     if (
-                        payload ===
-                        "[DONE]"
+                        payload === "[DONE]"
                     ) {
                         continue;
                     }
 
-
                     let data;
-
 
                     try {
 
                         data =
-                            JSON.parse(
-                                payload
-                            );
+                            JSON.parse(payload);
 
                     } catch {
 
                         continue;
                     }
 
-
                     if (
-                        typeof
-                            data.content !==
+                        typeof data.content !==
                         "string"
                     ) {
                         continue;
                     }
 
-
                     fullResponse +=
                         data.content;
 
-
-                    renderMarkdown(
+                    scheduleMarkdownRender(
                         assistantElement,
                         fullResponse
                     );
-
 
                     scrollBottom();
                 }
             }
         }
 
+        renderMarkdown(
+            assistantElement,
+            fullResponse
+        );
 
         return fullResponse;
     }
-
-
-    /* ========================================================
-       COMPLETE JOB
-       ======================================================== */
 
     async function saveCompletedJob(
         jobId,
@@ -1374,40 +1335,29 @@
     ) {
 
         const csrf =
-            getCookie(
-                "csrftoken"
-            );
-
+            getCookie("csrftoken");
 
         const response =
             await fetch(
                 `/ai/job/${encodeURIComponent(jobId)}/complete/`,
                 {
-                    method:
-                        "POST",
-
-                    credentials:
-                        "same-origin",
-
+                    method: "POST",
+                    credentials: "same-origin",
                     headers: {
                         "Content-Type":
                             "application/x-www-form-urlencoded; charset=UTF-8",
-
                         "X-CSRFToken":
                             csrf,
-
                         "X-Requested-With":
-                            "XMLHttpRequest",
+                            "XMLHttpRequest"
                     },
-
                     body:
                         new URLSearchParams({
                             response:
-                                responseText,
-                        }),
+                                responseText
+                        })
                 }
             );
-
 
         if (!response.ok) {
 
@@ -1417,66 +1367,47 @@
         }
     }
 
-
-    /* ========================================================
-       SEND
-       ======================================================== */
-
     form.addEventListener(
         "submit",
         async function (event) {
 
             event.preventDefault();
 
-
             if (busy) {
                 return;
             }
 
-
             const message =
                 input.value.trim();
-
 
             if (!message) {
                 return;
             }
 
-
             busy = true;
 
             clearError();
 
-
-            input.disabled =
-                true;
-
-            sendButton.disabled =
-                true;
-
+            input.disabled = true;
+            sendButton.disabled = true;
 
             addMessage(
                 "user",
                 message
             );
 
-
             input.value = "";
 
             resizeInput();
 
-
             const thinking =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
             thinking.className =
                 "apex-thinking";
 
             thinking.id =
                 "apex-thinking";
-
 
             thinking.innerHTML = `
                 <div class="apex-thinking-avatar">
@@ -1493,54 +1424,38 @@
                 </div>
             `;
 
-
-            chat.appendChild(
-                thinking
-            );
+            chat.appendChild(thinking);
 
             scrollBottom();
-
 
             try {
 
                 const csrf =
-                    getCookie(
-                        "csrftoken"
-                    );
-
+                    getCookie("csrftoken");
 
                 const response =
                     await fetch(
                         form.action,
                         {
-                            method:
-                                "POST",
-
-                            credentials:
-                                "same-origin",
-
+                            method: "POST",
+                            credentials: "same-origin",
                             headers: {
                                 "Content-Type":
                                     "application/x-www-form-urlencoded; charset=UTF-8",
-
                                 "X-CSRFToken":
                                     csrf,
-
                                 "X-Requested-With":
-                                    "XMLHttpRequest",
+                                    "XMLHttpRequest"
                             },
-
                             body:
                                 new URLSearchParams({
-                                    message,
-                                }),
+                                    message
+                                })
                         }
                     );
 
-
                 const data =
                     await response.json();
-
 
                 if (
                     !response.ok ||
@@ -1553,9 +1468,7 @@
                     );
                 }
 
-
                 thinking.remove();
-
 
                 const assistantElement =
                     addMessage(
@@ -1563,19 +1476,16 @@
                         ""
                     );
 
-
                 const answer =
                     await streamResponse(
                         data.stream_url,
                         assistantElement
                     );
 
-
                 await saveCompletedJob(
                     data.job_id,
                     answer
                 );
-
 
             } catch (error) {
 
@@ -1584,19 +1494,14 @@
                     error
                 );
 
-
                 const thinkingElement =
                     document.getElementById(
                         "apex-thinking"
                     );
 
-
-                if (
-                    thinkingElement
-                ) {
+                if (thinkingElement) {
                     thinkingElement.remove();
                 }
-
 
                 showError(
                     error.message ||
@@ -1607,11 +1512,8 @@
 
                 busy = false;
 
-                input.disabled =
-                    false;
-
-                sendButton.disabled =
-                    false;
+                input.disabled = false;
+                sendButton.disabled = false;
 
                 input.focus();
 
@@ -1619,11 +1521,6 @@
             }
         }
     );
-
-
-    /* ========================================================
-       ROOM MENU
-       ======================================================== */
 
     menuButton.addEventListener(
         "click",
@@ -1637,7 +1534,6 @@
         }
     );
 
-
     document.addEventListener(
         "click",
         function () {
@@ -1648,11 +1544,6 @@
         }
     );
 
-
-    /* ========================================================
-       RENAME
-       ======================================================== */
-
     renameButton.addEventListener(
         "click",
         async function () {
@@ -1662,13 +1553,11 @@
                     "apex-room-name"
                 ).textContent.trim();
 
-
             const name =
                 prompt(
                     "Rename this room:",
                     currentName
                 );
-
 
             if (
                 name === null ||
@@ -1677,43 +1566,31 @@
                 return;
             }
 
-
             const csrf =
-                getCookie(
-                    "csrftoken"
-                );
-
+                getCookie("csrftoken");
 
             const response =
                 await fetch(
                     "{% url 'ai:rename_room' room.id %}",
                     {
-                        method:
-                            "POST",
-
-                        credentials:
-                            "same-origin",
-
+                        method: "POST",
+                        credentials: "same-origin",
                         headers: {
                             "Content-Type":
                                 "application/x-www-form-urlencoded; charset=UTF-8",
-
                             "X-CSRFToken":
-                                csrf,
+                                csrf
                         },
-
                         body:
                             new URLSearchParams({
                                 name:
-                                    name.trim(),
-                            }),
+                                    name.trim()
+                            })
                     }
                 );
 
-
             const data =
                 await response.json();
-
 
             if (
                 !response.ok ||
@@ -1728,22 +1605,15 @@
                 return;
             }
 
-
             document.getElementById(
                 "apex-room-name"
             ).textContent =
                 data.name;
 
-
             document.title =
                 `${data.name} — Apex`;
         }
     );
-
-
-    /* ========================================================
-       DELETE
-       ======================================================== */
 
     deleteButton.addEventListener(
         "click",
@@ -1754,7 +1624,6 @@
                     "apex-room-name"
                 ).textContent.trim();
 
-
             if (
                 !confirm(
                     `Delete "${name}"?\n\nThis will permanently delete the room, messages, and room memory.`
@@ -1763,34 +1632,24 @@
                 return;
             }
 
-
             const csrf =
-                getCookie(
-                    "csrftoken"
-                );
-
+                getCookie("csrftoken");
 
             const response =
                 await fetch(
                     "{% url 'ai:delete_room' room.id %}",
                     {
-                        method:
-                            "POST",
-
-                        credentials:
-                            "same-origin",
-
+                        method: "POST",
+                        credentials: "same-origin",
                         headers: {
                             "X-CSRFToken":
-                                csrf,
-                        },
+                                csrf
+                        }
                     }
                 );
 
-
             const data =
                 await response.json();
-
 
             if (
                 !response.ok ||
@@ -1805,15 +1664,12 @@
                 return;
             }
 
-
             window.location.href =
                 "{% url 'ai:rooms' %}";
         }
     );
 
-
     resizeInput();
-
     scrollBottom();
 
 })();

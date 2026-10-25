@@ -37,9 +37,29 @@ import sys
 import traceback
 
 from django.shortcuts import render
-
+from django.conf import settings
 from .models import ServerError
 
+def debug_https(request):
+    return JsonResponse({
+
+        "is_secure": request.is_secure(),
+
+        "scheme": request.scheme,
+
+        "x_forwarded_proto": request.META.get("HTTP_X_FORWARDED_PROTO"),
+
+        "forwarded": request.META.get("HTTP_FORWARDED"),
+
+        "host": request.get_host(),
+
+        "allauth_default_protocol": getattr(
+
+            settings, "ACCOUNT_DEFAULT_HTTP_PROTOCOL", None
+
+        ),
+
+    })
 
 def server_error(request, *args, **kwargs):
     """

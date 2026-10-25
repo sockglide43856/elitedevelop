@@ -7,13 +7,6 @@ from machina import MACHINA_MAIN_TEMPLATE_DIR
 
 
 # =============================================================================
-# Security / Proxy
-# =============================================================================
-
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-
-# =============================================================================
 # Paths / Environment
 # =============================================================================
 
@@ -318,11 +311,13 @@ LOGGING = {
 # =============================================================================
 
 MIDDLEWARE = [
+
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "elitedevelop.middleware.OldDomainRedirectMiddleware",
+    "elitedevelop.middleware.OrganizationIdentityMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
