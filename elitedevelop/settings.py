@@ -196,7 +196,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
-
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
 # =============================================================================
 # MFA / WebAuthn
