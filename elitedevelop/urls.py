@@ -1,22 +1,17 @@
 from django.contrib import admin
 from django.urls import path, include
-from elitedevelop.views import HomeView, UserInfoView, register, login_view
+from elitedevelop.views import UserInfoView, register, login_view
 from . import views
 from machina import urls as machina_urls
-from django.views.generic import RedirectView, TemplateView
-from django.conf.urls.static import static
+from django.views.generic import TemplateView
 from django.conf import settings
 from django.contrib.auth import views as auth_views
-
+import django.views.static
 
 handler404 = "elitedevelop.views.page_not_found"
 handler403 = "elitedevelop.views.permission_denied"
 handler500 = "elitedevelop.views.server_error"
 
-# UNUSED URLS #
-#path('g/', include('gaming.urls')),
-#path('gaming/', include('gaming.urls')),
-###############
 
 urlpatterns = [
     path('stats/', views.stats, name='stats'),
@@ -32,7 +27,6 @@ urlpatterns = [
     path('accounts/login/', login_view, name='login'),
     path('accounts/register/', register, name='register'),
     path('accounts/logout/', views.logout.as_view(), name="logout"),
-    path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('allauth.urls')),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('qr/', include('qr_generator.urls')),
@@ -63,4 +57,8 @@ urlpatterns = [
     path('api-key/generate/', views.generate_api_key, name='generate_api_key'),
     path('500/', lambda r: 1/0),
     path('', views.home, name='home'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+urlpatterns += [
+    path(f"{settings.MEDIA_URL.lstrip('/')}<path:path>", django.views.static.serve, {'document_root': settings.MEDIA_ROOT}),
+]
