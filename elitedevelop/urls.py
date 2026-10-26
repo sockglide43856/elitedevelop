@@ -4,7 +4,8 @@ from elitedevelop.views import HomeView, UserInfoView, register, login_view
 from . import views
 from machina import urls as machina_urls
 from django.views.generic import RedirectView, TemplateView
-from django.templatetags.static import static
+from django.conf.urls.static import static
+from django.conf import settings
 from django.contrib.auth import views as auth_views
 
 
@@ -62,4 +63,4 @@ urlpatterns = [
     path('api-key/generate/', views.generate_api_key, name='generate_api_key'),
     path('500/', lambda r: 1/0),
     path('', views.home, name='home'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
