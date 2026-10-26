@@ -224,25 +224,58 @@ def permission_denied(request, exception):
 @login_required
 def organization_dashboard(request):
     memberships = request.user.organization_memberships.select_related('organization').all()
-    user_key = request.user.oauth_keys.first()
+    api_keys = request.user.oauth_keys.all().order_by('-created_at')
 
-    # Calculate creation eligibility based on owned orgs
+    # Calculate organization creation limit
     owned_orgs = OrganizationMembership.objects.filter(user=request.user, role="owner")
     owned_count = owned_orgs.count()
     is_any_verified = owned_orgs.filter(organization__verified=True).exists()
 
-    max_allowed = 5 if is_any_verified else 1
-    can_create_org = owned_count < max_allowed
+    max_allowed_orgs = 5 if is_any_verified else 1
+    can_create_org = owned_count < max_allowed_orgs
+
+    # API key limit (max 5)
+    key_count = api_keys.count()
+    can_create_key = key_count < 5
+
+    active_organization = getattr(getattr(request.user, 'profile', None), 'organization', None)
+
+    # Retrieve newly generated secret from session once, then clear it
+    new_secret_info = request.session.pop('new_api_secret', None)
 
     context = {
         'memberships': memberships,
-        'user_key': user_key,
+        'api_keys': api_keys,
         'can_create_org': can_create_org,
         'owned_count': owned_count,
-        'max_allowed': max_allowed,
-        'active_organization': getattr(request.user.profile, 'organization', None),
+        'max_allowed_orgs': max_allowed_orgs,
+        'can_create_key': can_create_key,
+        'key_count': key_count,
+        'active_organization': active_organization,
+        'new_secret_info': new_secret_info,
     }
     return render(request, 'organization_dashboard.html', context)
+
+
+@login_required
+def switch_organization(request, org_id):
+    if request.method == "POST":
+        membership = OrganizationMembership.objects.filter(
+            user=request.user,
+            organization_id=org_id
+        ).select_related('organization').first()
+
+        if not membership:
+            messages.error(request, "You do not have access to switch to this organization.")
+            return redirect('organization_dashboard')
+
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile.organization = membership.organization
+        profile.is_organization_account = True
+        profile.save()
+
+        messages.success(request, f"Switched active organization to '{membership.organization.name}'.")
+    return redirect('organization_dashboard')
 
 
 @login_required
@@ -252,7 +285,7 @@ def create_organization(request):
         description = request.POST.get("description", "").strip()
         website = request.POST.get("website", "").strip()
 
-        # Check limit
+        # Check creation limit
         owned_orgs = OrganizationMembership.objects.filter(user=request.user, role="owner")
         owned_count = owned_orgs.count()
         is_any_verified = owned_orgs.filter(organization__verified=True).exists()
@@ -290,7 +323,7 @@ def create_organization(request):
             role="owner"
         )
 
-        # LINK TO USER PROFILE: Set as current organization
+        # Set newly created organization as active profile org
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         profile.organization = org
         profile.is_organization_account = True
@@ -305,17 +338,37 @@ def create_organization(request):
 @login_required
 def generate_api_key(request):
     if request.method == "POST":
-        # Check if user already has an API Key
-        if request.user.oauth_keys.exists():
-            messages.error(request, "You already have an active OAuth2 API Key.")
+        # Check API key limit (max 5)
+        if request.user.oauth_keys.count() >= 5:
+            messages.error(request, "You have reached the maximum limit of 5 API keys.")
             return redirect('organization_dashboard')
 
-        key_name = request.POST.get("key_name", "Primary API Key")
+        key_name = request.POST.get("key_name", "").strip() or "API Key"
         key = OAuth2Key.objects.create(user=request.user, name=key_name)
 
-        messages.success(request, f"API Key '{key.name}' generated successfully.")
+        # Store secret in session temporarily so it is revealed once upon creation
+        request.session['new_api_secret'] = {
+            'name': key.name,
+            'client_id': key.client_id,
+            'client_secret': key.client_secret,
+        }
+
+        messages.success(request, f"API Key '{key.name}' generated successfully. Please store your secret key securely.")
         return redirect('organization_dashboard')
 
+    return redirect('organization_dashboard')
+
+
+@login_required
+def revoke_api_key(request, key_id):
+    if request.method == "POST":
+        key = OAuth2Key.objects.filter(id=key_id, user=request.user).first()
+        if key:
+            key_name = key.name
+            key.delete()
+            messages.success(request, f"API Key '{key_name}' has been revoked.")
+        else:
+            messages.error(request, "API Key not found or permission denied.")
     return redirect('organization_dashboard')
 
 class logout(LogoutView):
@@ -390,16 +443,8 @@ def updateStreak(*args, **kwargs):
     request.liuser.update_streak()
 '''
 
-import os
 import time
 import platform
-import psutil
-
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-
-# Keep this if your models are imported elsewhere already
-# from .models import PrivateMessage, AIMessage, FormConfiguration, UserProfile, CodeSnippet
 
 
 
