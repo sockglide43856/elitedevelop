@@ -2,842 +2,324 @@
 {% load static %}
 
 {% block head %}
-
 <style>
-/* =========================================================
-   ELITEDEVELOP — PREMIUM HOMEPAGE
-   ========================================================= */
 :root {
-    --ed-bg: #070a12;
-    --ed-surface: rgba(15, 20, 32, 0.72);
-    --ed-surface-strong: rgba(18, 24, 39, 0.92);
-    --ed-border: rgba(255, 255, 255, 0.085);
-    --ed-border-hover: rgba(120, 170, 255, 0.28);
-    --ed-text: #f5f7fb;
-    --ed-muted: #8d98ab;
-    --ed-dim: #626d80;
-    --ed-blue: #5b8cff;
-    --ed-cyan: #42d9ff;
-    --ed-purple: #9b7cff;
-    --ed-green: #49d99a;
-    --ed-radius: 22px;
-    --ed-shadow:
-        0 24px 80px rgba(0, 0, 0, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    --ed-bg: #090a0f;
+    --ed-card-bg: #11131a;
+    --ed-border: #1f2430;
+    --ed-border-hover: #333a4d;
+    --ed-text: #f0f2f5;
+    --ed-muted: #8c94a6;
+    --ed-accent: #3b82f6;
+    --ed-accent-hover: #2563eb;
+    --ed-radius: 12px;
 }
-/* ---------- PAGE ---------- */
-.ed-home {
-    position: relative;
+
+/* Base resets & Container */
+.ed-page {
     min-height: 100vh;
+    background-color: var(--ed-bg);
+    color: var(--ed-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.ed-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* News Banner Ticker */
+.ed-news-wrapper {
+    background-color: #121621;
+    border-bottom: 1px solid var(--ed-border);
+    padding: 10px 0;
+    font-size: 0.875rem;
+}
+
+.ed-news-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ed-news-badge {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--ed-accent);
+    font-size: 0.725rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.ed-news-text {
+    color: var(--ed-muted);
+    margin: 0;
+    white-space: nowrap;
     overflow: hidden;
-    background:
-        radial-gradient(circle at 50% -10%, rgba(78, 125, 255, 0.12), transparent 34%),
-        var(--ed-bg);
+    text-overflow: ellipsis;
+}
+
+.ed-news-text b {
     color: var(--ed-text);
 }
-/* ---------- AMBIENT BACKGROUND ---------- */
-.ed-home::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-    background-size: 52px 52px;
-    mask-image: linear-gradient(to bottom, black, transparent 75%);
-    opacity: .35;
-}
-.ed-orb {
-    position: absolute;
-    width: 480px;
-    height: 480px;
-    border-radius: 50%;
-    filter: blur(90px);
-    pointer-events: none;
-    opacity: .16;
-    animation: edFloat 12s ease-in-out infinite;
-}
-.ed-orb.one {
-    top: -220px;
-    left: -180px;
-    background: #426dff;
-}
-.ed-orb.two {
-    top: 320px;
-    right: -240px;
-    background: #8b4dff;
-    animation-delay: -4s;
-}
-.ed-orb.three {
-    top: 850px;
-    left: 30%;
-    background: #16c9ff;
-    animation-delay: -8s;
-}
-@keyframes edFloat {
-    0%, 100% {
-        transform: translate3d(0, 0, 0) scale(1);
-    }
-    50% {
-        transform: translate3d(0, 25px, 0) scale(1.06);
-    }
-}
-/* ---------- MAIN ---------- */
-.ed-container {
-    position: relative;
-    z-index: 2;
-    width: min(1180px, calc(100% - 36px));
-    margin: 0 auto;
-}
-/* ---------- HERO ---------- */
+
+/* Hero Section */
 .ed-hero {
-    position: relative;
-    padding: 105px 0 70px;
+    padding: 96px 0 64px;
     text-align: center;
 }
-.ed-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    padding: 8px 13px;
-    border: 1px solid rgba(91, 140, 255, .2);
-    border-radius: 999px;
-    background: rgba(91, 140, 255, .065);
-    color: #a9c2ff;
-    font-size: .78rem;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    animation: edAppear .7s ease both;
-}
-.ed-eyebrow-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--ed-green);
-    box-shadow: 0 0 14px rgba(73, 217, 154, .75);
-    animation: edPulse 2s ease-in-out infinite;
-}
-@keyframes edPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: .8;
-    }
-    50% {
-        transform: scale(1.35);
-        opacity: 1;
-    }
-}
+
 .ed-hero h1 {
-    max-width: 850px;
-    margin: 24px auto 0;
-    font-size: clamp(3rem, 8vw, 6.4rem);
-    line-height: .96;
-    letter-spacing: -.065em;
-    font-weight: 850;
-    animation: edHeroIn .85s cubic-bezier(.2,.8,.2,1) both;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin: 0 0 20px 0;
+    color: var(--ed-text);
 }
-.ed-gradient-text {
-    background: linear-gradient(
-        110deg,
-        #ffffff 15%,
-        #a9c7ff 42%,
-        #72dfff 66%,
-        #b39cff 90%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    background-size: 180% auto;
-    animation: edGradient 7s ease-in-out infinite alternate;
-}
-@keyframes edGradient {
-    from {
-        background-position: 0% center;
-    }
-    to {
-        background-position: 100% center;
-    }
-}
+
 .ed-hero p {
-    max-width: 670px;
-    margin: 26px auto 0;
+    font-size: 1.125rem;
     color: var(--ed-muted);
-    font-size: clamp(1rem, 2vw, 1.2rem);
-    line-height: 1.75;
-    animation: edAppear 1s .15s ease both;
+    max-width: 580px;
+    margin: 0 auto 36px;
+    line-height: 1.6;
 }
+
+/* Actions & Buttons */
 .ed-actions {
     display: flex;
     justify-content: center;
+    gap: 12px;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 34px;
-    animation: edAppear 1s .25s ease both;
 }
-.ed-button {
+
+.ed-btn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 9px;
-    min-height: 48px;
-    padding: 0 21px;
-    border-radius: 13px;
-    border: 1px solid var(--ed-border);
+    gap: 8px;
+    height: 44px;
+    padding: 0 20px;
+    border-radius: var(--ed-radius);
+    font-size: 0.9375rem;
+    font-weight: 600;
     text-decoration: none;
-    font-weight: 700;
-    font-size: .93rem;
-    transition:
-        transform .22s ease,
-        border-color .22s ease,
-        box-shadow .22s ease,
-        background .22s ease;
+    transition: all 0.15s ease;
 }
-.ed-button:hover {
-    transform: translateY(-3px);
+
+.ed-btn-primary {
+    background-color: var(--ed-accent);
+    color: #ffffff;
+    border: 1px solid transparent;
 }
-.ed-button.primary {
-    color: white;
-    border-color: transparent;
-    background: linear-gradient(135deg, #527fff, #765cff);
-    box-shadow: 0 12px 35px rgba(83, 113, 255, .25);
+
+.ed-btn-primary:hover {
+    background-color: var(--ed-accent-hover);
 }
-.ed-button.primary:hover {
-    box-shadow: 0 18px 45px rgba(83, 113, 255, .38);
-}
-.ed-button.secondary {
+
+.ed-btn-secondary {
+    background-color: var(--ed-card-bg);
     color: var(--ed-text);
-    background: rgba(255,255,255,.045);
-}
-.ed-button.secondary:hover {
-    border-color: var(--ed-border-hover);
-    background: rgba(255,255,255,.075);
-}
-/* ---------- HERO PRODUCT CARD ---------- */
-.ed-product {
-    position: relative;
-    margin: 70px auto 0;
-    max-width: 1000px;
     border: 1px solid var(--ed-border);
-    border-radius: 26px;
-    background:
-        linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
-        var(--ed-surface);
-    box-shadow: var(--ed-shadow);
-    backdrop-filter: blur(24px);
-    overflow: hidden;
-    text-align: left;
-    animation: edProductIn 1s .35s cubic-bezier(.2,.8,.2,1) both;
 }
-@keyframes edProductIn {
-    from {
-        opacity: 0;
-        transform: translateY(35px) scale(.97);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-.ed-product-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 16px 19px;
-    border-bottom: 1px solid var(--ed-border);
-}
-.ed-product-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: .85rem;
-    font-weight: 750;
-}
-.ed-product-logo {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    object-fit: contain;
-}
-.ed-window-dots {
-    display: flex;
-    gap: 6px;
-}
-.ed-window-dots span {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.16);
-}
-.ed-product-body {
-    display: grid;
-    grid-template-columns: 210px 1fr;
-    min-height: 310px;
-}
-.ed-sidebar {
-    padding: 18px;
-    border-right: 1px solid var(--ed-border);
-    background: rgba(0,0,0,.1);
-}
-.ed-side-label {
-    margin: 8px 9px 12px;
-    color: var(--ed-dim);
-    font-size: .65rem;
-    font-weight: 800;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-}
-.ed-side-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 11px;
-    margin-bottom: 4px;
-    border-radius: 10px;
-    color: #8792a7;
-    font-size: .82rem;
-}
-.ed-side-item.active {
-    color: #dce6ff;
-    background: rgba(91,140,255,.12);
-}
-.ed-side-item i {
-    width: 17px;
-    text-align: center;
-}
-.ed-workspace {
-    padding: 27px;
-}
-.ed-workspace-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 20px;
-}
-.ed-workspace-heading h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    letter-spacing: -.025em;
-}
-.ed-workspace-heading p {
-    margin: 6px 0 0;
-    color: var(--ed-dim);
-    font-size: .8rem;
-}
-.ed-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 9px;
-    border-radius: 999px;
-    background: rgba(73,217,154,.08);
-    color: #76e4b3;
-    font-size: .68rem;
-    font-weight: 750;
-}
-.ed-status::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--ed-green);
-    box-shadow: 0 0 10px rgba(73,217,154,.65);
-}
-.ed-work-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 25px;
-}
-.ed-mini {
-    padding: 17px;
-    min-height: 105px;
-    border: 1px solid var(--ed-border);
-    border-radius: 15px;
-    background: rgba(255,255,255,.025);
-    transition: transform .25s ease, background .25s ease, border-color .25s ease;
-}
-.ed-mini:hover {
-    transform: translateY(-4px);
-    background: rgba(255,255,255,.045);
+
+.ed-btn-secondary:hover {
     border-color: var(--ed-border-hover);
+    background-color: #171a24;
 }
-.ed-mini i {
-    font-size: .9rem;
-    color: #82a8ff;
-}
-.ed-mini strong {
-    display: block;
-    margin-top: 12px;
-    font-size: .84rem;
-}
-.ed-mini span {
-    display: block;
-    margin-top: 4px;
-    color: var(--ed-dim);
-    font-size: .7rem;
-}
-/* ---------- SECTION ---------- */
+
+/* Grid & Section Headers */
 .ed-section {
-    padding: 70px 0;
+    padding: 48px 0 96px;
 }
-.ed-section-heading {
-    max-width: 650px;
-    margin-bottom: 28px;
+
+.ed-section-header {
+    margin-bottom: 32px;
 }
-.ed-section-heading .label {
-    color: #7fa4ff;
-    font-size: .72rem;
-    font-weight: 800;
-    letter-spacing: .12em;
-    text-transform: uppercase;
+
+.ed-section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px 0;
 }
-.ed-section-heading h2 {
-    margin: 10px 0 0;
-    font-size: clamp(2rem, 4vw, 3rem);
-    line-height: 1.05;
-    letter-spacing: -.045em;
-}
-.ed-section-heading p {
-    margin: 13px 0 0;
+
+.ed-section-header p {
     color: var(--ed-muted);
-    line-height: 1.7;
+    margin: 0;
+    font-size: 0.95rem;
 }
-/* ---------- FEATURES ---------- */
-.ed-features {
+
+/* Tool Cards */
+.ed-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 13px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
 }
-.ed-feature {
-    position: relative;
-    min-height: 190px;
-    padding: 23px;
+
+.ed-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background-color: var(--ed-card-bg);
     border: 1px solid var(--ed-border);
     border-radius: var(--ed-radius);
-    background: rgba(255,255,255,.025);
-    overflow: hidden;
-    transition:
-        transform .3s cubic-bezier(.2,.8,.2,1),
-        border-color .3s ease,
-        background .3s ease,
-        box-shadow .3s ease;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease;
 }
-.ed-feature::before {
-    content: "";
-    position: absolute;
-    width: 170px;
-    height: 170px;
-    top: -100px;
-    right: -100px;
-    border-radius: 50%;
-    background: var(--feature-glow, #527fff);
-    filter: blur(60px);
-    opacity: 0;
-    transition: opacity .35s ease;
-}
-.ed-feature:hover {
-    transform: translateY(-7px);
+
+.ed-card:hover {
     border-color: var(--ed-border-hover);
-    background: rgba(255,255,255,.045);
-    box-shadow: 0 20px 55px rgba(0,0,0,.22);
+    transform: translateY(-2px);
 }
-.ed-feature:hover::before {
-    opacity: .22;
+
+.ed-card-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    color: var(--ed-text);
+    font-size: 1.1rem;
 }
-.ed-feature-icon {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    place-items: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: rgba(91,140,255,.11);
-    color: #8db0ff;
+
+.ed-card h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: var(--ed-text);
 }
-.ed-feature h3 {
-    position: relative;
-    z-index: 1;
-    margin: 18px 0 7px;
-    font-size: 1rem;
-}
-.ed-feature p {
-    position: relative;
-    z-index: 1;
-    margin: 0;
+
+.ed-card p {
+    font-size: 0.875rem;
     color: var(--ed-muted);
-    font-size: .82rem;
-    line-height: 1.6;
-}
-/* ---------- CALL TO ACTION ---------- */
-.ed-cta {
-    position: relative;
-    padding: 65px 30px;
-    margin: 30px 0 80px;
-    text-align: center;
-    border: 1px solid var(--ed-border);
-    border-radius: 28px;
-    overflow: hidden;
-    background:
-        radial-gradient(circle at 50% 0%, rgba(91,140,255,.16), transparent 55%),
-        rgba(255,255,255,.025);
-}
-.ed-cta::after {
-    content: "";
-    position: absolute;
-    width: 500px;
-    height: 1px;
-    left: 50%;
-    top: 0;
-    transform: translateX(-50%);
-    background: linear-gradient(90deg, transparent, rgba(100,160,255,.65), transparent);
-    animation: edScan 4s ease-in-out infinite;
-}
-@keyframes edScan {
-    0%, 100% {
-        opacity: .25;
-        transform: translateX(-50%) scaleX(.5);
-    }
-    50% {
-        opacity: 1;
-        transform: translateX(-50%) scaleX(1);
-    }
-}
-.ed-cta h2 {
-    position: relative;
-    z-index: 1;
     margin: 0;
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    letter-spacing: -.045em;
+    line-height: 1.5;
 }
-.ed-cta p {
-    position: relative;
-    z-index: 1;
-    max-width: 580px;
-    margin: 14px auto 25px;
-    color: var(--ed-muted);
-    line-height: 1.7;
-}
-/* ---------- REVEAL ---------- */
-.ed-reveal {
-    opacity: 0;
-    transform: translateY(25px);
-    transition:
-        opacity .7s ease,
-        transform .7s cubic-bezier(.2,.8,.2,1);
-}
-.ed-reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-@keyframes edAppear {
-    from {
-        opacity: 0;
-        transform: translateY(14px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-@keyframes edHeroIn {
-    from {
-        opacity: 0;
-        transform: translateY(25px) scale(.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 900px) {
-    .ed-product-body {
-        grid-template-columns: 1fr;
-    }
-    .ed-sidebar {
-        display: none;
-    }
-    .ed-features {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-@media (max-width: 650px) {
-    .ed-container {
-        width: min(100% - 24px, 1180px);
-    }
+
+@media (max-width: 640px) {
     .ed-hero {
-        padding: 75px 0 45px;
-    }
-    .ed-hero h1 {
-        font-size: clamp(2.7rem, 15vw, 4.5rem);
+        padding: 64px 0 32px;
     }
     .ed-actions {
         flex-direction: column;
     }
-    .ed-button {
+    .ed-btn {
         width: 100%;
-    }
-    .ed-product {
-        margin-top: 45px;
-        border-radius: 19px;
-    }
-    .ed-workspace {
-        padding: 20px;
-    }
-    .ed-work-grid {
-        grid-template-columns: 1fr;
-    }
-    .ed-features {
-        grid-template-columns: 1fr;
-    }
-    .ed-section {
-        padding: 45px 0;
-    }
-    .ed-cta {
-        margin-bottom: 45px;
-        padding: 45px 20px;
-    }
-}
-/* ---------- REDUCED MOTION ---------- */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
-    }
-    .ed-reveal {
-        opacity: 1;
-        transform: none;
+        justify-content: center;
     }
 }
 </style>
-
 {% endblock %}
 
 {% block content %}
-<div class="ed-banner">
-{% for new in news %}
-    <p><b>{{ new.title }} </b> - {{ new.content }}</p>
-{% empty %}
-    <p>No news!</p>
-{% endfor %}
-</div>
-<div class="ed-home">
-<div class="ed-orb one"></div>
-<div class="ed-orb two"></div>
-<div class="ed-orb three"></div>
-<main class="ed-container">
-    <!-- HERO -->
-    <section class="ed-hero">
-        {% if user.is_authenticated %}
-            <h1>
-                Welcome back,<br>
-                <span class="ed-gradient-text">{{ user.username }}</span>
-            </h1>
-            <p>
-                Your workspace for building, creating, experimenting,
-                and managing everything across EliteDevelop.
-            </p>
-        {% else %}
-            <h1>
-                Build things.<br>
-                <span class="ed-gradient-text">Make them yours.</span>
-            </h1>
-            <p>
-                EliteDevelop brings useful tools, creative projects,
-                and your digital workspace together in one place.
-            </p>
-        {% endif %}
-        <div class="ed-actions">
-            {% if user.is_authenticated %}
-                <a href="{% url 'chat-page' %}" class="ed-button primary">
-                    <i class="fa-solid fa-comments"></i>
-                    Open Chat
-                </a>
-                <a href="/qr/" class="ed-button secondary">
-                    <i class="fa-solid fa-qrcode"></i>
-                    QR Studio
-                </a>
-            {% else %}
-                <a href="{% url 'login' %}" class="ed-button primary">
-                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                    Get Started
-                </a>
-                <a href="#features" class="ed-button secondary">
-                    Explore EliteDevelop
-                    <i class="fa-solid fa-arrow-down"></i>
-                </a>
-            {% endif %}
-    </section>
-    <!-- FEATURES -->
-    <section class="ed-section" id="features">
-        <div class="ed-section-heading ed-reveal">
-            <div class="label">Everything in one place</div>
-            <h2>
-                Tools that stay<br>
-                out of your way.
-            </h2>
-            <p>
-                Open what you need, use it, and get back to what
-                you were actually trying to do.
-            </p>
+<div class="ed-page">
+    {% if news %}
+    <div class="ed-news-wrapper">
+        <div class="ed-container">
+            <div class="ed-news-content">
+                <span class="ed-news-badge">Updates</span>
+                <div class="ed-news-text">
+                    {% for new in news %}
+                        <b>{{ new.title }}</b> — {{ new.content }}<br>{% if not forloop.last %} &nbsp;|&nbsp; {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
         </div>
-        <div class="ed-features">
-            <a
-                href="{% url 'chat-page' %}"
-                class="ed-feature ed-reveal"
-                style="--feature-glow:#527fff;"
-            >
-                <div class="ed-feature-icon">
-                    <i class="fa-solid fa-comments"></i>
-                </div>
-                <h3>Chat</h3>
-                <p>
-                    A simple place to talk, collaborate, and get things done.
-                </p>
-            </a>
-            <a
-                href="/qr/"
-                class="ed-feature ed-reveal"
-                style="--feature-glow:#42d9ff;"
-            >
-                <div class="ed-feature-icon">
-                    <i class="fa-solid fa-qrcode"></i>
-                </div>
-                <h3>QR Studio</h3>
-                <p>
-                    Quickly create and work with QR codes without the clutter.
-                </p>
-            </a>
-            <a
-                href="{% url 'py' %}"
-                class="ed-feature ed-reveal"
-                style="--feature-glow:#9b7cff;"
-            >
-                <div class="ed-feature-icon">
-                    <i class="fa-brands fa-python"></i>
-                </div>
-                <h3>Python</h3>
-                <p>
-                    Experiment with Python projects directly from EliteDevelop.
-                </p>
-            </a>
-            <a
-                href="/proxy/"
-                class="ed-feature ed-reveal"
-                style="--feature-glow:#49d99a;"
-            >
-                <div class="ed-feature-icon">
-                    <i class="fa-solid fa-globe"></i>
-                </div>
-                <h3>Proxy</h3>
-                <p>
-                    A straightforward gateway for the tools and services you use.
-                </p>
-            </a>
-            <a
-                href="/forums/"
-                class="ed-feature ed-reveal"
-                style="--feature-glow:#ff8b5c;"
-            >
-                <div class="ed-feature-icon">
-                    <i class="fa-solid fa-comments"></i>
-                </div>
-                <h3>Forums</h3>
-                <p>
-                    Share ideas, ask questions, and take part in the community.
-                </p>
-            </a>
-            <a
-                href="{% url 'view_users' %}"
-                class="ed-feature ed-reveal"
-                style="--feature-glow:#e477ff;"
-            >
-                <div class="ed-feature-icon">
-                    <i class="fa-solid fa-users"></i>
-                </div>
-                <h3>People</h3>
-                <p>
-                    Discover the people and profiles that make up EliteDevelop.
-                </p>
-            </a>
-            <a
-                href="{% url 'settings-hub' %}"
-                class="ed-feature ed-reveal"
-                style="--feature-glow:#7fa4ff;"
-            >
-                <div class="ed-feature-icon">
-                    <i class="fa-solid fa-sliders"></i>
-                </div>
-                <h3>Settings</h3>
-                <p>
-                    Personalize your account and control your preferences.
-                </p>
-            </a>
-            <a
-                href="{% url 'stats' %}"
-                class="ed-feature ed-reveal"
-                style="--feature-glow:#ffd166;"
-            >
-                <div class="ed-feature-icon">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
-                <h3>Stats</h3>
-                <p>
-                    Keep an eye on your activity and your EliteDevelop usage.
-                </p>
-            </a>
-        </div>
-    </section>
-</main>
-</div>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    /* Scroll reveal */
-    const revealItems = document.querySelectorAll(".ed-reveal");
-    if ("IntersectionObserver" in window) {
-        const observer = new IntersectionObserver(
-            entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add("visible");
-                        observer.unobserve(entry.target);
-                    }
-                });
-            },
-            {
-                threshold: 0.12
-            }
-        );
-        revealItems.forEach((item, index) => {
-            item.style.transitionDelay = `${Math.min(index * 35, 180)}ms`;
-            observer.observe(item);
-        });
-    } else {
-        revealItems.forEach(item => item.classList.add("visible"));
-    }
-    /* Gentle mouse movement on the product preview */
-    const product = document.querySelector(".ed-product");
-    if (product && window.matchMedia("(pointer:fine)").matches) {
-        product.addEventListener("mousemove", event => {
-            const rect = product.getBoundingClientRect();
-            const x = (event.clientX - rect.left) / rect.width - .5;
-            const y = (event.clientY - rect.top) / rect.height - .5;
-            product.style.transform =
-                `perspective(1200px) rotateX(${y * -1.2}deg) rotateY(${x * 1.2}deg)`;
-        });
-        product.addEventListener("mouseleave", () => {
-            product.style.transform = "";
-        });
-    }
-});
-</script>
+    </div>
+    {% endif %}
 
+    <main class="ed-container">
+        <!-- HERO -->
+        <section class="ed-hero">
+            {% if user.is_authenticated %}
+                <h1>Welcome back, {{ user.username }}</h1>
+                <p>Jump directly back into your chats, developer tools, or workspace settings.</p>
+                <div class="ed-actions">
+                    <a href="/collabs" class="ed-btn ed-btn-primary">
+                        <i class="fa-solid fa-comments"></i> Collabs
+                    </a>
+                    <a href="/org" class="ed-btn ed-btn-secondary">
+                        <i class="fa-solid fa-building"></i> Organizations
+                    </a>
+                </div>
+            {% else %}
+                <h1>EliteDevelop Workspace</h1>
+                <p>An integrated platform for communication, developer utilities, and user management.</p>
+                <div class="ed-actions">
+                    <a href="{% url 'login' %}" class="ed-btn ed-btn-primary">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+                    </a>
+                    <a href="{% url 'register' %}" class="ed-btn ed-btn-secondary">
+                        Create Account
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- TOOLS GRID -->
+        <section class="ed-section">
+            <div class="ed-section-header">
+                <h2>Available Utilities</h2>
+                <p>Select a tool below to access your workspace features.</p>
+            </div>
+
+            <div class="ed-grid">
+                <a href="/chat" class="ed-card">
+                    <div class="ed-card-icon"><i class="fa-solid fa-comments"></i></div>
+                    <h3>Public Chat</h3>
+                    <p>Chat with others</p>
+                </a>
+                <a href="/chat/private/home" class="ed-card">
+                    <div class="ed-card-icon"><i class="fa-solid fa-comments"></i></div>
+                    <h3>Private Chats</h3>
+                    <p>Private chat rooms</p>
+                </a>
+
+                <a href="/qr" class="ed-card">
+                    <div class="ed-card-icon"><i class="fa-solid fa-qrcode"></i></div>
+                    <h3>QR Studio</h3>
+                    <p>Generate, edit, and manage custom QR codes.</p>
+                </a>
+
+                <a href="/py" class="ed-card">
+                    <div class="ed-card-icon"><i class="fa-brands fa-python"></i></div>
+                    <h3>Python Sandbox</h3>
+                    <p>Run and test scripts within the integrated environment.</p>
+                </a>
+
+                <a href="/forums" class="ed-card">
+                    <div class="ed-card-icon"><i class="fa-solid fa-users-rectangle"></i></div>
+                    <h3>Forums</h3>
+                    <p>Community discussions, topics, and support boards.</p>
+                </a>
+
+                <a href="/users" class="ed-card">
+                    <div class="ed-card-icon"><i class="fa-solid fa-users"></i></div>
+                    <h3>Users</h3>
+                    <p>Browse member profiles and active platform accounts.</p>
+                </a>
+
+                <a href="/stats" class="ed-card">
+                    <div class="ed-card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3>Analytics</h3>
+                    <p>Platform information</p>
+                </a>
+
+                <a href="/settings" class="ed-card">
+                    <div class="ed-card-icon"><i class="fa-solid fa-sliders"></i></div>
+                    <h3>Settings</h3>
+                    <p>Manage security, account details, and preferences.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+</div>
 {% endblock %}
