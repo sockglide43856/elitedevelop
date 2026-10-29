@@ -18,7 +18,7 @@ from oauth2_provider.views.generic import ProtectedResourceView
 from chat.models import ChatMessage, PrivateMessage
 from .forms import SignUpForm, EmailLoginForm, ProfileForm
 from mfa.helpers import has_mfa
-from .models import CodeSnippet, UserProfile
+from .models import CodeSnippet, UserProfile, news
 from django.shortcuts import get_object_or_404
 from forms.models import FormConfiguration
 from .models import UserBlock, UserReport
@@ -530,8 +530,10 @@ def track_time_ping(request):
 def stats(request):
     return render(request, 'stats.html')
 def home(request):
-    # Your home view logic stays exactly the same
-    return render(request, 'home.html')
+    context = {
+        "news": news.objects.all(),
+    }
+    return render(request, 'home.html', context)
 def view_shared_snippet(request, share_id):
     # Fetch the snippet by its unique secure UUID
     snippet = get_object_or_404(CodeSnippet, share_id=share_id)

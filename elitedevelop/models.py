@@ -254,6 +254,13 @@ class UserProfile(models.Model):
         return f"{self.user.username}'s Profile"
 
 
+class news(models.Model):
+    title = models.CharField(max_length=100, default="-")
+    content = models.TextField(max_length=1000, default="-")
+
+    def __str__(self):
+        return f"News: {self.title}"
+
 class inDevelopment(models.Model):
     indev = models.BooleanField(default=False)
     reason = models.CharField(max_length=1000, default="?")

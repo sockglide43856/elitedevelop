@@ -623,9 +623,11 @@
 
 {% block content %}
 <div class="ed-banner">
-<span>
-    NOW AT <b>www.elitedevelop.org</b>! <u>Old links will not work after Nov. 1, 2026</u> <b>In addition, Google, Proxy, and AI may not work on the old site.</b>
-</span>
+{% for new in news %}
+    <p><b>{{ new.title }} </b> - {{ new.content }}</p>
+{% empty %}
+    <p>No news!</p>
+{% endfor %}
 </div>
 <div class="ed-home">
 <div class="ed-orb one"></div>

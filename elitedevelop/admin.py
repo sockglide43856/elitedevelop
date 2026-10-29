@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import inDevelopment, UserProfile, UserBlock, UserReport, Organization, OrganizationMembership, OAuth2Key
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
-from .models import UserProfile
+from .models import UserProfile, news
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -190,3 +190,4 @@ admin.site.register(UserReport)
 admin.site.register(OrganizationMembership)
 admin.site.register(Organization)
 admin.site.register(OAuth2Key)
+admin.site.register(news)
