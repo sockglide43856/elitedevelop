@@ -4,23 +4,31 @@
 {% block head %}
 <style>
 :root {
-    --ed-bg: #090a0f;
-    --ed-card-bg: #11131a;
-    --ed-border: #1f2430;
-    --ed-border-hover: #333a4d;
-    --ed-text: #f0f2f5;
-    --ed-muted: #8c94a6;
+    --ed-bg: #0b0f19;
+    --ed-card-bg: rgba(17, 24, 39, 0.7);
+    --ed-card-hover: rgba(30, 41, 59, 0.8);
+    --ed-border: #1e293b;
+    --ed-border-hover: #3b82f6;
+    --ed-text: #f8fafc;
+    --ed-muted: #94a3b8;
     --ed-accent: #3b82f6;
+    --ed-accent-glow: rgba(59, 130, 246, 0.15);
     --ed-accent-hover: #2563eb;
-    --ed-radius: 12px;
+    --ed-code-font: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', Consolas, monospace;
+    --ed-radius: 10px;
 }
 
-/* Base resets & Container */
+/* Base Resets & Background Grid Accent */
 .ed-page {
     min-height: 100vh;
     background-color: var(--ed-bg);
+    background-image:
+        radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 32px 32px, 32px 32px;
     color: var(--ed-text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .ed-container {
@@ -31,10 +39,11 @@
 
 /* News Banner Ticker */
 .ed-news-wrapper {
-    background-color: #121621;
+    background-color: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--ed-border);
     padding: 10px 0;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
 }
 
 .ed-news-content {
@@ -44,48 +53,75 @@
 }
 
 .ed-news-badge {
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(59, 130, 246, 0.1);
     color: var(--ed-accent);
-    font-size: 0.725rem;
-    font-weight: 700;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    font-family: var(--ed-code-font);
+    font-size: 0.7rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 2px 8px;
+    padding: 3px 8px;
     border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .ed-news-text {
     color: var(--ed-muted);
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .ed-news-text b {
     color: var(--ed-text);
+    font-weight: 600;
 }
 
 /* Hero Section */
 .ed-hero {
-    padding: 96px 0 64px;
+    padding: 80px 0 56px;
     text-align: center;
+    position: relative;
+}
+
+.ed-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid var(--ed-border);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: var(--ed-code-font);
+    font-size: 0.75rem;
+    color: var(--ed-muted);
+    margin-bottom: 24px;
+}
+
+.ed-hero-badge span {
+    color: var(--ed-accent);
 }
 
 .ed-hero h1 {
-    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-size: clamp(2.4rem, 5vw, 3.75rem);
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.15;
     letter-spacing: -0.03em;
-    margin: 0 0 20px 0;
+    margin: 0 0 16px 0;
     color: var(--ed-text);
 }
 
+.ed-hero h1 .gradient-text {
+    background: linear-gradient(135deg, #ffffff 30%, var(--ed-muted) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .ed-hero p {
-    font-size: 1.125rem;
+    font-size: 1.1rem;
     color: var(--ed-muted);
     max-width: 580px;
-    margin: 0 auto 36px;
+    margin: 0 auto 32px;
     line-height: 1.6;
 }
 
@@ -100,57 +136,71 @@
 .ed-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    height: 44px;
+    gap: 10px;
+    height: 42px;
     padding: 0 20px;
-    border-radius: var(--ed-radius);
-    font-size: 0.9375rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
     font-weight: 600;
+    font-family: var(--ed-code-font);
     text-decoration: none;
-    transition: all 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ed-btn-primary {
     background-color: var(--ed-accent);
     color: #ffffff;
-    border: 1px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
 }
 
 .ed-btn-primary:hover {
     background-color: var(--ed-accent-hover);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
 }
 
 .ed-btn-secondary {
-    background-color: var(--ed-card-bg);
+    background-color: rgba(30, 41, 59, 0.5);
     color: var(--ed-text);
     border: 1px solid var(--ed-border);
 }
 
 .ed-btn-secondary:hover {
-    border-color: var(--ed-border-hover);
-    background-color: #171a24;
+    border-color: var(--ed-muted);
+    background-color: rgba(51, 65, 85, 0.6);
+    transform: translateY(-1px);
 }
 
 /* Grid & Section Headers */
 .ed-section {
-    padding: 48px 0 96px;
+    padding: 32px 0 80px;
 }
 
 .ed-section-header {
-    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--ed-border);
+    padding-bottom: 16px;
 }
 
 .ed-section-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
+
 
 .ed-section-header p {
     color: var(--ed-muted);
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
 }
 
 /* Tool Cards */
@@ -161,44 +211,93 @@
 }
 
 .ed-card {
+    position: relative;
     display: flex;
     flex-direction: column;
-    padding: 24px;
+    padding: 20px;
     background-color: var(--ed-card-bg);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--ed-border);
     border-radius: var(--ed-radius);
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.15s ease, transform 0.15s ease;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.ed-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ed-accent), transparent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .ed-card:hover {
     border-color: var(--ed-border-hover);
+    background-color: var(--ed-card-hover);
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.3);
+}
+
+.ed-card:hover::before {
+    opacity: 1;
+}
+
+.ed-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
 .ed-card-icon {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--ed-border);
     border-radius: 8px;
-    margin-bottom: 16px;
-    color: var(--ed-text);
-    font-size: 1.1rem;
+    color: var(--ed-accent);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.ed-card:hover .ed-card-icon {
+    background: var(--ed-accent-glow);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #ffffff;
+}
+
+.ed-card-arrow {
+    color: var(--ed-muted);
+    font-size: 0.75rem;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all 0.2s ease;
+}
+
+.ed-card:hover .ed-card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--ed-accent);
 }
 
 .ed-card h3 {
-    font-size: 1.05rem;
+    font-size: 0.98rem;
     font-weight: 600;
-    margin: 0 0 8px 0;
+    margin: 0 0 6px 0;
     color: var(--ed-text);
 }
 
 .ed-card p {
-    font-size: 0.875rem;
+    font-size: 0.825rem;
     color: var(--ed-muted);
     margin: 0;
     line-height: 1.5;
@@ -206,7 +305,7 @@
 
 @media (max-width: 640px) {
     .ed-hero {
-        padding: 64px 0 32px;
+        padding: 56px 0 32px;
     }
     .ed-actions {
         flex-direction: column;
@@ -214,6 +313,11 @@
     .ed-btn {
         width: 100%;
         justify-content: center;
+    }
+    .ed-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
 }
 </style>
@@ -225,10 +329,10 @@
     <div class="ed-news-wrapper">
         <div class="ed-container">
             <div class="ed-news-content">
-                <span class="ed-news-badge">Updates</span>
+                <span class="ed-news-badge">News</span>
                 <div class="ed-news-text">
                     {% for new in news %}
-                        <b>{{ new.title }}</b> — {{ new.content }}<br>{% if not forloop.last %} &nbsp;|&nbsp; {% endif %}
+                        <b>{{ new.title }}</b> — {{ new.content }}{% if not forloop.last %}{% endif %}<br>
                     {% endfor %}
                 </div>
             </div>
@@ -239,84 +343,141 @@
     <main class="ed-container">
         <!-- HERO -->
         <section class="ed-hero">
+            <div class="ed-hero-badge">
+                EliteDevelop
+            </div>
+
             {% if user.is_authenticated %}
-                <h1>Welcome back, {{ user.username }}</h1>
-                <p>Jump directly back into your chats, developer tools, or workspace settings.</p>
+                <h1><span class="gradient-text">Welcome back, {{ user.username }}!</span></h1>
+                <p>Jump directly back into your collabs, workspaces, code, or AI.</p>
                 <div class="ed-actions">
-                    <a href="/collabs" class="ed-btn ed-btn-primary">
-                        <i class="fa-solid fa-comments"></i> Collabs
-                    </a>
-                    <a href="/org" class="ed-btn ed-btn-secondary">
-                        <i class="fa-solid fa-building"></i> Organizations
-                    </a>
+                    <!-- nothing for now -->
                 </div>
             {% else %}
-                <h1>EliteDevelop Workspace</h1>
-                <p>An integrated platform for communication, developer utilities, and user management.</p>
+                <h1><span class="gradient-text">Welcome!</span></h1>
+                <p>Join the many users that use EliteDevelop for coding, collaborations, workspaces, and AI</p>
                 <div class="ed-actions">
                     <a href="{% url 'login' %}" class="ed-btn ed-btn-primary">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> I have an account
                     </a>
                     <a href="{% url 'register' %}" class="ed-btn ed-btn-secondary">
-                        Create Account
+                    Get started!
                     </a>
                 </div>
             {% endif %}
         </section>
 
-        <!-- TOOLS GRID -->
         <section class="ed-section">
             <div class="ed-section-header">
-                <h2>Available Utilities</h2>
-                <p>Select a tool below to access your workspace features.</p>
+                <div>
+                    <h2>Jump in</h2>
+                    <p>Select a tool, program, or site to continue</p>
+                </div>
             </div>
 
             <div class="ed-grid">
                 <a href="/chat" class="ed-card">
-                    <div class="ed-card-icon"><i class="fa-solid fa-comments"></i></div>
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-comments"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
                     <h3>Public Chat</h3>
-                    <p>Chat with others</p>
+                    <p>Get social</p>
                 </a>
+
                 <a href="/chat/private/home" class="ed-card">
-                    <div class="ed-card-icon"><i class="fa-solid fa-comments"></i></div>
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-lock"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
                     <h3>Private Chats</h3>
-                    <p>Private chat rooms</p>
+                    <p>Encrypted messaging</p>
+                </a>
+                <a href="/chats/dm" class="ed-card">
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-paper-plane"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
+                    <h3>DMs</h3>
+                    <p>Your messages</p>
                 </a>
 
                 <a href="/qr" class="ed-card">
-                    <div class="ed-card-icon"><i class="fa-solid fa-qrcode"></i></div>
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-qrcode"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
                     <h3>QR Studio</h3>
-                    <p>Generate, edit, and manage custom QR codes.</p>
+                    <p>Create a free QR code</p>
                 </a>
 
                 <a href="/py" class="ed-card">
-                    <div class="ed-card-icon"><i class="fa-brands fa-python"></i></div>
-                    <h3>Python Sandbox</h3>
-                    <p>Run and test scripts within the integrated environment.</p>
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-brands fa-python"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
+                    <h3>Python</h3>
+                    <p>Create a script or see your saved code</p>
                 </a>
 
                 <a href="/forums" class="ed-card">
-                    <div class="ed-card-icon"><i class="fa-solid fa-users-rectangle"></i></div>
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-users-rectangle"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
                     <h3>Forums</h3>
-                    <p>Community discussions, topics, and support boards.</p>
+                    <p>Community discussions, topics, and support</p>
                 </a>
 
                 <a href="/users" class="ed-card">
-                    <div class="ed-card-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-users"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
                     <h3>Users</h3>
-                    <p>Browse member profiles and active platform accounts.</p>
+                    <p>See the many people who trust EliteDevelop</p>
                 </a>
 
                 <a href="/stats" class="ed-card">
-                    <div class="ed-card-icon"><i class="fa-solid fa-chart-line"></i></div>
-                    <h3>Analytics</h3>
-                    <p>Platform information</p>
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
+                    <h3>Stats</h3>
+                    <p>Information about the site, messages count, or users.</p>
                 </a>
 
                 <a href="/settings" class="ed-card">
-                    <div class="ed-card-icon"><i class="fa-solid fa-sliders"></i></div>
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-sliders"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
                     <h3>Settings</h3>
-                    <p>Manage security, account details, and preferences.</p>
+                    <p>Manage security, account details, 2 Factor authentication, and preferences.</p>
+                </a>
+                <a href="/collabs" class="ed-card">
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-handshake"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
+                    <h3>Collabs</h3>
+                    <p>Collaborate on your next assignment, project, or lesson</p>
+                </a>
+                <a href="/eliteos" class="ed-card">
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-computer"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
+                    <h3>EliteOS</h3>
+                    <p>An online, responsive OS designed for light programming</p>
+                </a>
+                <a href="/org" class="ed-card">
+                    <div class="ed-card-top">
+                        <div class="ed-card-icon"><i class="fa-solid fa-building-user"></i></div>
+                        <i class="fa-solid fa-arrow-right ed-card-arrow"></i>
+                    </div>
+                    <h3>Organizations</h3>
+                    <p>Manage your organization and check verification status</p>
                 </a>
             </div>
         </section>

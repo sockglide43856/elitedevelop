@@ -78,7 +78,7 @@ DATABASES = {
         "PORT": "3306",
 
         # Reuse connections briefly instead of keeping them indefinitely.
-        "CONN_MAX_AGE": 60,
+        "CONN_MAX_AGE": 0,
 
         # Check persistent connections before reusing them.
         "CONN_HEALTH_CHECKS": True,
