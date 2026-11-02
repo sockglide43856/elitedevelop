@@ -32,14 +32,169 @@ from .models import Organization, OrganizationMembership, OAuth2Key
 import traceback
 from django.shortcuts import render
 from .models import ServerError
-
 import sys
 import traceback
-
 from django.shortcuts import render
 from django.conf import settings
 from .models import ServerError
+import json
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import UserCodeFile
 
+import json
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import WorkspaceNode
+
+MAX_USER_BYTES = 100 * 1024  # 100 KB limit
+
+def serialize_tree(node):
+    """Recursively serializes folders and files into a JSON tree structure."""
+    return {
+        'id': node.id,
+        'name': node.name,
+        'type': node.node_type,
+        'content': node.content if node.node_type == 'file' else None,
+        'parent_id': node.parent_id,
+        'children': [serialize_tree(child) for child in node.children.all()] if node.node_type == 'folder' else []
+    }
+
+@login_required
+def pyexec_view(request):
+    root_nodes = WorkspaceNode.objects.filter(user=request.user, parent=None)
+    tree_data = [serialize_tree(node) for node in root_nodes]
+    total_bytes = WorkspaceNode.get_user_total_bytes(request.user)
+
+    context = {
+        'tree_json': json.dumps(tree_data),
+        'total_bytes_used': total_bytes,
+        'max_bytes': MAX_USER_BYTES,
+        'usage_percent': round((total_bytes / MAX_USER_BYTES) * 100, 1),
+    }
+    return render(request, 'pyexec.html', context)
+
+
+@login_required
+@require_POST
+def create_node_view(request):
+    """Creates either a new file or folder."""
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        node_type = data.get('type', 'file')
+        parent_id = data.get('parent_id')
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Name cannot be empty.'}, status=400)
+
+        parent = WorkspaceNode.objects.filter(user=request.user, id=parent_id).first() if parent_id else None
+
+        if WorkspaceNode.objects.filter(user=request.user, parent=parent, name=name).exists():
+            return JsonResponse({'success': False, 'error': 'An item with that name already exists in this directory.'}, status=400)
+
+        node = WorkspaceNode.objects.create(
+            user=request.user,
+            name=name,
+            node_type=node_type,
+            parent=parent,
+            content="" if node_type == 'file' else ""
+        )
+
+        return JsonResponse({'success': True, 'node': serialize_tree(node)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def save_file_view(request):
+    """Saves file content with strict 100KB user quota check."""
+    try:
+        data = json.loads(request.body)
+        node_id = data.get('id')
+        content = data.get('content', '')
+
+        node = WorkspaceNode.objects.filter(user=request.user, id=node_id, node_type='file').first()
+        if not node:
+            return JsonResponse({'success': False, 'error': 'File not found.'}, status=404)
+
+        current_total = WorkspaceNode.get_user_total_bytes(request.user)
+        old_size = node.get_size_bytes()
+        new_size = len(content.encode('utf-8'))
+        projected_total = (current_total - old_size) + new_size
+
+        if projected_total > MAX_USER_BYTES:
+            overflow_kb = round((projected_total - MAX_USER_BYTES) / 1024, 2)
+            return JsonResponse({
+                'success': False,
+                'error': f'Storage quota exceeded by {overflow_kb} KB. Limit is 100 KB.'
+            }, status=400)
+
+        node.content = content
+        node.save()
+
+        new_total = WorkspaceNode.get_user_total_bytes(request.user)
+        return JsonResponse({
+            'success': True,
+            'total_bytes_used': new_total,
+            'usage_percent': round((new_total / MAX_USER_BYTES) * 100, 1),
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def rename_node_view(request):
+    """Renames a file or folder."""
+    try:
+        data = json.loads(request.body)
+        node_id = data.get('id')
+        new_name = data.get('name', '').strip()
+
+        if not new_name:
+            return JsonResponse({'success': False, 'error': 'Name cannot be empty.'}, status=400)
+
+        node = WorkspaceNode.objects.filter(user=request.user, id=node_id).first()
+        if not node:
+            return JsonResponse({'success': False, 'error': 'Item not found.'}, status=404)
+
+        if WorkspaceNode.objects.filter(user=request.user, parent=node.parent, name=new_name).exclude(id=node_id).exists():
+            return JsonResponse({'success': False, 'error': 'An item with that name already exists in this directory.'}, status=400)
+
+        node.name = new_name
+        node.save()
+
+        return JsonResponse({'success': True, 'name': node.name})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def delete_node_view(request):
+    """Deletes a file or folder (cascade deletes children)."""
+    try:
+        data = json.loads(request.body)
+        node_id = data.get('id')
+
+        node = WorkspaceNode.objects.filter(user=request.user, id=node_id).first()
+        if node:
+            node.delete()
+
+        new_total = WorkspaceNode.get_user_total_bytes(request.user)
+        return JsonResponse({
+            'success': True,
+            'total_bytes_used': new_total,
+            'usage_percent': round((new_total / MAX_USER_BYTES) * 100, 1),
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 def debug_https(request):
     return JsonResponse({
 

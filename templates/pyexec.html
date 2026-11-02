@@ -1,40 +1,75 @@
 {% extends "base.html" %}
 
-{% block title %}EliteDevelop Python Executer{% endblock %}
+{% block title %}EliteDevelop Python Studio{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-4 py-3">
     <div class="card shadow-sm border-0 p-4">
+        <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="fw-bold m-0"><i class="fa-brands fa-python text-primary me-2"></i>Python Studio</h3>
-            <span class="badge bg-success shadow-sm" id="engine-status"><i class="fa-solid fa-microchip fa-spin me-1"></i> Booting Pyodide Runtime...</span>
+            <h3 class="fw-bold m-0">
+                <i class="fa-brands fa-python text-primary me-2"></i>Python Studio
+            </h3>
+            <span class="badge bg-warning text-dark shadow-sm" id="engine-status">
+                <i class="fa-solid fa-microchip fa-spin me-1"></i> Booting Pyodide...
+            </span>
         </div>
-        <p class="text-muted small mt-0 mb-4">Run Python code in your browser. 100% free, recommended to have an account (but not requried)
+
+        <!-- Storage Quota Bar -->
+        <div class="mb-3">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Storage Used: <strong id="storage-text">{{ total_bytes_used|filesizeformat }}</strong> / 100 KB</span>
+                <span id="storage-percent">{{ usage_percent }}%</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+                <div id="storage-bar" class="progress-bar {% if usage_percent > 90 %}bg-danger{% else %}bg-primary{% endif %}"
+                     role="progressbar" style="width: {{ usage_percent }}%;"></div>
+            </div>
+        </div>
+
+        <!-- Main Grid Layout -->
         <div class="row g-3">
-            <div class="col-md-6">
-                <div class="d-flex justify-content-between align-items-center bg-dark text-light px-3 py-2 rounded-top border-bottom border-secondary">
-                    <span class="small fw-bold text-secondary">main.py</span>
-                    <button class="btn btn-sm btn-primary px-3 fw-bold shadow-sm" id="run-code-btn" disabled>
-                        <i class="fa-solid fa-play me-1"></i> Run Code
-                    </button>
+            <!-- Sidebar: File Tree Explorer -->
+            <div class="col-md-3">
+                <div class="bg-dark text-light p-3 rounded h-100 d-flex flex-column border border-secondary">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-bold text-secondary text-uppercase">Explorer</span>
+                        <div>
+                            <button class="btn btn-sm btn-outline-success py-0 px-2" id="new-file-btn" title="New File"><i class="fa-solid fa-file-circle-plus"></i></button>
+                            <button class="btn btn-sm btn-outline-info py-0 px-2" id="new-folder-btn" title="New Folder"><i class="fa-solid fa-folder-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="overflow-auto flex-grow-1" id="tree-container" style="max-height: 400px;">
+                        <!-- Dynamic Tree rendered by JS -->
+                    </div>
                 </div>
-                <textarea id="code-editor" class="form-control font-monospace text-white bg-dark p-3 rounded-bottom border-0 shadow-inner" style="height: 400px; resize: none; font-size: 14px; line-height: 1.5;"># Write real Python code here!
-def greet(name):
-    return f"Hello, {name}! Welcome to EliteDevelop."
-
-for i in range(1, 4):
-    print(f"Loop index iteration: {i}")
-
-print(greet("Programmer"))
-</textarea>
             </div>
 
-            <div class="col-md-6">
-                <div class="bg-dark text-light px-3 py-2 rounded-top border-bottom border-secondary">
-                    <span class="small fw-bold text-secondary">Output</span>
+            <!-- Code Editor -->
+            <div class="col-md-5">
+                <div class="d-flex justify-content-between align-items-center bg-dark text-light px-3 py-2 rounded-top border-bottom border-secondary">
+                    <span id="active-file-title" class="small fw-bold text-info">No file opened</span>
+                    <div>
+                        <button class="btn btn-sm btn-outline-light me-1" id="save-code-btn" disabled>
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save
+                        </button>
+                        <button class="btn btn-sm btn-primary px-3 fw-bold" id="run-code-btn" disabled>
+                            <i class="fa-solid fa-play me-1"></i> Run
+                        </button>
+                    </div>
                 </div>
-                <div id="console-output" class="form-control font-monospace text-success bg-dark p-3 rounded-bottom border-0 overflow-auto" style="height: 400px; white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: #38bdf8 !important;">Loading engine profiles...
-</div>
+                <textarea id="code-editor" class="form-control font-monospace text-white bg-dark p-3 rounded-bottom border-0 shadow-inner" style="height: 400px; resize: none; font-size: 14px; line-height: 1.5; tab-size: 4;" spellcheck="false" disabled></textarea>
+            </div>
+
+            <!-- Console Output -->
+            <div class="col-md-4">
+                <div class="d-flex justify-content-between align-items-center bg-dark text-light px-3 py-2 rounded-top border-bottom border-secondary">
+                    <span class="small fw-bold text-secondary">Console Output</span>
+                    <button class="btn btn-sm btn-outline-secondary py-0 text-light border-0" id="clear-console-btn">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+                <div id="console-output" class="form-control font-monospace bg-dark p-3 rounded-bottom border-0 overflow-auto" style="height: 400px; white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: #38bdf8 !important;">Loading WebAssembly engine...</div>
             </div>
         </div>
     </div>
@@ -43,52 +78,301 @@ print(greet("Programmer"))
 <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 
 <script>
+    const csrfToken = '{{ csrf_token }}';
+    let fileTree = JSON.parse('{{ tree_json|escapejs }}');
+    let activeFileNode = null;
+    let selectedFolderId = null; // null means root directory
+
     async function main() {
-        let outputConsole = document.getElementById("console-output");
-        let runButton = document.getElementById("run-code-btn");
-        let statusBadge = document.getElementById("engine-status");
+        const outputConsole = document.getElementById("console-output");
+        const runButton = document.getElementById("run-code-btn");
+        const saveButton = document.getElementById("save-code-btn");
+        const codeEditor = document.getElementById("code-editor");
+        const activeTitle = document.getElementById("active-file-title");
+        const statusBadge = document.getElementById("engine-status");
 
+        // Initialize Pyodide
+        let pyodide = null;
         try {
-            // Initialize the WebAssembly Python sandbox environment
-            let pyodide = await loadPyodide();
+            pyodide = await loadPyodide();
+            pyodide.setStdout({ batched: (text) => { outputConsole.textContent += text + "\n"; } });
+            pyodide.setStderr({ batched: (text) => { outputConsole.textContent += "[ERROR] " + text + "\n"; } });
 
-            // Re-route Python's standard output print statements directly to our HTML console pane
-            pyodide.setStdout({
-                batched: (text) => {
-                    outputConsole.textContent += text + "\n";
-                }
-            });
-            pyodide.setStderr({
-                batched: (text) => {
-                    outputConsole.textContent += "[ERROR] " + text + "\n";
-                }
-            });
-
-            outputConsole.textContent = ">>> Python interpreter ready. Press 'Run Code' to execute scripts.\n";
+            outputConsole.textContent = ">>> Python interpreter ready.\n";
             statusBadge.textContent = "Engine Active";
-            statusBadge.className = "badge bg-primary shadow-sm";
-            runButton.disabled = false;
+            statusBadge.className = "badge bg-success shadow-sm";
 
-            // Handle script execution sequence
             runButton.addEventListener("click", async () => {
-                let code = document.getElementById("code-editor").value;
-                outputConsole.textContent = ""; // Clear console before outputting new results
+                outputConsole.textContent = "";
+                runButton.disabled = true;
 
                 try {
-                    await pyodide.runPythonAsync(code);
+                    // 1. Sync all workspace files/folders into Pyodide's Virtual File System
+                    syncTreeToPyodideVFS(pyodide, fileTree);
+
+                    // 2. Sync unsaved current editor buffer to Pyodide's VFS
+                    if (activeFileNode) {
+                        const path = getVFSPath(activeFileNode, fileTree);
+                        pyodide.FS.writeFile(path, codeEditor.value, { encoding: "utf8" });
+                    }
+
+                    // 3. Execute python code
+                    await pyodide.runPythonAsync(codeEditor.value);
                 } catch (err) {
-                    outputConsole.textContent += "\n[Runtime Exception Encountered]:\n" + err;
+                    outputConsole.textContent += "\n[Runtime Error]:\n" + err;
+                } finally {
+                    runButton.disabled = false;
                 }
             });
-
-        } catch (initError) {
-            outputConsole.textContent = "Failed to initialize WebAssembly core: " + initError;
+        } catch (err) {
+            outputConsole.textContent = "Failed to load Pyodide engine: " + err;
             statusBadge.textContent = "Boot Failure";
             statusBadge.className = "badge bg-danger shadow-sm";
         }
+
+        renderTree();
+
+        // Save active file
+        saveButton.addEventListener("click", async () => {
+            if (!activeFileNode) return;
+            const content = codeEditor.value;
+
+            const res = await apiCall("{% url 'py_save' %}", { id: activeFileNode.id, content });
+            if (res.success) {
+                activeFileNode.content = content;
+                updateStorageUI(res.total_bytes_used, res.usage_percent);
+                alert("File saved!");
+            } else {
+                alert("Save failed: " + res.error);
+            }
+        });
+
+        // Tab key support in editor
+        codeEditor.addEventListener("keydown", function(e) {
+            if (e.key === "Tab") {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        });
+
+        // Create File/Folder listeners
+        document.getElementById("new-file-btn").addEventListener("click", () => createNode('file'));
+        document.getElementById("new-folder-btn").addEventListener("click", () => createNode('folder'));
+        document.getElementById("clear-console-btn").addEventListener("click", () => { outputConsole.textContent = ""; });
     }
 
-    // Fire up compiler runtime on document load sequence
-    main();
+    // Recursively syncs files/folders to Pyodide VFS
+    function syncTreeToPyodideVFS(pyodide, nodes, currentPath = "") {
+        for (const node of nodes) {
+            const nodePath = currentPath ? `${currentPath}/${node.name}` : node.name;
+
+            if (node.type === "folder") {
+                try {
+                    pyodide.FS.mkdir(nodePath);
+                } catch (e) {
+                    // Folder already exists in VFS
+                }
+                if (node.children && node.children.length > 0) {
+                    syncTreeToPyodideVFS(pyodide, node.children, nodePath);
+                }
+            } else if (node.type === "file") {
+                pyodide.FS.writeFile(nodePath, node.content || "", { encoding: "utf8" });
+            }
+        }
+    }
+
+    // Resolves full node VFS path
+    function getVFSPath(targetNode, nodes, currentPath = "") {
+        for (const node of nodes) {
+            const nodePath = currentPath ? `${currentPath}/${node.name}` : node.name;
+            if (node.id === targetNode.id) {
+                return nodePath;
+            }
+            if (node.type === "folder" && node.children) {
+                const found = getVFSPath(targetNode, node.children, nodePath);
+                if (found) return found;
+            }
+        }
+        return targetNode.name;
+    }
+
+    // Render workspace tree recursively
+    function renderTree() {
+        const container = document.getElementById("tree-container");
+        container.innerHTML = "";
+        const ul = document.createElement("ul");
+        ul.className = "list-unstyled mb-0";
+        fileTree.forEach(node => ul.appendChild(createNodeElement(node)));
+        container.appendChild(ul);
+    }
+
+    function createNodeElement(node) {
+        const li = document.createElement("li");
+        li.className = "my-1";
+
+        const row = document.createElement("div");
+        row.className = `d-flex justify-content-between align-items-center py-1 px-2 rounded cursor-pointer ${node.id === selectedFolderId ? 'bg-secondary' : ''}`;
+
+        const isFolder = node.type === 'folder';
+        const iconClass = isFolder ? 'fa-folder text-warning' : 'fa-file-code text-info';
+
+        row.innerHTML = `
+            <span class="text-truncate node-click flex-grow-1"><i class="fa-solid ${iconClass} me-2"></i><span class="node-name">${node.name}</span></span>
+            <div class="node-actions opacity-75">
+                <button class="btn btn-sm text-light p-0 me-2 rename-btn" title="Rename"><i class="fa-solid fa-pen fa-xs"></i></button>
+                <button class="btn btn-sm text-danger p-0 delete-btn" title="Delete"><i class="fa-solid fa-xmark fa-xs"></i></button>
+            </div>
+        `;
+
+        // Node Click behavior
+        row.querySelector('.node-click').addEventListener('click', () => {
+            if (isFolder) {
+                selectedFolderId = (selectedFolderId === node.id) ? null : node.id;
+                renderTree();
+            } else {
+                openFile(node);
+            }
+        });
+
+        // Rename Listener
+        row.querySelector('.rename-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            renameNode(node);
+        });
+
+        // Delete Listener
+        row.querySelector('.delete-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteNode(node);
+        });
+
+        li.appendChild(row);
+
+        // Nested children for folders
+        if (isFolder && node.children && node.children.length > 0) {
+            const subUl = document.createElement("ul");
+            subUl.className = "list-unstyled ms-3 border-start border-secondary ps-2";
+            node.children.forEach(child => subUl.appendChild(createNodeElement(child)));
+            li.appendChild(subUl);
+        }
+
+        return li;
+    }
+
+    function openFile(node) {
+        activeFileNode = node;
+        document.getElementById("active-file-title").textContent = node.name;
+        const codeEditor = document.getElementById("code-editor");
+        codeEditor.value = node.content || "";
+        codeEditor.disabled = false;
+        document.getElementById("save-code-btn").disabled = false;
+        document.getElementById("run-code-btn").disabled = false;
+    }
+
+    async function createNode(type) {
+        const name = prompt(`Enter name for new ${type}:`);
+        if (!name) return;
+
+        const res = await apiCall("{% url 'py_create' %}", {
+            name,
+            type,
+            parent_id: selectedFolderId
+        });
+
+        if (res.success) {
+            if (selectedFolderId) {
+                const parentFolder = findNodeById(fileTree, selectedFolderId);
+                if (parentFolder) parentFolder.children.push(res.node);
+            } else {
+                fileTree.push(res.node);
+            }
+            renderTree();
+            if (type === 'file') openFile(res.node);
+        } else {
+            alert(res.error);
+        }
+    }
+
+    async function renameNode(node) {
+        const newName = prompt("Enter new name:", node.name);
+        if (!newName || newName === node.name) return;
+
+        const res = await apiCall("{% url 'py_rename' %}", { id: node.id, name: newName });
+        if (res.success) {
+            node.name = res.name;
+            if (activeFileNode && activeFileNode.id === node.id) {
+                document.getElementById("active-file-title").textContent = res.name;
+            }
+            renderTree();
+        } else {
+            alert(res.error);
+        }
+    }
+
+    async function deleteNode(node) {
+        if (!confirm(`Delete '${node.name}'${node.type === 'folder' ? ' and all contents?' : '?'}`)) return;
+
+        const res = await apiCall("{% url 'py_delete' %}", { id: node.id });
+        if (res.success) {
+            removeNodeFromTree(fileTree, node.id);
+            if (activeFileNode && activeFileNode.id === node.id) {
+                activeFileNode = null;
+                document.getElementById("active-file-title").textContent = "No file opened";
+                document.getElementById("code-editor").value = "";
+                document.getElementById("code-editor").disabled = true;
+                document.getElementById("save-code-btn").disabled = true;
+                document.getElementById("run-code-btn").disabled = true;
+            }
+            updateStorageUI(res.total_bytes_used, res.usage_percent);
+            renderTree();
+        } else {
+            alert(res.error);
+        }
+    }
+
+    // Helper utilities
+    async function apiCall(url, data) {
+        const resp = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+            body: JSON.stringify(data)
+        });
+        return await resp.json();
+    }
+
+    function findNodeById(nodes, id) {
+        for (let n of nodes) {
+            if (n.id === id) return n;
+            if (n.children) {
+                let found = findNodeById(n.children, id);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    function removeNodeFromTree(nodes, id) {
+        for (let i = 0; i < nodes.length; i++) {
+            if (nodes[i].id === id) {
+                nodes.splice(i, 1);
+                return true;
+            }
+            if (nodes[i].children && removeNodeFromTree(nodes[i].children, id)) return true;
+        }
+        return false;
+    }
+
+    function updateStorageUI(totalBytes, percent) {
+        document.getElementById("storage-text").textContent = (totalBytes / 1024).toFixed(2) + " KB";
+        document.getElementById("storage-percent").textContent = percent + "%";
+        const bar = document.getElementById("storage-bar");
+        bar.style.width = percent + "%";
+        bar.className = `progress-bar ${percent > 90 ? 'bg-danger' : 'bg-primary'}`;
+    }
+
+    document.addEventListener("DOMContentLoaded", main);
 </script>
 {% endblock %}

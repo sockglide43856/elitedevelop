@@ -5,11 +5,69 @@ from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 import string
 import datetime
 import secrets
 import uuid
+from django.db import models
+from django.contrib.auth.models import User
 
+class UserCodeFile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="code_files")
+    filename = models.CharField(max_length=255)
+    content = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'filename')
+        ordering = ['-updated_at']
+
+    def get_size_bytes(self):
+        """Returns the size of this file's content in bytes."""
+        return len(self.content.encode('utf-8'))
+
+    @classmethod
+    def get_user_total_bytes(cls, user):
+        """Calculates total storage used across all files for a user."""
+        files = cls.objects.filter(user=user)
+        return sum(f.get_size_bytes() for f in files)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.filename}"
+class WorkspaceNode(models.Model):
+    NODE_TYPES = (
+        ('file', 'File'),
+        ('folder', 'Folder'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="workspace_nodes")
+    name = models.CharField(max_length=255)
+    node_type = models.CharField(max_length=10, choices=NODE_TYPES, default='file')
+    content = models.TextField(blank=True, default="")
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name="children")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'parent', 'name')
+        ordering = ['node_type', 'name']
+
+    def get_size_bytes(self):
+        """Folder sizes are calculated recursively from contained files."""
+        if self.node_type == 'file':
+            return len(self.content.encode('utf-8'))
+        return sum(child.get_size_bytes() for child in self.children.all())
+
+    @classmethod
+    def get_user_total_bytes(cls, user):
+        """Calculates total storage used by all files for a user."""
+        files = cls.objects.filter(user=user, node_type='file')
+        return sum(f.get_size_bytes() for f in files)
+
+    def __str__(self):
+        return f"{self.user.username} - [{self.node_type.upper()}] {self.name}"
 
 def generate_error_code():
     alphabet = string.ascii_uppercase + string.digits
