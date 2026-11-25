@@ -1,7 +1,5 @@
 # EliteDevelop
 
-> # IMPORTANT - ELITEDEVELOP IS NOW ELITEDEVELOP.ORG - ELITEDEVELOP.PYTHONANYWHERE.COM WILL NOT WORK!!
-
 EliteDevelop is a free web-based developer and community platform built with Django.
 
 > Website: [EliteDevelop](https://elitedevelop.org)
